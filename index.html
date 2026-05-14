@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Carousel Creator</title>
     
+    <!-- Favicon incorporata -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%2270%22 y=%2220%22 rx=%2210%22 fill=%22%236d4c41%22/><rect width=%2290%22 height=%2260%22 x=%225%22 y=%2225%22 rx=%225%22 fill=%22%23212121%22/><circle cx=%2250%22 cy=%2255%22 r=%2225%22 fill=%22%23111%22/><path stroke=%22%23555%22 stroke-width=%224%22 d=%22M30 0l20 20M70 0L50 20%22/><circle cx=%2280%22 cy=%2240%22 r=%224%22 fill=%22%23f44336%22/><circle cx=%2280%22 cy=%2255%22 r=%224%22 fill=%22%23ccc%22/><circle cx=%2280%22 cy=%2270%22 r=%224%22 fill=%22%23ccc%22/></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,7 +50,7 @@
                         <label class="text-sm font-medium text-gray-900">Badge News (Alto a Sinistra)</label>
                         <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi News</button>
                     </div>
-                    <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-100 transition-all cursor-pointer w-full" />
+                    <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 transition-all cursor-pointer w-full" />
                 </div>
             </div>
         </div>
@@ -209,7 +212,7 @@
             
             // News Globale Salvata
             var newsHTML = state.newsBase64 ? 
-                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 40px; max-width: 100px; object-fit: contain; z-index: 40;\">" : "";
+                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
 
             // Velo nero sfumato (SOLO COPERTINA)
             var gradientHTML = isCover ? 
