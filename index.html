@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Carousel Creator</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #F5F5F7; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #AEAEB2; }
+        
+        /* Modale */
+        #help-modal { display: none; opacity: 0; transition: opacity 0.2s ease; }
+        #help-modal.active { display: flex; opacity: 1; }
+    </style>
+</head>
+<body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
+
+    <!-- PANNELLO SINISTRO: EDITOR -->
+    <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
+        
+        <!-- Brand Settings -->
+        <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-lg text-gray-900">Impostazioni Brand</h2>
+                <button id="btn-help" class="text-sm font-medium text-[#0071E3] hover:underline bg-gray-100 px-3 py-1 rounded-full">Guida all'uso</button>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-900">Logo (Alto a Destra)</label>
+                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi Logo</button>
+                    </div>
+                    <input type="file" id="logo-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 transition-all cursor-pointer w-full" />
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-900">Badge News (Alto a Sinistra)</label>
+                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi News</button>
+                    </div>
+                    <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-100 transition-all cursor-pointer w-full" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide Navigator -->
+        <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="slide-count-title" class="font-semibold text-lg text-gray-900">Slides (1/20)</h2>
+                <div class="flex gap-2">
+                    <button id="btn-prev" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">↑</button>
+                    <button id="btn-next" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">↓</button>
+                </div>
+            </div>
+            
+            <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar">
+                <!-- Thumbnails iniettate via JS -->
+            </div>
+        </div>
+
+        <!-- Editor Slide Attiva -->
+        <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
+                <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina Slide</button>
+            </div>
+
+            <!-- Immagine di Sfondo -->
+            <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
+                <input type="file" id="bg-upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73]">Clicca o Trascina Immagine di Sfondo</span>
+            </div>
+
+            <!-- Testi (Visibili solo se è la Copertina) -->
+            <div id="text-fields-container" class="flex flex-col gap-4 mt-2">
+                <input type="text" id="input-title" placeholder="Titolo Copertina" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-[15px] outline-none focus:ring-2 focus:ring-[#0071E3] placeholder-[#AEAEB2] transition-all duration-180" />
+                <textarea id="input-body" placeholder="Sottotitolo / Testo aggiuntivo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-[15px] outline-none focus:ring-2 focus:ring-[#0071E3] placeholder-[#AEAEB2] transition-all duration-180 resize-none"></textarea>
+                <input type="text" id="input-source" placeholder="Fonte (Es. Fonte: theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-[13px] outline-none focus:ring-2 focus:ring-[#0071E3] placeholder-[#AEAEB2] transition-all duration-180" />
+            </div>
+            <p id="content-slide-notice" class="text-sm text-gray-500 italic hidden">Testo disabilitato. Questa slide mostrerà solo l'immagine a schermo intero.</p>
+        </div>
+    </div>
+
+    <!-- PANNELLO DESTRO: PREVIEW LIVE -->
+    <div class="flex-grow flex flex-col items-center gap-6">
+        <div class="w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <h2 class="font-semibold text-lg text-gray-900">Anteprima (4:5)</h2>
+            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium transition-all duration-180 hover:bg-[#005bb5] disabled:opacity-50 shadow-sm">
+                Esporta Slide
+            </button>
+        </div>
+
+        <!-- Contenitore dell'Anteprima (Proporzione 4:5 per 1080x1350) -->
+        <div id="preview-wrapper" class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden" style="aspect-ratio: 4/5;">
+            <div id="preview-container" class="absolute top-0 left-0 origin-top-left transition-all duration-180">
+                <!-- Preview iniettata via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- NODI NASCOSTI PER ESPORTAZIONE HTML2CANVAS -->
+    <div id="export-nodes" class="absolute left-[-9999px] top-[-9999px] opacity-0 pointer-events-none"></div>
+
+    <!-- MODALE GUIDA -->
+    <div id="help-modal" class="fixed inset-0 z-50 bg-black/50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
+            <h3 class="text-xl font-bold mb-4">Guida all'uso rapida</h3>
+            <ul class="space-y-3 text-sm text-gray-700">
+                <li><strong>1. Impostazioni Brand:</strong> Carica il tuo Logo e il file per la scritta NEWS (opzionale). Verranno salvati automaticamente nella memoria del tuo browser per non darti problemi di esportazione e per i tuoi progetti futuri.</li>
+                <li><strong>2. Formato Instagram:</strong> Le slide sono impostate sul formato verticale 1080x1350 (4:5).</li>
+                <li><strong>3. Copertina vs Contenuto:</strong> La <i>Prima Slide</i> ha un velo nero sul fondo e ti permette di inserire Titolo, Sottotitolo e Fonte (in basso a destra). Le <i>Slide Successive</i> mostrano solo l'immagine a schermo intero.</li>
+                <li><strong>4. Limiti:</strong> Puoi creare ed esportare da un minimo di 1 a un massimo di 20 slide per volta.</li>
+            </ul>
+            <button id="btn-close-help" class="mt-6 w-full bg-black text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">Ho capito</button>
+        </div>
+    </div>
+
+    <script>
+        var state = {
+            activeIndex: 0,
+            isExporting: false,
+            // Recupero dal localStorage per evitare errori CORS e "Tainted Canvas"
+            logoBase64: localStorage.getItem('instagramCarouselLogo') || null,
+            newsBase64: localStorage.getItem('instagramCarouselNews') || null,
+            slides: [
+                { id: 'slide-0', image: null, title: 'Titolo Copertina', body: 'Questo testo appare solo sulla prima slide.', source: 'Fonte: theverge.com' }
+            ]
+        };
+
+        var DOM = {
+            thumbnailsContainer: document.getElementById('thumbnails-container'),
+            editorTitle: document.getElementById('editor-title'),
+            btnDeleteSlide: document.getElementById('btn-delete-slide'),
+            bgUpload: document.getElementById('bg-upload'),
+            bgUploadLabel: document.getElementById('bg-upload-label'),
+            inputTitle: document.getElementById('input-title'),
+            inputBody: document.getElementById('input-body'),
+            inputSource: document.getElementById('input-source'),
+            textFieldsContainer: document.getElementById('text-fields-container'),
+            contentSlideNotice: document.getElementById('content-slide-notice'),
+            previewContainer: document.getElementById('preview-container'),
+            previewWrapper: document.getElementById('preview-wrapper'),
+            exportNodesContainer: document.getElementById('export-nodes'),
+            slideCountTitle: document.getElementById('slide-count-title'),
+            btnPrev: document.getElementById('btn-prev'),
+            btnNext: document.getElementById('btn-next'),
+            btnExport: document.getElementById('btn-export'),
+            logoUpload: document.getElementById('logo-upload'),
+            newsUpload: document.getElementById('news-upload'),
+            btnClearLogo: document.getElementById('btn-clear-logo'),
+            btnClearNews: document.getElementById('btn-clear-news'),
+            btnHelp: document.getElementById('btn-help'),
+            btnCloseHelp: document.getElementById('btn-close-help'),
+            helpModal: document.getElementById('help-modal')
+        };
+
+        function readImageAsBase64(file, callback) {
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) { callback(e.target.result); };
+            reader.readAsDataURL(file);
+        }
+
+        function moveSlide(direction) {
+            var newIndex = state.activeIndex + direction;
+            if (newIndex < 0 || newIndex >= state.slides.length) return;
+            var temp = state.slides[state.activeIndex];
+            state.slides[state.activeIndex] = state.slides[newIndex];
+            state.slides[newIndex] = temp;
+            state.activeIndex = newIndex;
+            render();
+        }
+
+        function addSlide() {
+            if (state.slides.length >= 20) return;
+            state.slides.push({ id: 'slide-' + Date.now(), image: null });
+            state.activeIndex = state.slides.length - 1;
+            render();
+        }
+
+        function deleteSlide() {
+            if (state.slides.length > 1) {
+                state.slides.splice(state.activeIndex, 1);
+                state.activeIndex = Math.max(0, state.activeIndex - 1);
+                render();
+            }
+        }
+
+        function generateSlideHTML(slide, index) {
+            var isCover = (index === 0);
+            
+            // Background Immagine o Colore
+            var bgStyle = slide.image 
+                ? "background-image: url('" + slide.image + "'); background-size: cover; background-position: center;"
+                : "background-color: #333;";
+
+            // Logo Globale Salvato
+            var logoHTML = state.logoBase64 ? 
+                "<img src=\"" + state.logoBase64 + "\" style=\"position: absolute; top: 40px; right: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
+            
+            // News Globale Salvata
+            var newsHTML = state.newsBase64 ? 
+                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 40px; max-width: 100px; object-fit: contain; z-index: 40;\">" : "";
+
+            // Velo nero sfumato (SOLO COPERTINA)
+            var gradientHTML = isCover ? 
+                "<div style=\"position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;\"></div>" : "";
+
+            // Testi Principali (SOLO COPERTINA)
+            var titleText = slide.title || "Titolo Copertina";
+            var bodyText = slide.body || "Questo testo appare solo sulla prima slide.";
+            var textHTML = isCover ? 
+                "<div style=\"position: absolute; bottom: 80px; left: 60px; right: 60px; z-index: 20; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.5);\">" +
+                    "<h2 style=\"font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 110px; line-height: 1; margin: 0 0 16px 0; letter-spacing: 0.02em; text-transform: uppercase;\">" +
+                        titleText +
+                    "</h2>" +
+                    "<p style=\"font-size: 36px; opacity: 0.95; line-height: 1.4; font-weight: 500; margin: 0; font-family: 'DM Sans', sans-serif;\">" +
+                        bodyText +
+                    "</p>" +
+                "</div>" : "";
+
+            // Fonte in basso a destra (SOLO COPERTINA)
+            var sourceHTML = (isCover && slide.source) ? 
+                "<div style=\"position: absolute; bottom: 40px; right: 40px; z-index: 30; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.5); text-align: right;\">" +
+                    "<p style=\"font-size: 18px; opacity: 0.8; font-weight: 400; margin: 0; font-family: 'DM Sans', sans-serif;\">" + slide.source + "</p>" +
+                "</div>" : "";
+
+            // Contenitore Slide formato Instagram Verticale (1080x1350)
+            return "<div style=\"width: 1080px; height: 1350px; position: relative; overflow: hidden; " + bgStyle + "\">" +
+                gradientHTML +
+                newsHTML +
+                logoHTML +
+                textHTML +
+                sourceHTML +
+            "</div>";
+        }
+
+        function renderThumbnails() {
+            DOM.thumbnailsContainer.innerHTML = "";
+            DOM.slideCountTitle.innerText = "Slides (" + state.slides.length + "/20)";
+            
+            state.slides.forEach(function(slide, i) {
+                var thumb = document.createElement('div');
+                var isCover = (i === 0);
+                var isActive = (i === state.activeIndex);
+                
+                var bgStyle = slide.image ? "background-image: url('" + slide.image + "');" : "background-color: #E5E5EA;";
+                var activeClasses = isActive ? "border-[2px] border-[#0071E3] scale-105 shadow-sm" : "border border-black/10 opacity-70 hover:opacity-100";
+                
+                thumb.className = "w-[72px] h-[72px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden transition-all duration-180 flex items-center justify-center bg-cover bg-center " + activeClasses;
+                thumb.style = bgStyle;
+                thumb.onclick = function() { state.activeIndex = i; render(); };
+                
+                if (isCover) {
+                    thumb.innerHTML = "<span class=\"text-white text-[10px] font-bold uppercase mix-blend-overlay drop-shadow-md bg-black/30 px-1 rounded\">Cover</span>";
+                }
+                DOM.thumbnailsContainer.appendChild(thumb);
+            });
+
+            var btnAdd = document.createElement('button');
+            btnAdd.className = "w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-[#F5F5F7] border border-dashed border-[#AEAEB2] flex items-center justify-center text-[#6E6E73] hover:bg-gray-200 transition-all disabled:opacity-50";
+            btnAdd.disabled = state.slides.length >= 20;
+            btnAdd.innerHTML = "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 5v14m-7-7h14\"/></svg>";
+            btnAdd.onclick = addSlide;
+            DOM.thumbnailsContainer.appendChild(btnAdd);
+
+            DOM.btnPrev.disabled = state.activeIndex === 0;
+            DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
+        }
+
+        function renderEditor() {
+            var slide = state.slides[state.activeIndex];
+            var isCover = (state.activeIndex === 0);
+            
+            DOM.editorTitle.innerText = isCover ? "Modifica Copertina" : "Modifica Slide " + (state.activeIndex + 1);
+            DOM.btnDeleteSlide.style.display = (state.slides.length > 1 && !isCover) ? "block" : "none";
+            DOM.bgUploadLabel.innerText = slide.image ? "Sostituisci Sfondo" : "Clicca o Trascina Sfondo";
+            
+            if (isCover) {
+                DOM.textFieldsContainer.style.display = "flex";
+                DOM.contentSlideNotice.style.display = "none";
+                DOM.inputTitle.value = slide.title || "";
+                DOM.inputBody.value = slide.body || "";
+                DOM.inputSource.value = slide.source || "";
+            } else {
+                DOM.textFieldsContainer.style.display = "none";
+                DOM.contentSlideNotice.style.display = "block";
+            }
+
+            DOM.btnClearLogo.style.display = state.logoBase64 ? "block" : "none";
+            DOM.btnClearNews.style.display = state.newsBase64 ? "block" : "none";
+            DOM.btnExport.innerText = state.isExporting ? "Esportazione..." : "Esporta " + state.slides.length + " Slide";
+        }
+
+        function renderPreview() {
+            DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex);
+        }
+
+        function render() {
+            renderThumbnails();
+            renderEditor();
+            renderPreview();
+        }
+
+        async function exportAllSlides() {
+            if (state.isExporting) return;
+            if (!window.html2canvas) {
+                alert("Il motore di esportazione si sta caricando. Riprova tra un attimo.");
+                return;
+            }
+
+            state.isExporting = true;
+            renderEditor(); 
+
+            try {
+                for (var i = 0; i < state.slides.length; i++) {
+                    var exportNode = document.createElement('div');
+                    exportNode.innerHTML = generateSlideHTML(state.slides[i], i);
+                    DOM.exportNodesContainer.appendChild(exportNode);
+                    
+                    var canvas = await html2canvas(exportNode.firstChild, {
+                        scale: 1,
+                        useCORS: true,
+                        backgroundColor: null,
+                        logging: false
+                    });
+                    
+                    var link = document.createElement('a');
+                    var slideNum = (i + 1 < 10) ? '0' + (i + 1) : (i + 1);
+                    link.download = 'slide-' + slideNum + '.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    DOM.exportNodesContainer.innerHTML = "";
+                    
+                    // Ritardo vitale per evitare Out of Memory e freeze del browser
+                    await new Promise(function(resolve) { setTimeout(resolve, 600); });
+                }
+            } catch (err) {
+                alert("Errore durante l'esportazione: " + err.message);
+            } finally {
+                state.isExporting = false;
+                renderEditor();
+            }
+        }
+
+        function updateScale() {
+            var parentWidth = DOM.previewWrapper.offsetWidth;
+            var scale = parentWidth / 1080;
+            DOM.previewContainer.style.transform = 'scale(' + scale + ')';
+        }
+
+        function bindEvents() {
+            window.addEventListener('resize', updateScale);
+            
+            DOM.btnPrev.onclick = function() { moveSlide(-1); };
+            DOM.btnNext.onclick = function() { moveSlide(1); };
+            DOM.btnDeleteSlide.onclick = deleteSlide;
+            DOM.btnExport.onclick = exportAllSlides;
+
+            // Brand Uploads (Salvati in LocalStorage)
+            DOM.logoUpload.onchange = function(e) {
+                readImageAsBase64(e.target.files[0], function(res) {
+                    state.logoBase64 = res;
+                    localStorage.setItem('instagramCarouselLogo', res);
+                    render();
+                });
+            };
+            DOM.btnClearLogo.onclick = function() {
+                state.logoBase64 = null;
+                localStorage.removeItem('instagramCarouselLogo');
+                DOM.logoUpload.value = '';
+                render();
+            };
+
+            DOM.newsUpload.onchange = function(e) {
+                readImageAsBase64(e.target.files[0], function(res) {
+                    state.newsBase64 = res;
+                    localStorage.setItem('instagramCarouselNews', res);
+                    render();
+                });
+            };
+            DOM.btnClearNews.onclick = function() {
+                state.newsBase64 = null;
+                localStorage.removeItem('instagramCarouselNews');
+                DOM.newsUpload.value = '';
+                render();
+            };
+
+            // Slide Editor Upload
+            DOM.bgUpload.onchange = function(e) {
+                readImageAsBase64(e.target.files[0], function(res) {
+                    state.slides[state.activeIndex].image = res;
+                    render();
+                });
+            };
+
+            // Text Inputs
+            DOM.inputTitle.oninput = function(e) { state.slides[state.activeIndex].title = e.target.value; renderPreview(); };
+            DOM.inputBody.oninput = function(e) { state.slides[state.activeIndex].body = e.target.value; renderPreview(); };
+            DOM.inputSource.oninput = function(e) { state.slides[state.activeIndex].source = e.target.value; renderPreview(); };
+
+            // Modal Guida
+            DOM.btnHelp.onclick = function() { DOM.helpModal.classList.add('active'); };
+            DOM.btnCloseHelp.onclick = function() { DOM.helpModal.classList.remove('active'); };
+        }
+
+        window.onload = function() {
+            bindEvents();
+            render();
+            // Piccolo timeout per assicurarsi che i font siano caricati prima di calcolare la scala
+            setTimeout(updateScale, 100); 
+        };
+    </script>
+</body>
+</html>
