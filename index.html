@@ -275,14 +275,16 @@
         function generateSlideHTML(slide, index) {
             var isCover = (index === 0);
             
-            // Ripristinato background-image con background-size: cover.
-            // Questo previene completamente la distorsione nelle esportazioni.
+            // Ripristinato tag <img> con tecnica CSS transform per simulare "object-fit: cover"
+            // Questo risolve sia le slide vuote (background-image saltato) sia la distorsione!
             var bgHTML = slide.image 
-                ? "<div style=\"position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('" + slide.image + "'); background-size: cover; background-position: center; z-index: 1;\"></div>"
+                ? "<div style=\"position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 1; background-color: #333;\">" +
+                  "<img src=\"" + slide.image + "\" style=\"position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 100%; min-height: 100%; width: auto; height: auto; max-width: none; max-height: none;\">" +
+                  "</div>"
                 : "<div style=\"position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #333; z-index: 1;\"></div>";
 
             var logoHTML = state.logoBase64 ? 
-                "<img src=\"" + state.logoBase64 + "\" style=\"position: absolute; top: 40px; right: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
+                "<img src=\"" + state.logoBase64 + "\" style=\"position: absolute; top: 40px; right: 40px; max-height: 100px; max-width: 300px; object-fit: contain; z-index: 40;\">" : "";
             
             var newsHTML = state.newsBase64 ? 
                 "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
@@ -412,8 +414,8 @@
                     exportNode.innerHTML = generateSlideHTML(state.slides[i], i);
                     DOM.exportNodesContainer.appendChild(exportNode);
                     
-                    // Pausa per permettere al browser di dipingere il DOM aggiornato
-                    await new Promise(function(resolve) { setTimeout(resolve, 300); });
+                    // Pausa leggermente aumentata per far posizionare correttamente i tag img
+                    await new Promise(function(resolve) { setTimeout(resolve, 400); });
                     
                     var canvas = await html2canvas(exportNode.firstChild, {
                         scale: 1,
