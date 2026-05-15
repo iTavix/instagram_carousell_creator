@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Instagram Carousel Creator</title>
     
     <!-- Favicon incorporata -->
@@ -21,9 +21,16 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #AEAEB2; }
         
-        /* Modale */
-        #help-modal { display: none; opacity: 0; transition: opacity 0.2s ease; }
-        #help-modal.active { display: flex; opacity: 1; }
+        /* Modali */
+        .modal { display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .modal.active { display: flex; opacity: 1; }
+        
+        #export-nodes {
+            position: absolute;
+            top: 0;
+            left: -9999px;
+            z-index: -10;
+        }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
@@ -41,14 +48,14 @@
                 <div>
                     <div class="flex justify-between mb-2">
                         <label class="text-sm font-medium text-gray-900">Logo (Alto a Destra)</label>
-                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi Logo</button>
+                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="logo-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 transition-all cursor-pointer w-full" />
                 </div>
                 <div>
                     <div class="flex justify-between mb-2">
                         <label class="text-sm font-medium text-gray-900">Badge News (Alto a Sinistra)</label>
-                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi News</button>
+                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm text-[#6E6E73] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 transition-all cursor-pointer w-full" />
                 </div>
@@ -97,12 +104,12 @@
     <div class="flex-grow flex flex-col items-center gap-6">
         <div class="w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
             <h2 class="font-semibold text-lg text-gray-900">Anteprima (4:5)</h2>
-            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium transition-all duration-180 hover:bg-[#005bb5] disabled:opacity-50 shadow-sm">
-                Esporta Slide
+            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium transition-all duration-180 hover:bg-[#005bb5] shadow-sm">
+                Genera Slide per l'Esportazione
             </button>
         </div>
 
-        <!-- Contenitore dell'Anteprima (Proporzione 4:5 per 1080x1350) -->
+        <!-- Contenitore dell'Anteprima -->
         <div id="preview-wrapper" class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden" style="aspect-ratio: 4/5;">
             <div id="preview-container" class="absolute top-0 left-0 origin-top-left transition-all duration-180">
                 <!-- Preview iniettata via JS -->
@@ -111,19 +118,39 @@
     </div>
 
     <!-- NODI NASCOSTI PER ESPORTAZIONE HTML2CANVAS -->
-    <div id="export-nodes" class="absolute left-[-9999px] top-[-9999px] opacity-0 pointer-events-none"></div>
+    <div id="export-nodes"></div>
 
     <!-- MODALE GUIDA -->
-    <div id="help-modal" class="fixed inset-0 z-50 bg-black/50 items-center justify-center p-4">
+    <div id="help-modal" class="modal fixed inset-0 z-50 bg-black/60 items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
             <h3 class="text-xl font-bold mb-4">Guida all'uso rapida</h3>
             <ul class="space-y-3 text-sm text-gray-700">
-                <li><strong>1. Impostazioni Brand:</strong> Carica il tuo Logo e il file per la scritta NEWS (opzionale). Verranno salvati automaticamente nella memoria del tuo browser per non darti problemi di esportazione e per i tuoi progetti futuri.</li>
-                <li><strong>2. Formato Instagram:</strong> Le slide sono impostate sul formato verticale 1080x1350 (4:5).</li>
-                <li><strong>3. Copertina vs Contenuto:</strong> La <i>Prima Slide</i> ha un velo nero sul fondo e ti permette di inserire Titolo, Sottotitolo e Fonte (in basso a destra). Le <i>Slide Successive</i> mostrano solo l'immagine a schermo intero.</li>
-                <li><strong>4. Limiti:</strong> Puoi creare ed esportare da un minimo di 1 a un massimo di 20 slide per volta.</li>
+                <li><strong>1. Impostazioni Brand:</strong> Carica il tuo Logo e il file per la scritta NEWS. Verranno salvati automaticamente nella memoria del browser.</li>
+                <li><strong>2. Copertina vs Contenuto:</strong> La <i>Prima Slide</i> ha i testi modificabili. Le <i>Slide Successive</i> mostrano solo l'immagine a schermo intero.</li>
+                <li><strong>3. Salvataggio Rullino:</strong> Clicca su "Genera Slide", poi sul pulsante di condivisione e seleziona "Salva X Immagini" per metterle direttamente nel Rullino Foto.</li>
             </ul>
             <button id="btn-close-help" class="mt-6 w-full bg-black text-white font-medium py-3 rounded-xl hover:bg-gray-800 transition-colors">Ho capito</button>
+        </div>
+    </div>
+
+    <!-- MODALE CONDIVISIONE / SALVATAGGIO RULLINO -->
+    <div id="share-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh]">
+            <h3 class="text-xl font-bold mb-2">Esportazione Completata! 🎉</h3>
+            <p class="text-sm text-gray-600 mb-4">Le tue slide sono pronte. Usa il tasto blu per salvarle nel Rullino Foto o per condividerle.</p>
+            
+            <div id="rendered-previews" class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <!-- Anteprime generate iniettate qui -->
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 mt-auto">
+                <button id="btn-close-share" class="flex-1 bg-gray-200 text-black font-medium py-3 rounded-xl hover:bg-gray-300 transition-colors">Annulla</button>
+                <button id="btn-native-share" class="flex-2 bg-[#0071E3] text-white font-medium py-3 px-6 rounded-xl hover:bg-[#005bb5] transition-colors flex items-center justify-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+                    Salva nel Rullino / Condividi
+                </button>
+            </div>
+            <p id="share-fallback-msg" class="text-xs text-center text-gray-500 mt-3 hidden">Il tuo browser non supporta il salvataggio diretto nel rullino. Cliccando il tasto blu, le immagini verranno scaricate nei Download.</p>
         </div>
     </div>
 
@@ -131,7 +158,7 @@
         var state = {
             activeIndex: 0,
             isExporting: false,
-            // Recupero dal localStorage per evitare errori CORS e "Tainted Canvas"
+            renderedBlobs: [], // Contiene i file pronti per la condivisione
             logoBase64: localStorage.getItem('instagramCarouselLogo') || null,
             newsBase64: localStorage.getItem('instagramCarouselNews') || null,
             slides: [
@@ -161,10 +188,26 @@
             newsUpload: document.getElementById('news-upload'),
             btnClearLogo: document.getElementById('btn-clear-logo'),
             btnClearNews: document.getElementById('btn-clear-news'),
+            helpModal: document.getElementById('help-modal'),
             btnHelp: document.getElementById('btn-help'),
             btnCloseHelp: document.getElementById('btn-close-help'),
-            helpModal: document.getElementById('help-modal')
+            shareModal: document.getElementById('share-modal'),
+            renderedPreviews: document.getElementById('rendered-previews'),
+            btnCloseShare: document.getElementById('btn-close-share'),
+            btnNativeShare: document.getElementById('btn-native-share'),
+            shareFallbackMsg: document.getElementById('share-fallback-msg')
         };
+
+        function dataURItoBlob(dataURI) {
+            var byteString = atob(dataURI.split(',')[1]);
+            var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+            var ab = new ArrayBuffer(byteString.length);
+            var ia = new Uint8Array(ab);
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], {type: mimeString});
+        }
 
         function readImageAsBase64(file, callback) {
             if (!file) return;
@@ -201,49 +244,35 @@
         function generateSlideHTML(slide, index) {
             var isCover = (index === 0);
             
-            // Background Immagine o Colore
-            var bgStyle = slide.image 
-                ? "background-image: url('" + slide.image + "'); background-size: cover; background-position: center;"
-                : "background-color: #333;";
+            // Fix critico: Sostituito background CSS con tag <img> per evitare immagini bianche
+            var bgHTML = slide.image 
+                ? "<img src=\"" + slide.image + "\" style=\"position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;\">"
+                : "<div style=\"position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #333; z-index: 1;\"></div>";
 
-            // Logo Globale Salvato
             var logoHTML = state.logoBase64 ? 
                 "<img src=\"" + state.logoBase64 + "\" style=\"position: absolute; top: 40px; right: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
             
-            // News Globale Salvata
             var newsHTML = state.newsBase64 ? 
-                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 40px; max-width: 100px; object-fit: contain; z-index: 40;\">" : "";
+                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
 
-            // Velo nero sfumato (SOLO COPERTINA)
             var gradientHTML = isCover ? 
                 "<div style=\"position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;\"></div>" : "";
 
-            // Testi Principali (SOLO COPERTINA)
             var titleText = slide.title || "Titolo Copertina";
             var bodyText = slide.body || "Questo testo appare solo sulla prima slide.";
             var textHTML = isCover ? 
                 "<div style=\"position: absolute; bottom: 80px; left: 60px; right: 60px; z-index: 20; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.5);\">" +
-                    "<h2 style=\"font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 110px; line-height: 1; margin: 0 0 16px 0; letter-spacing: 0.02em; text-transform: uppercase;\">" +
-                        titleText +
-                    "</h2>" +
-                    "<p style=\"font-size: 36px; opacity: 0.95; line-height: 1.4; font-weight: 500; margin: 0; font-family: 'DM Sans', sans-serif;\">" +
-                        bodyText +
-                    "</p>" +
+                    "<h2 style=\"font-family: 'Bebas Neue', sans-serif; font-weight: 400; font-size: 110px; line-height: 1; margin: 0 0 16px 0; letter-spacing: 0.02em; text-transform: uppercase;\">" + titleText + "</h2>" +
+                    "<p style=\"font-size: 36px; opacity: 0.95; line-height: 1.4; font-weight: 500; margin: 0; font-family: 'DM Sans', sans-serif;\">" + bodyText + "</p>" +
                 "</div>" : "";
 
-            // Fonte in basso a destra (SOLO COPERTINA)
             var sourceHTML = (isCover && slide.source) ? 
                 "<div style=\"position: absolute; bottom: 40px; right: 40px; z-index: 30; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.5); text-align: right;\">" +
                     "<p style=\"font-size: 18px; opacity: 0.8; font-weight: 400; margin: 0; font-family: 'DM Sans', sans-serif;\">" + slide.source + "</p>" +
                 "</div>" : "";
 
-            // Contenitore Slide formato Instagram Verticale (1080x1350)
-            return "<div style=\"width: 1080px; height: 1350px; position: relative; overflow: hidden; " + bgStyle + "\">" +
-                gradientHTML +
-                newsHTML +
-                logoHTML +
-                textHTML +
-                sourceHTML +
+            return "<div style=\"width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: #000;\">" +
+                bgHTML + gradientHTML + newsHTML + logoHTML + textHTML + sourceHTML +
             "</div>";
         }
 
@@ -263,9 +292,7 @@
                 thumb.style = bgStyle;
                 thumb.onclick = function() { state.activeIndex = i; render(); };
                 
-                if (isCover) {
-                    thumb.innerHTML = "<span class=\"text-white text-[10px] font-bold uppercase mix-blend-overlay drop-shadow-md bg-black/30 px-1 rounded\">Cover</span>";
-                }
+                if (isCover) thumb.innerHTML = "<span class=\"text-white text-[10px] font-bold uppercase mix-blend-overlay drop-shadow-md bg-black/30 px-1 rounded\">Cover</span>";
                 DOM.thumbnailsContainer.appendChild(thumb);
             });
 
@@ -301,7 +328,16 @@
 
             DOM.btnClearLogo.style.display = state.logoBase64 ? "block" : "none";
             DOM.btnClearNews.style.display = state.newsBase64 ? "block" : "none";
-            DOM.btnExport.innerText = state.isExporting ? "Esportazione..." : "Esporta " + state.slides.length + " Slide";
+            
+            if(state.isExporting) {
+                DOM.btnExport.innerText = "Attendere...";
+                DOM.btnExport.disabled = true;
+                DOM.btnExport.classList.add('opacity-50');
+            } else {
+                DOM.btnExport.innerText = "Genera Slide per l'Esportazione";
+                DOM.btnExport.disabled = false;
+                DOM.btnExport.classList.remove('opacity-50');
+            }
         }
 
         function renderPreview() {
@@ -317,11 +353,13 @@
         async function exportAllSlides() {
             if (state.isExporting) return;
             if (!window.html2canvas) {
-                alert("Il motore di esportazione si sta caricando. Riprova tra un attimo.");
+                alert("Caricamento motore in corso, riprova tra un attimo.");
                 return;
             }
 
             state.isExporting = true;
+            state.renderedBlobs = [];
+            DOM.renderedPreviews.innerHTML = "";
             renderEditor(); 
 
             try {
@@ -330,6 +368,9 @@
                     exportNode.innerHTML = generateSlideHTML(state.slides[i], i);
                     DOM.exportNodesContainer.appendChild(exportNode);
                     
+                    // Pausa fondamentale per far elaborare i tag <img> al DOM
+                    await new Promise(function(resolve) { setTimeout(resolve, 200); });
+                    
                     var canvas = await html2canvas(exportNode.firstChild, {
                         scale: 1,
                         useCORS: true,
@@ -337,22 +378,55 @@
                         logging: false
                     });
                     
-                    var link = document.createElement('a');
-                    var slideNum = (i + 1 < 10) ? '0' + (i + 1) : (i + 1);
-                    link.download = 'slide-' + slideNum + '.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    var dataUrl = canvas.toDataURL('image/png');
+                    var blob = dataURItoBlob(dataUrl);
+                    var num = (i + 1 < 10) ? '0' + (i + 1) : (i + 1);
                     
+                    state.renderedBlobs.push(new File([blob], 'slide-' + num + '.png', { type: 'image/png' }));
+                    
+                    // Aggiungi miniatura al modale
+                    var imgThumb = document.createElement('img');
+                    imgThumb.src = dataUrl;
+                    imgThumb.className = "h-[200px] w-auto rounded border border-gray-300 shadow-sm";
+                    DOM.renderedPreviews.appendChild(imgThumb);
+
                     DOM.exportNodesContainer.innerHTML = "";
-                    
-                    // Ritardo vitale per evitare Out of Memory e freeze del browser
-                    await new Promise(function(resolve) { setTimeout(resolve, 600); });
                 }
+                
+                // Controlla se la Web Share API supporta i file (Safari/Mobile)
+                if (!(navigator.canShare && navigator.canShare({ files: state.renderedBlobs }))) {
+                    DOM.shareFallbackMsg.classList.remove('hidden');
+                } else {
+                    DOM.shareFallbackMsg.classList.add('hidden');
+                }
+
+                DOM.shareModal.classList.add('active');
+
             } catch (err) {
                 alert("Errore durante l'esportazione: " + err.message);
             } finally {
                 state.isExporting = false;
                 renderEditor();
+            }
+        }
+
+        function executeNativeShare() {
+            if (navigator.canShare && navigator.canShare({ files: state.renderedBlobs })) {
+                // Questo apre il menu nativo di iOS/Android. Da lì si può premere "Salva Immagini" nel rullino.
+                navigator.share({
+                    title: 'Slide Carousel',
+                    files: state.renderedBlobs
+                }).catch(function(err) {
+                    console.log("Condivisione annullata o fallita", err);
+                });
+            } else {
+                // Fallback Desktop: Scarica tutti i file (nella cartella Download)
+                state.renderedBlobs.forEach(function(file) {
+                    var link = document.createElement('a');
+                    link.href = URL.createObjectURL(file);
+                    link.download = file.name;
+                    link.click();
+                });
             }
         }
 
@@ -370,7 +444,7 @@
             DOM.btnDeleteSlide.onclick = deleteSlide;
             DOM.btnExport.onclick = exportAllSlides;
 
-            // Brand Uploads (Salvati in LocalStorage)
+            // Brand Uploads
             DOM.logoUpload.onchange = function(e) {
                 readImageAsBase64(e.target.files[0], function(res) {
                     state.logoBase64 = res;
@@ -399,7 +473,6 @@
                 render();
             };
 
-            // Slide Editor Upload
             DOM.bgUpload.onchange = function(e) {
                 readImageAsBase64(e.target.files[0], function(res) {
                     state.slides[state.activeIndex].image = res;
@@ -407,20 +480,22 @@
                 });
             };
 
-            // Text Inputs
+            // Testi
             DOM.inputTitle.oninput = function(e) { state.slides[state.activeIndex].title = e.target.value; renderPreview(); };
             DOM.inputBody.oninput = function(e) { state.slides[state.activeIndex].body = e.target.value; renderPreview(); };
             DOM.inputSource.oninput = function(e) { state.slides[state.activeIndex].source = e.target.value; renderPreview(); };
 
-            // Modal Guida
+            // Modali
             DOM.btnHelp.onclick = function() { DOM.helpModal.classList.add('active'); };
             DOM.btnCloseHelp.onclick = function() { DOM.helpModal.classList.remove('active'); };
+            
+            DOM.btnCloseShare.onclick = function() { DOM.shareModal.classList.remove('active'); };
+            DOM.btnNativeShare.onclick = executeNativeShare;
         }
 
         window.onload = function() {
             bindEvents();
             render();
-            // Piccolo timeout per assicurarsi che i font siano caricati prima di calcolare la scala
             setTimeout(updateScale, 100); 
         };
     </script>
