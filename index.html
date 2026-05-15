@@ -67,8 +67,8 @@
             <div class="flex justify-between items-center mb-4">
                 <h2 id="slide-count-title" class="font-semibold text-lg text-gray-900">Slides (1/20)</h2>
                 <div class="flex gap-2">
-                    <button id="btn-prev" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">↑</button>
-                    <button id="btn-next" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">↓</button>
+                    <button id="btn-prev" title="Vai alla Slide Precedente" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&larr;</button>
+                    <button id="btn-next" title="Vai alla Slide Successiva" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&rarr;</button>
                 </div>
             </div>
             
@@ -81,7 +81,11 @@
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
             <div class="flex justify-between items-center mb-2">
                 <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
-                <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina Slide</button>
+                <div class="flex gap-3 items-center">
+                    <button id="btn-move-left" class="text-gray-500 text-sm hover:text-black hidden" title="Sposta Indietro">&larr; Sposta</button>
+                    <button id="btn-move-right" class="text-gray-500 text-sm hover:text-black hidden" title="Sposta in Avanti">Sposta &rarr;</button>
+                    <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina</button>
+                </div>
             </div>
 
             <!-- Immagine di Sfondo -->
@@ -169,6 +173,8 @@
         var DOM = {
             thumbnailsContainer: document.getElementById('thumbnails-container'),
             editorTitle: document.getElementById('editor-title'),
+            btnMoveLeft: document.getElementById('btn-move-left'),
+            btnMoveRight: document.getElementById('btn-move-right'),
             btnDeleteSlide: document.getElementById('btn-delete-slide'),
             bgUpload: document.getElementById('bg-upload'),
             bgUploadLabel: document.getElementById('bg-upload-label'),
@@ -227,6 +233,20 @@
             reader.readAsDataURL(file);
         }
 
+        function prevSlide() {
+            if (state.activeIndex > 0) {
+                state.activeIndex--;
+                render();
+            }
+        }
+
+        function nextSlide() {
+            if (state.activeIndex < state.slides.length - 1) {
+                state.activeIndex++;
+                render();
+            }
+        }
+
         function moveSlide(direction) {
             var newIndex = state.activeIndex + direction;
             if (newIndex < 0 || newIndex >= state.slides.length) return;
@@ -265,7 +285,7 @@
                 "<img src=\"" + state.logoBase64 + "\" style=\"position: absolute; top: 40px; right: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
             
             var newsHTML = state.newsBase64 ? 
-                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 40px; max-width: 100px; object-fit: contain; z-index: 40;\">" : "";
+                "<img src=\"" + state.newsBase64 + "\" style=\"position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;\">" : "";
 
             var gradientHTML = isCover ? 
                 "<div style=\"position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;\"></div>" : "";
@@ -324,7 +344,11 @@
             var isCover = (state.activeIndex === 0);
             
             DOM.editorTitle.innerText = isCover ? "Modifica Copertina" : "Modifica Slide " + (state.activeIndex + 1);
+            
+            DOM.btnMoveLeft.style.display = (state.activeIndex > 0) ? "block" : "none";
+            DOM.btnMoveRight.style.display = (state.activeIndex < state.slides.length - 1) ? "block" : "none";
             DOM.btnDeleteSlide.style.display = (state.slides.length > 1 && !isCover) ? "block" : "none";
+            
             DOM.bgUploadLabel.innerText = slide.image ? "Sostituisci Sfondo" : "Clicca o Trascina Sfondo";
             
             if (isCover) {
@@ -459,8 +483,10 @@
         function bindEvents() {
             window.addEventListener('resize', updateScale);
             
-            DOM.btnPrev.onclick = function() { moveSlide(-1); };
-            DOM.btnNext.onclick = function() { moveSlide(1); };
+            DOM.btnPrev.onclick = prevSlide;
+            DOM.btnNext.onclick = nextSlide;
+            DOM.btnMoveLeft.onclick = function() { moveSlide(-1); };
+            DOM.btnMoveRight.onclick = function() { moveSlide(1); };
             DOM.btnDeleteSlide.onclick = deleteSlide;
             DOM.btnExport.onclick = exportAllSlides;
 
@@ -496,6 +522,7 @@
             DOM.bgUpload.onchange = function(e) {
                 readImageAsBase64(e.target.files[0], function(res) {
                     state.slides[state.activeIndex].image = res;
+                    DOM.bgUpload.value = '';
                     render();
                 });
             };
