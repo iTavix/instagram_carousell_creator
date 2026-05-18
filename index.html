@@ -61,7 +61,14 @@
                 </div>
                 <div>
                     <div class="flex justify-between mb-2">
-                        <label class="text-sm font-medium text-gray-900">Badge News (Alto Sinistra)</label>
+                        <label class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
+                        <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                    </div>
+                    <input type="file" id="theme-logo-upload" accept="image/png, image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-900">Badge News (Sopra il Titolo Copertina)</label>
                         <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
@@ -183,6 +190,7 @@
             isExporting: false,
             renderedBlobs: [],
             logoBase64: localStorage.getItem('instagramCarouselLogo') || null,
+            themeLogoBase64: localStorage.getItem('instagramCarouselThemeLogo') || null,
             newsBase64: localStorage.getItem('instagramCarouselNews') || null,
             slides: [
                 { id: 'slide-0', image: null, title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com', zoom: 1, bgColor: '#333333', titleFontSize: 110 }
@@ -215,8 +223,10 @@
             btnNext: document.getElementById('btn-next'),
             btnExport: document.getElementById('btn-export'),
             logoUpload: document.getElementById('logo-upload'),
+            themeLogoUpload: document.getElementById('theme-logo-upload'),
             newsUpload: document.getElementById('news-upload'),
             btnClearLogo: document.getElementById('btn-clear-logo'),
+            btnClearThemeLogo: document.getElementById('btn-clear-theme-logo'),
             btnClearNews: document.getElementById('btn-clear-news'),
             shareModal: document.getElementById('share-modal'),
             renderedPreviews: document.getElementById('rendered-previews'),
@@ -265,14 +275,19 @@
             var logoHTML = state.logoBase64 ? 
                 `<img src="${state.logoBase64}" style="position: absolute; top: 40px; right: 40px; max-height: 100px; max-width: 300px; object-fit: contain; z-index: 40;">` : "";
             
-            var newsHTML = state.newsBase64 ? 
-                `<img src="${state.newsBase64}" style="position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;">` : "";
+            var themeLogoHTML = state.themeLogoBase64 ? 
+                `<img src="${state.themeLogoBase64}" style="position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;">` : "";
 
             var gradientHTML = isCover ? 
                 `<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;"></div>` : "";
 
+            // Il badge News è ora inserito all'interno del blocco di testo, sopra il titolo
+            var newsHTML = state.newsBase64 ? 
+                `<img src="${state.newsBase64}" style="max-height: 60px; max-width: 200px; object-fit: contain; margin-bottom: 16px;">` : "";
+
             var textHTML = isCover ? 
-                `<div style="position: absolute; bottom: 80px; left: 60px; right: 60px; z-index: 20; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.8);">
+                `<div style="position: absolute; bottom: 80px; left: 60px; right: 60px; z-index: 20; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: flex-start;">
+                    ${newsHTML}
                     <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: ${titleFontSize}px; line-height: 1; margin: 0 0 16px 0; text-transform: uppercase;">${slide.title || ''}</h2>
                     <p style="font-size: 36px; line-height: 1.4; font-weight: 500; margin: 0; font-family: 'DM Sans', sans-serif;">${slide.body || ''}</p>
                 </div>` : "";
@@ -280,7 +295,7 @@
             var sourceHTML = (isCover && slide.source) ? 
                 `<div style="position: absolute; bottom: 40px; right: 40px; z-index: 30; color: white; opacity: 0.8; font-size: 18px; font-family: 'DM Sans', sans-serif;">${slide.source}</div>` : "";
 
-            return `<div style="width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: ${bgColor};">${bgHTML}${gradientHTML}${newsHTML}${logoHTML}${textHTML}${sourceHTML}</div>`;
+            return `<div style="width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: ${bgColor};">${bgHTML}${gradientHTML}${themeLogoHTML}${logoHTML}${textHTML}${sourceHTML}</div>`;
         }
 
         function render() {
@@ -331,6 +346,7 @@
             DOM.inputSource.value = state.slides[0].source || "";
             
             DOM.btnClearLogo.style.display = state.logoBase64 ? "block" : "none";
+            DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? "block" : "none";
             DOM.btnClearNews.style.display = state.newsBase64 ? "block" : "none";
 
             DOM.previewContainer.innerHTML = generateSlideHTML(slide, state.activeIndex);
@@ -414,8 +430,11 @@
 
         DOM.bgUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.slides[state.activeIndex].image = res; DOM.bgUpload.value = ''; render(); });
         DOM.logoUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.logoBase64 = res; localStorage.setItem('instagramCarouselLogo', res); render(); });
+        DOM.themeLogoUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.themeLogoBase64 = res; localStorage.setItem('instagramCarouselThemeLogo', res); render(); });
         DOM.newsUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.newsBase64 = res; localStorage.setItem('instagramCarouselNews', res); render(); });
+        
         DOM.btnClearLogo.onclick = () => { state.logoBase64 = null; localStorage.removeItem('instagramCarouselLogo'); render(); };
+        DOM.btnClearThemeLogo.onclick = () => { state.themeLogoBase64 = null; localStorage.removeItem('instagramCarouselThemeLogo'); render(); };
         DOM.btnClearNews.onclick = () => { state.newsBase64 = null; localStorage.removeItem('instagramCarouselNews'); render(); };
         
         DOM.inputBgColor.oninput = e => {
