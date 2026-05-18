@@ -272,11 +272,17 @@
                    </div>`
                 : `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: ${bgColor}; z-index: 1;"></div>`;
 
-            var logoHTML = state.logoBase64 ? 
-                `<img src="${state.logoBase64}" style="position: absolute; top: 40px; right: 40px; max-height: 100px; max-width: 300px; object-fit: contain; z-index: 40;">` : "";
-            
-            var themeLogoHTML = state.themeLogoBase64 ? 
-                `<img src="${state.themeLogoBase64}" style="position: absolute; top: 40px; left: 40px; max-height: 80px; max-width: 200px; object-fit: contain; z-index: 40;">` : "";
+            // Nuovo contenitore per l'allineamento perfetto dei loghi superiori
+            var topLogosHTML = `
+                <div style="position: absolute; top: 40px; left: 40px; right: 40px; height: 100px; display: flex; justify-content: space-between; align-items: center; z-index: 40;">
+                    <div style="display: flex; align-items: center; justify-content: flex-start; width: 50%; height: 100%;">
+                        ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" style="max-height: 80px; max-width: 200px; object-fit: contain;">` : ''}
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: flex-end; width: 50%; height: 100%;">
+                        ${state.logoBase64 ? `<img src="${state.logoBase64}" style="max-height: 100px; max-width: 300px; object-fit: contain;">` : ''}
+                    </div>
+                </div>
+            `;
 
             var gradientHTML = isCover ? 
                 `<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;"></div>` : "";
@@ -295,7 +301,7 @@
             var sourceHTML = (isCover && slide.source) ? 
                 `<div style="position: absolute; bottom: 40px; right: 40px; z-index: 30; color: white; opacity: 0.8; font-size: 18px; font-family: 'DM Sans', sans-serif;">${slide.source}</div>` : "";
 
-            return `<div style="width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: ${bgColor};">${bgHTML}${gradientHTML}${themeLogoHTML}${logoHTML}${textHTML}${sourceHTML}</div>`;
+            return `<div style="width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: ${bgColor};">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}</div>`;
         }
 
         function render() {
