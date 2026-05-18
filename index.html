@@ -4,46 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Instagram Carousel Creator</title>
-    
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%2270%22 y=%2220%22 rx=%2210%22 fill=%22%236d4c41%22/><rect width=%2290%22 height=%2260%22 x=%225%22 y=%2225%22 rx=%225%22 fill=%22%23212121%22/><circle cx=%2250%22 cy=%2255%22 r=%2225%22 fill=%22%23111%22/><path stroke=%22%23555%22 stroke-width=%224%22 d=%22M30 0l20 20M70 0L50 20%22/><circle cx=%2280%22 cy=%2240%22 r=%224%22 fill=%22%23f44336%22/><circle cx=%2280%22 cy=%2255%22 r=%224%22 fill=%22%23ccc%22/><circle cx=%2280%22 cy=%2270%22 r=%224%22 fill=%22%23ccc%22/></svg>">
-    
-    <!-- Aggiunte specifiche per l'icona e l'aspetto su iOS Home Screen -->
+
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Carousel App">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap');
-        
+
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em; }
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+
+        /* Scrollbar personalizzata */
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #F5F5F7; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #AEAEB2; }
+
+        /* Modali */
         .modal { display: none; opacity: 0; transition: opacity 0.2s ease; }
         .modal.active { display: flex; opacity: 1; }
+
+        /* Nodo di rendering per l'export (fuori schermo) */
         #export-nodes { position: absolute; top: 0; left: -9999px; z-index: -10; }
-        
-        /* Stile per lo Slider */
+
+        /* Slider personalizzati */
         input[type=range] { -webkit-appearance: none; background: #E5E5EA; height: 4px; border-radius: 2px; outline: none; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #0071E3; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+
+        /* Utility accessibilità: visibile solo per screen reader */
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
 
-    <!-- PANNELLO SINISTRO (EDITOR) -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PANNELLO SINISTRO — EDITOR                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
-        
+
+        <!-- Impostazioni Brand -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-semibold text-lg text-gray-900">Impostazioni Brand</h2>
                 <div class="flex items-center gap-2">
-                    <button id="btn-refresh" class="text-gray-500 hover:text-black hover:bg-gray-100 p-1.5 rounded-full transition-all" title="Ricarica l'app">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button id="btn-refresh"
+                            aria-label="Ricarica l'applicazione"
+                            title="Ricarica l'app"
+                            class="text-gray-500 hover:text-black hover:bg-gray-100 p-1.5 rounded-full transition-all">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <polyline points="23 4 23 10 17 10"></polyline>
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                         </svg>
@@ -52,111 +66,156 @@
                 </div>
             </div>
             <div class="flex flex-col gap-4">
+
+                <!-- Logo principale (alto destra) -->
                 <div>
                     <div class="flex justify-between mb-2">
-                        <label class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
-                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                        <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
+                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden" aria-label="Rimuovi logo principale">Rimuovi</button>
                     </div>
-                    <input type="file" id="logo-upload" accept="image/png, image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
+                    <input type="file" id="logo-upload" accept="image/png, image/jpeg"
+                           class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
+
+                <!-- Logo tema (alto sinistra) -->
                 <div>
                     <div class="flex justify-between mb-2">
-                        <label class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
-                        <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                        <label for="theme-logo-upload" class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
+                        <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden" aria-label="Rimuovi logo tema">Rimuovi</button>
                     </div>
-                    <input type="file" id="theme-logo-upload" accept="image/png, image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
+                    <input type="file" id="theme-logo-upload" accept="image/png, image/jpeg"
+                           class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
+
+                <!-- Badge News -->
                 <div>
                     <div class="flex justify-between mb-2">
-                        <label class="text-sm font-medium text-gray-900">Badge News (Sopra il Titolo Copertina)</label>
-                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                        <label for="news-upload" class="text-sm font-medium text-gray-900">Badge News (Sopra il Titolo Copertina)</label>
+                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden" aria-label="Rimuovi badge news">Rimuovi</button>
                     </div>
-                    <input type="file" id="news-upload" accept="image/png, image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
+                    <input type="file" id="news-upload" accept="image/png, image/jpeg"
+                           class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
+
             </div>
         </div>
 
+        <!-- Gestione Slides / Thumbnail -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="slide-count-title" class="font-semibold text-lg text-gray-900">Slides (1/20)</h2>
                 <div class="flex gap-2">
-                    <button id="btn-prev" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&larr;</button>
-                    <button id="btn-next" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&rarr;</button>
+                    <button id="btn-prev" aria-label="Slide precedente"
+                            class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&larr;</button>
+                    <button id="btn-next" aria-label="Slide successiva"
+                            class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&rarr;</button>
                 </div>
             </div>
-            <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar"></div>
+            <div id="thumbnails-container"
+                 class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar"
+                 role="list"
+                 aria-label="Elenco delle slide"></div>
         </div>
 
+        <!-- Editor Slide -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
             <div class="flex justify-between items-center mb-2">
                 <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
                 <div class="flex gap-3 items-center">
-                    <button id="btn-move-left" class="text-gray-500 text-sm hover:text-black hidden">&larr; Sposta</button>
-                    <button id="btn-move-right" class="text-gray-500 text-sm hover:text-black hidden">Sposta &rarr;</button>
-                    <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina</button>
+                    <button id="btn-move-left"  class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta slide a sinistra">&larr; Sposta</button>
+                    <button id="btn-move-right" class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta slide a destra">Sposta &rarr;</button>
+                    <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden" aria-label="Elimina questa slide">Elimina</button>
                 </div>
             </div>
 
+            <!-- Upload immagine di sfondo -->
             <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
-                <input type="file" id="bg-upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73]">Carica Immagine Sfondo</span>
+                <input type="file" id="bg-upload" accept="image/*"
+                       aria-label="Carica immagine di sfondo per la slide"
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
             </div>
 
-            <!-- CONTENITORE COLORE SFONDO -->
+            <!-- Colore di sfondo -->
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <span class="text-xs font-bold text-gray-500 uppercase">Colore Sfondo</span>
-                <input type="color" id="input-bg-color" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" value="#333333">
+                <label for="input-bg-color" class="text-xs font-bold text-gray-500 uppercase">Colore Sfondo</label>
+                <input type="color" id="input-bg-color" value="#333333"
+                       class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
             </div>
 
-            <!-- CONTENITORE ZOOM -->
-            <div id="zoom-container" style="display: none; flex-direction: column; gap: 8px;" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <!-- Slider Zoom (visibilità controllata da JS) -->
+            <div id="zoom-container" style="display:none; flex-direction:column; gap:8px;"
+                 class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                    <span>Livello Ingrandimento</span>
+                    <label for="input-zoom">Livello Ingrandimento</label>
                     <span id="zoom-value" class="text-[#0071E3]">1.00x</span>
                 </div>
-                <!-- Min a 0.1 per rimpicciolire -->
-                <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2">
+                <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1"
+                       class="w-full mt-2" />
             </div>
 
+            <!-- Campi testo — solo per la Copertina (slide 0) -->
             <div id="text-fields-container" class="flex flex-col gap-4 mt-2">
-                <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]" />
-                
-                <!-- CONTENITORE DIMENSIONE FONT TITOLO -->
+
+                <label class="sr-only" for="input-title">Titolo della copertina</label>
+                <input type="text" id="input-title"
+                       placeholder="Titolo (Es. LEGO STAR WARS)"
+                       class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]" />
+
+                <!-- Dimensione font titolo -->
                 <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                        <span>Dimensione Titolo</span>
+                        <label for="input-title-font-size">Dimensione Titolo</label>
                         <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
                     </div>
-                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2">
+                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110"
+                           class="w-full mt-2" />
                 </div>
 
-                <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-                <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]" />
+                <label class="sr-only" for="input-body">Sottotitolo della copertina</label>
+                <textarea id="input-body" placeholder="Sottotitolo" rows="2"
+                          class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+
+                <label class="sr-only" for="input-source">Fonte</label>
+                <input type="text" id="input-source"
+                       placeholder="Fonte (es. theverge.com)"
+                       class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]" />
             </div>
         </div>
     </div>
 
-    <!-- PANNELLO DESTRO (ANTEPRIMA) -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- PANNELLO DESTRO — ANTEPRIMA                        -->
+    <!-- ═══════════════════════════════════════════════════ -->
     <div class="flex-grow flex flex-col items-center gap-6">
         <div class="w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
             <h2 class="font-semibold text-lg text-gray-900">Anteprima</h2>
-            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all">
+            <button id="btn-export"
+                    class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
                 Esporta Carousel
             </button>
         </div>
 
-        <div id="preview-wrapper" class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden" style="aspect-ratio: 4/5;">
+        <div id="preview-wrapper"
+             role="img"
+             aria-label="Anteprima della slide attiva"
+             class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden"
+             style="aspect-ratio: 4/5;">
             <div id="preview-container" class="absolute top-0 left-0 origin-top-left"></div>
         </div>
     </div>
 
-    <!-- Nodi per export -->
-    <div id="export-nodes"></div>
+    <!-- Nodi di rendering per l'export (nascosti fuori schermo) -->
+    <div id="export-nodes" aria-hidden="true"></div>
 
-    <!-- Modale Guida -->
-    <div id="help-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col">
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MODALE: GUIDA                                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="help-modal"
+         class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+         role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <h3 class="text-2xl font-bold mb-4">Guida all'uso</h3>
+            <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
             <div class="space-y-4 text-sm text-gray-700">
                 <p><strong>1. Brand:</strong> Carica Logo e badge News. Verranno salvati automaticamente nel browser per i prossimi utilizzi.</p>
                 <p><strong>2. Copertina:</strong> Solo la prima slide ti permette di inserire e ridimensionare il Titolo, il Sottotitolo e la Fonte.</p>
@@ -164,20 +223,35 @@
                 <p><strong>4. Colore Sfondo:</strong> Puoi cambiare il colore della cornice di sfondo per ogni singola slide.</p>
                 <p><strong>5. Ordina e Crea:</strong> Usa i tasti "Sposta" o "Elimina". Aggiungi fino a 20 slide con il tasto "+".</p>
                 <p><strong>6. Esporta e Salva:</strong> Genera il carosello. Su computer le immagini verranno scaricate, su smartphone potrai salvarle tutte insieme nel Rullino Foto.</p>
+                <p><strong>7. Navigazione da tastiera:</strong> Usa i tasti ← → per spostarti tra le slide senza cliccare.</p>
+                <p><strong>8. Persistenza:</strong> Titoli, testi e impostazioni vengono salvati automaticamente. Le immagini di sfondo devono essere ricaricate ad ogni sessione.</p>
             </div>
-            <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
+            <button id="btn-close-help"
+                    class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">
+                Perfetto, iniziamo!
+            </button>
         </div>
     </div>
 
-    <!-- Modale Export -->
-    <div id="share-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col">
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MODALE: EXPORT / CONDIVISIONE                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="share-modal"
+         class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+         role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh]">
-            <h3 class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
-            <p class="text-sm text-gray-600 mb-4">Usa il tasto blu per salvare le immagini (su Mac verranno scaricate, su iPhone si aprirà il menu di condivisione).</p>
-            <div id="rendered-previews" class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border"></div>
+            <h3 id="share-modal-title" class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
+            <p class="share-description text-sm text-gray-600 mb-4">
+                Usa il tasto blu per salvare le immagini.
+            </p>
+            <div id="rendered-previews"
+                 class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border"
+                 aria-label="Anteprima delle slide esportate"></div>
             <div class="flex flex-col sm:flex-row gap-3">
-                <button id="btn-close-share" class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
-                <button id="btn-native-share" class="flex-2 bg-[#0071E3] text-white py-3 px-6 rounded-xl font-medium hover:bg-[#005bb5] transition-all flex items-center justify-center gap-2">
+                <button id="btn-close-share"
+                        class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
+                <button id="btn-native-share"
+                        class="flex-[2] bg-[#0071E3] text-white py-3 px-6 rounded-xl font-medium hover:bg-[#005bb5] transition-all">
                     Scarica / Salva in Foto
                 </button>
             </div>
@@ -185,311 +259,658 @@
     </div>
 
     <script>
-        var state = {
-            activeIndex: 0,
-            isExporting: false,
-            renderedBlobs: [],
-            logoBase64: localStorage.getItem('instagramCarouselLogo') || null,
-            themeLogoBase64: localStorage.getItem('instagramCarouselThemeLogo') || null,
-            newsBase64: localStorage.getItem('instagramCarouselNews') || null,
-            slides: [
-                { id: 'slide-0', image: null, title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com', zoom: 1, bgColor: '#333333', titleFontSize: 110 }
-            ]
+    // ═══════════════════════════════════════════════════════════
+    // COSTANTI
+    // ═══════════════════════════════════════════════════════════
+
+    /** Rilevamento dispositivo mobile (calcolato una volta sola) */
+    const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    const MAX_SLIDES = 20;
+
+    /** Chiavi localStorage unificate per evitare typo */
+    const LS = {
+        logo:      'icc_logo',
+        themeLogo: 'icc_theme_logo',
+        news:      'icc_news',
+        state:     'icc_state',
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // STATO APPLICAZIONE
+    // ═══════════════════════════════════════════════════════════
+
+    const state = {
+        activeIndex:  0,
+        isExporting:  false,
+        renderedBlobs: [],
+
+        // Brand assets — caricati da localStorage al primo avvio
+        logoBase64:      localStorage.getItem(LS.logo)      || null,
+        themeLogoBase64: localStorage.getItem(LS.themeLogo) || null,
+        newsBase64:      localStorage.getItem(LS.news)      || null,
+
+        slides: [
+            {
+                id:            'slide-0',
+                image:         null,
+                title:         'Titolo Copertina',
+                body:          'Testo di copertina.',
+                source:        'Fonte: theverge.com',
+                zoom:          1,
+                bgColor:       '#333333',
+                titleFontSize: 110,
+            }
+        ],
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // CACHE RIFERIMENTI DOM
+    // ═══════════════════════════════════════════════════════════
+
+    const DOM = {
+        thumbnailsContainer:  document.getElementById('thumbnails-container'),
+        editorTitle:          document.getElementById('editor-title'),
+        btnMoveLeft:          document.getElementById('btn-move-left'),
+        btnMoveRight:         document.getElementById('btn-move-right'),
+        btnDeleteSlide:       document.getElementById('btn-delete-slide'),
+        bgUpload:             document.getElementById('bg-upload'),
+        bgUploadLabel:        document.getElementById('bg-upload-label'),
+        inputBgColor:         document.getElementById('input-bg-color'),
+        zoomContainer:        document.getElementById('zoom-container'),
+        inputZoom:            document.getElementById('input-zoom'),
+        zoomValue:            document.getElementById('zoom-value'),
+        inputTitle:           document.getElementById('input-title'),
+        inputTitleFontSize:   document.getElementById('input-title-font-size'),
+        titleFontSizeValue:   document.getElementById('title-font-size-value'),
+        inputBody:            document.getElementById('input-body'),
+        inputSource:          document.getElementById('input-source'),
+        textFieldsContainer:  document.getElementById('text-fields-container'),
+        previewContainer:     document.getElementById('preview-container'),
+        previewWrapper:       document.getElementById('preview-wrapper'),
+        exportNodesContainer: document.getElementById('export-nodes'),
+        slideCountTitle:      document.getElementById('slide-count-title'),
+        btnPrev:              document.getElementById('btn-prev'),
+        btnNext:              document.getElementById('btn-next'),
+        btnExport:            document.getElementById('btn-export'),
+        logoUpload:           document.getElementById('logo-upload'),
+        themeLogoUpload:      document.getElementById('theme-logo-upload'),
+        newsUpload:           document.getElementById('news-upload'),
+        btnClearLogo:         document.getElementById('btn-clear-logo'),
+        btnClearThemeLogo:    document.getElementById('btn-clear-theme-logo'),
+        btnClearNews:         document.getElementById('btn-clear-news'),
+        shareModal:           document.getElementById('share-modal'),
+        renderedPreviews:     document.getElementById('rendered-previews'),
+        btnCloseShare:        document.getElementById('btn-close-share'),
+        btnNativeShare:       document.getElementById('btn-native-share'),
+        btnHelp:              document.getElementById('btn-help'),
+        btnRefresh:           document.getElementById('btn-refresh'),
+        helpModal:            document.getElementById('help-modal'),
+        btnCloseHelp:         document.getElementById('btn-close-help'),
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // UTILITY
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Sanifica una stringa per prevenire XSS quando inserita nell'HTML.
+     * Converte caratteri speciali in entità HTML.
+     */
+    function escapeHtml(str) {
+        const el = document.createElement('div');
+        el.appendChild(document.createTextNode(str || ''));
+        return el.innerHTML;
+    }
+
+    /**
+     * Ritarda l'esecuzione di una funzione finché smette di essere chiamata.
+     * Usato sugli input di testo per evitare re-render ad ogni singolo tasto.
+     */
+    function debounce(fn, ms = 150) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), ms);
         };
+    }
 
-        var DOM = {
-            thumbnailsContainer: document.getElementById('thumbnails-container'),
-            editorTitle: document.getElementById('editor-title'),
-            btnMoveLeft: document.getElementById('btn-move-left'),
-            btnMoveRight: document.getElementById('btn-move-right'),
-            btnDeleteSlide: document.getElementById('btn-delete-slide'),
-            bgUpload: document.getElementById('bg-upload'),
-            bgUploadLabel: document.getElementById('bg-upload-label'),
-            inputBgColor: document.getElementById('input-bg-color'),
-            zoomContainer: document.getElementById('zoom-container'),
-            inputZoom: document.getElementById('input-zoom'),
-            zoomValue: document.getElementById('zoom-value'),
-            inputTitle: document.getElementById('input-title'),
-            inputTitleFontSize: document.getElementById('input-title-font-size'),
-            titleFontSizeValue: document.getElementById('title-font-size-value'),
-            inputBody: document.getElementById('input-body'),
-            inputSource: document.getElementById('input-source'),
-            textFieldsContainer: document.getElementById('text-fields-container'),
-            previewContainer: document.getElementById('preview-container'),
-            previewWrapper: document.getElementById('preview-wrapper'),
-            exportNodesContainer: document.getElementById('export-nodes'),
-            slideCountTitle: document.getElementById('slide-count-title'),
-            btnPrev: document.getElementById('btn-prev'),
-            btnNext: document.getElementById('btn-next'),
-            btnExport: document.getElementById('btn-export'),
-            logoUpload: document.getElementById('logo-upload'),
-            themeLogoUpload: document.getElementById('theme-logo-upload'),
-            newsUpload: document.getElementById('news-upload'),
-            btnClearLogo: document.getElementById('btn-clear-logo'),
-            btnClearThemeLogo: document.getElementById('btn-clear-theme-logo'),
-            btnClearNews: document.getElementById('btn-clear-news'),
-            shareModal: document.getElementById('share-modal'),
-            renderedPreviews: document.getElementById('rendered-previews'),
-            btnCloseShare: document.getElementById('btn-close-share'),
-            btnNativeShare: document.getElementById('btn-native-share'),
-            btnHelp: document.getElementById('btn-help'),
-            btnRefresh: document.getElementById('btn-refresh'),
-            helpModal: document.getElementById('help-modal'),
-            btnCloseHelp: document.getElementById('btn-close-help')
+    /** Legge un file immagine e lo converte in una stringa base64 */
+    function readImageAsBase64(file, callback) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => callback(e.target.result);
+        reader.readAsDataURL(file);
+    }
+
+    /** Precarica un'immagine nel cache del browser */
+    function preloadImage(src) {
+        if (!src) return Promise.resolve();
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload  = resolve;
+            img.onerror = resolve; // Risolve comunque per non bloccare l'export
+            img.src = src;
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PERSISTENZA — localStorage
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Salva i metadati delle slide (testo, zoom, colori) su localStorage.
+     * Le immagini di sfondo sono escluse perché troppo grandi (~5 MB limite).
+     */
+    function saveState() {
+        const toSave = {
+            slides: state.slides.map(s => ({
+                id:            s.id,
+                title:         s.title,
+                body:          s.body,
+                source:        s.source,
+                zoom:          s.zoom,
+                bgColor:       s.bgColor,
+                titleFontSize: s.titleFontSize,
+                // 'image' intenzionalmente escluso: troppo pesante per localStorage
+            })),
         };
-
-        async function preloadImage(src) {
-            if (!src) return;
-            return new Promise(resolve => {
-                var img = new Image();
-                img.onload = resolve;
-                img.onerror = resolve;
-                img.src = src;
-            });
+        try {
+            localStorage.setItem(LS.state, JSON.stringify(toSave));
+        } catch (e) {
+            // Quota superata: ignoriamo silenziosamente, non è un errore critico
+            console.warn('Impossibile salvare lo stato (quota localStorage superata?):', e);
         }
+    }
 
-        function readImageAsBase64(file, callback) {
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = e => callback(e.target.result);
-            reader.readAsDataURL(file);
+    /** Ripristina i metadati delle slide salvati dalla sessione precedente */
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(LS.state);
+            if (!raw) return;
+            const saved = JSON.parse(raw);
+            if (Array.isArray(saved.slides) && saved.slides.length > 0) {
+                // Merge: rispetta i dati salvati, ma azzera le immagini
+                state.slides = saved.slides.map(s => ({ ...s, image: null }));
+            }
+        } catch (e) {
+            console.warn('Impossibile caricare lo stato salvato — si parte da zero:', e);
         }
+    }
 
-        function generateSlideHTML(slide, index) {
-            var isCover = (index === 0);
-            var zoom = slide.zoom || 1;
-            var bgColor = slide.bgColor || '#333333';
-            var titleFontSize = slide.titleFontSize || 110;
-            
-            // Logica per arrotondare i bordi se l'immagine è rimpicciolita (< 1)
-            var borderRadiusStyle = (zoom < 1) ? 'border-radius: 40px;' : '';
-            // Rimuoviamo min-width/min-height quando rimpiccioliamo, altrimenti l'immagine si sgrana o non si riduce
-            var sizeStyle = (zoom < 1) ? 'max-width: 100%; max-height: 100%; object-fit: contain;' : 'min-width: 100%; min-height: 100%; width: auto; height: auto; max-width: none; max-height: none;';
-            
-            var bgHTML = slide.image 
-                ? `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 1; background-color: ${bgColor};">
-                    <img src="${slide.image}" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(${zoom}); ${sizeStyle} ${borderRadiusStyle}">
-                   </div>`
-                : `<div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: ${bgColor}; z-index: 1;"></div>`;
+    // ═══════════════════════════════════════════════════════════
+    // GENERAZIONE HTML SLIDE
+    // ═══════════════════════════════════════════════════════════
 
-            // Nuovo contenitore per l'allineamento perfetto dei loghi superiori
-            var topLogosHTML = `
-                <div style="position: absolute; top: 40px; left: 40px; right: 40px; height: 100px; display: flex; justify-content: space-between; align-items: center; z-index: 40;">
-                    <div style="display: flex; align-items: center; justify-content: flex-start; width: 50%; height: 100%;">
-                        ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" style="max-height: 80px; max-width: 200px; object-fit: contain;">` : ''}
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: flex-end; width: 50%; height: 100%;">
-                        ${state.logoBase64 ? `<img src="${state.logoBase64}" style="max-height: 100px; max-width: 300px; object-fit: contain;">` : ''}
-                    </div>
+    /**
+     * Genera l'HTML della slide a 1080×1350px per la preview e l'export.
+     * TUTTI i valori testuali forniti dall'utente vengono sanificati con escapeHtml().
+     */
+    function generateSlideHTML(slide, index) {
+        const isCover       = (index === 0);
+        const zoom          = slide.zoom          || 1;
+        const bgColor       = slide.bgColor       || '#333333';
+        const titleFontSize = slide.titleFontSize  || 110;
+
+        // Bordi arrotondati quando l'immagine è ridotta (zoom < 1)
+        const borderRadiusStyle = zoom < 1 ? 'border-radius: 40px;' : '';
+        const sizeStyle = zoom < 1
+            ? 'max-width: 100%; max-height: 100%; object-fit: contain;'
+            : 'min-width: 100%; min-height: 100%; width: auto; height: auto; max-width: none; max-height: none;';
+
+        const bgHTML = slide.image
+            ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;background-color:${bgColor};">
+                   <img src="${slide.image}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}">
+               </div>`
+            : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:${bgColor};z-index:1;"></div>`;
+
+        const topLogosHTML = `
+            <div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:center;z-index:40;">
+                <div style="display:flex;align-items:center;justify-content:flex-start;width:50%;height:100%;">
+                    ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:80px;max-width:200px;object-fit:contain;">` : ''}
                 </div>
-            `;
+                <div style="display:flex;align-items:center;justify-content:flex-end;width:50%;height:100%;">
+                    ${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;">` : ''}
+                </div>
+            </div>`;
 
-            var gradientHTML = isCover ? 
-                `<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 40%, transparent 100%); z-index: 10;"></div>` : "";
+        const gradientHTML = isCover
+            ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>`
+            : '';
 
-            // Il badge News è ora inserito all'interno del blocco di testo, sopra il titolo
-            var newsHTML = state.newsBase64 ? 
-                `<img src="${state.newsBase64}" style="max-height: 60px; max-width: 200px; object-fit: contain; margin-bottom: 16px;">` : "";
+        const newsHTML = state.newsBase64
+            ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">`
+            : '';
 
-            var textHTML = isCover ? 
-                `<div style="position: absolute; bottom: 80px; left: 60px; right: 60px; z-index: 20; color: white; text-shadow: 0 4px 12px rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: flex-start;">
-                    ${newsHTML}
-                    <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: ${titleFontSize}px; line-height: 1; margin: 0 0 16px 0; text-transform: uppercase;">${slide.title || ''}</h2>
-                    <p style="font-size: 36px; line-height: 1.4; font-weight: 500; margin: 0; font-family: 'DM Sans', sans-serif;">${slide.body || ''}</p>
-                </div>` : "";
+        // ✅ Testo utente sanificato con escapeHtml() — prevenzione XSS
+        const textHTML = isCover
+            ? `<div style="position:absolute;bottom:80px;left:60px;right:60px;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;">
+                   ${newsHTML}
+                   <h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFontSize}px;line-height:1;margin:0 0 16px 0;text-transform:uppercase;">${escapeHtml(slide.title)}</h2>
+                   <p  style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p>
+               </div>`
+            : '';
 
-            var sourceHTML = (isCover && slide.source) ? 
-                `<div style="position: absolute; bottom: 40px; right: 40px; z-index: 30; color: white; opacity: 0.8; font-size: 18px; font-family: 'DM Sans', sans-serif;">${slide.source}</div>` : "";
+        const sourceHTML = (isCover && slide.source)
+            ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.source)}</div>`
+            : '';
 
-            return `<div style="width: 1080px; height: 1350px; position: relative; overflow: hidden; background-color: ${bgColor};">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}</div>`;
-        }
+        return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;background-color:${bgColor};">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}</div>`;
+    }
 
-        function render() {
-            DOM.thumbnailsContainer.innerHTML = "";
-            state.slides.forEach((slide, i) => {
-                var thumb = document.createElement('div');
-                thumb.className = `w-[72px] h-[72px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all ${i === state.activeIndex ? 'border-[#0071E3] scale-105 shadow-md' : 'border-transparent opacity-60'}`;
-                thumb.style.backgroundColor = slide.bgColor || "#333333";
-                if(slide.image) {
-                    thumb.style.backgroundImage = `url(${slide.image})`;
-                    thumb.style.backgroundSize = "cover";
-                    thumb.style.backgroundPosition = "center";
-                }
-                thumb.onclick = () => { state.activeIndex = i; render(); };
-                DOM.thumbnailsContainer.appendChild(thumb);
+    // ═══════════════════════════════════════════════════════════
+    // RENDERING — suddiviso in funzioni specializzate
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Ricostruisce la striscia delle thumbnail.
+     * Chiamare quando cambia il numero di slide, l'ordine, o l'indice attivo.
+     */
+    function renderThumbnails() {
+        DOM.thumbnailsContainer.innerHTML = '';
+
+        state.slides.forEach((slide, i) => {
+            const thumb = document.createElement('div');
+            thumb.className = [
+                'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all',
+                i === state.activeIndex
+                    ? 'border-[#0071E3] scale-105 shadow-md'
+                    : 'border-transparent opacity-60',
+            ].join(' ');
+            thumb.style.backgroundColor = slide.bgColor || '#333333';
+            thumb.setAttribute('role', 'listitem');
+            thumb.setAttribute('aria-label', `Slide ${i + 1}${i === state.activeIndex ? ' (attiva)' : ''}`);
+            thumb.setAttribute('tabindex', '0');
+
+            if (slide.image) {
+                thumb.style.backgroundImage    = `url(${slide.image})`;
+                thumb.style.backgroundSize     = 'cover';
+                thumb.style.backgroundPosition = 'center';
+            }
+
+            const selectSlide = () => { state.activeIndex = i; render(); };
+            thumb.addEventListener('click', selectSlide);
+            thumb.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSlide(); }
             });
 
-            var btnAdd = document.createElement('button');
-            btnAdd.className = "w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl";
-            btnAdd.innerHTML = "+";
-            btnAdd.onclick = () => { if(state.slides.length < 20) { state.slides.push({ id: Date.now(), image: null, zoom: 1, bgColor: '#333333' }); state.activeIndex = state.slides.length - 1; render(); } };
+            DOM.thumbnailsContainer.appendChild(thumb);
+        });
+
+        // Pulsante "+" per aggiungere una nuova slide (max 20)
+        if (state.slides.length < MAX_SLIDES) {
+            const btnAdd = document.createElement('button');
+            btnAdd.className   = 'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
+            btnAdd.textContent = '+';
+            btnAdd.setAttribute('aria-label', 'Aggiungi nuova slide');
+            btnAdd.addEventListener('click', () => {
+                state.slides.push({ id: `slide-${Date.now()}`, image: null, zoom: 1, bgColor: '#333333' });
+                state.activeIndex = state.slides.length - 1;
+                saveState();
+                render();
+            });
             DOM.thumbnailsContainer.appendChild(btnAdd);
+        }
+    }
 
-            var slide = state.slides[state.activeIndex];
-            var isCover = state.activeIndex === 0;
+    /**
+     * Aggiorna i controlli dell'editor in base alla slide attiva.
+     * Non tocca la preview — più leggero di un render() completo.
+     */
+    function renderEditor() {
+        const slide   = state.slides[state.activeIndex];
+        const isCover = state.activeIndex === 0;
 
-            DOM.slideCountTitle.innerText = `Slides (${state.slides.length}/20)`;
-            DOM.editorTitle.innerText = isCover ? "Modifica Copertina" : `Modifica Slide ${state.activeIndex + 1}`;
-            
-            DOM.textFieldsContainer.style.display = isCover ? "flex" : "none";
-            DOM.zoomContainer.style.display = "flex";
-            
-            DOM.btnDeleteSlide.style.display = (!isCover) ? "block" : "none";
-            DOM.btnMoveLeft.style.display = (state.activeIndex > 0) ? "block" : "none";
-            DOM.btnMoveRight.style.display = (state.activeIndex < state.slides.length - 1) ? "block" : "none";
-            
-            DOM.inputZoom.value = slide.zoom || 1;
-            DOM.zoomValue.innerText = (slide.zoom || 1).toFixed(2) + "x";
+        // Intestazioni e titoli
+        DOM.slideCountTitle.textContent = `Slides (${state.slides.length}/${MAX_SLIDES})`;
+        DOM.editorTitle.textContent     = isCover ? 'Modifica Copertina' : `Modifica Slide ${state.activeIndex + 1}`;
 
-            if (isCover) {
-                DOM.inputTitleFontSize.value = slide.titleFontSize || 110;
-                DOM.titleFontSizeValue.innerText = (slide.titleFontSize || 110) + "px";
-            }
+        // Visibilità sezioni contestuali
+        DOM.textFieldsContainer.style.display = isCover ? 'flex' : 'none';
+        DOM.zoomContainer.style.display       = 'flex';
+        DOM.btnDeleteSlide.style.display      = !isCover ? 'block' : 'none';
+        DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
+        DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length - 1 ? 'block' : 'none';
 
-            DOM.inputBgColor.value = slide.bgColor || "#333333";
-            DOM.inputTitle.value = state.slides[0].title || "";
-            DOM.inputBody.value = state.slides[0].body || "";
-            DOM.inputSource.value = state.slides[0].source || "";
-            
-            DOM.btnClearLogo.style.display = state.logoBase64 ? "block" : "none";
-            DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? "block" : "none";
-            DOM.btnClearNews.style.display = state.newsBase64 ? "block" : "none";
+        // Stato disabilitato dei bottoni di navigazione
+        DOM.btnPrev.disabled = state.activeIndex === 0;
+        DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
 
-            DOM.previewContainer.innerHTML = generateSlideHTML(slide, state.activeIndex);
-            updateScale();
+        // Sincronizzazione valori controlli
+        DOM.inputZoom.value       = slide.zoom    || 1;
+        DOM.zoomValue.textContent = (slide.zoom   || 1).toFixed(2) + 'x';
+        DOM.inputBgColor.value    = slide.bgColor || '#333333';
+
+        // Etichetta area di upload
+        DOM.bgUploadLabel.textContent = slide.image
+            ? '✓ Immagine caricata — clicca per cambiarla'
+            : 'Carica Immagine Sfondo';
+
+        // Campi testo (solo copertina)
+        if (isCover) {
+            DOM.inputTitleFontSize.value       = slide.titleFontSize || 110;
+            DOM.titleFontSizeValue.textContent = (slide.titleFontSize || 110) + 'px';
+            DOM.inputTitle.value               = slide.title  || '';
+            DOM.inputBody.value                = slide.body   || '';
+            DOM.inputSource.value              = slide.source || '';
         }
 
-        function updateScale() {
-            var scale = DOM.previewWrapper.offsetWidth / 1080;
-            DOM.previewContainer.style.transform = `scale(${scale})`;
-        }
+        // Visibilità bottoni "Rimuovi" per gli asset brand
+        DOM.btnClearLogo.style.display      = state.logoBase64      ? 'block' : 'none';
+        DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? 'block' : 'none';
+        DOM.btnClearNews.style.display      = state.newsBase64      ? 'block' : 'none';
+    }
 
-        async function exportAllSlides() {
-            state.isExporting = true;
-            state.renderedBlobs = [];
-            DOM.renderedPreviews.innerHTML = "";
-            DOM.btnExport.innerText = "Generazione...";
+    /** Aggiorna solo il contenuto della preview (il riquadro visivo a destra) */
+    function renderPreview() {
+        DOM.previewContainer.innerHTML = generateSlideHTML(
+            state.slides[state.activeIndex],
+            state.activeIndex
+        );
+        updateScale();
+    }
 
-            await document.fonts.ready;
+    /** Aggiorna tutto: thumbnail + editor + preview */
+    function render() {
+        renderThumbnails();
+        renderEditor();
+        renderPreview();
+    }
 
-            for (var i = 0; i < state.slides.length; i++) {
+    /** Ricalcola il fattore di scala della preview in base alla larghezza disponibile */
+    function updateScale() {
+        const scale = DOM.previewWrapper.offsetWidth / 1080;
+        DOM.previewContainer.style.transform = `scale(${scale})`;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EXPORT
+    // ═══════════════════════════════════════════════════════════
+
+    async function exportAllSlides() {
+        if (state.isExporting) return;
+
+        state.isExporting      = true;
+        state.renderedBlobs    = [];
+        DOM.renderedPreviews.innerHTML = '';
+        DOM.btnExport.disabled = true;
+
+        await document.fonts.ready;
+
+        for (let i = 0; i < state.slides.length; i++) {
+            DOM.btnExport.textContent = `Generazione ${i + 1} / ${state.slides.length}…`;
+
+            try {
                 await preloadImage(state.slides[i].image);
-                var div = document.createElement('div');
-                div.innerHTML = generateSlideHTML(state.slides[i], i);
-                DOM.exportNodesContainer.appendChild(div);
-                
+
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = generateSlideHTML(state.slides[i], i);
+                DOM.exportNodesContainer.appendChild(wrapper);
+
+                // Attende che il browser completi il layout prima della cattura
                 await new Promise(r => setTimeout(r, 400));
-                var canvas = await html2canvas(div.firstChild, { scale: 1, useCORS: true });
-                var dataUrl = canvas.toDataURL('image/png');
-                
-                var res = await fetch(dataUrl);
-                var blob = await res.blob();
-                state.renderedBlobs.push(new File([blob], `slide-${i+1}.png`, { type: 'image/png' }));
 
-                var img = document.createElement('img');
-                img.src = dataUrl;
-                img.className = "h-48 rounded shadow-sm border";
+                const canvas  = await html2canvas(wrapper.firstChild, { scale: 1, useCORS: true });
+                const dataUrl = canvas.toDataURL('image/png');
+
+                const res  = await fetch(dataUrl);
+                const blob = await res.blob();
+                state.renderedBlobs.push(new File([blob], `slide-${i + 1}.png`, { type: 'image/png' }));
+
+                const img     = document.createElement('img');
+                img.src       = dataUrl;
+                img.alt       = `Slide ${i + 1}`;
+                img.className = 'h-48 rounded shadow-sm border flex-shrink-0';
                 DOM.renderedPreviews.appendChild(img);
-                DOM.exportNodesContainer.innerHTML = "";
-            }
 
-            state.isExporting = false;
-            DOM.btnExport.innerText = "Esporta Carousel";
-            
-            // Adatta il testo del modale e del bottone in base al dispositivo
-            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            var textElement = document.querySelector('#share-modal p.text-sm');
-            if(textElement) {
-                textElement.innerText = isMobile 
-                    ? "Le slide sono pronte! Usa il tasto blu per salvarle nel tuo Rullino Foto."
-                    : "Le slide sono pronte! Usa il tasto blu per scaricare i file sul tuo computer.";
-            }
-            DOM.btnNativeShare.innerText = isMobile ? "Salva in Foto / Condividi" : "Scarica Immagini";
+            } catch (err) {
+                // ✅ Errore isolato per slide: non blocca le altre
+                console.error(`Errore nella generazione della slide ${i + 1}:`, err);
+                const errDiv       = document.createElement('div');
+                errDiv.className   = 'h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line';
+                errDiv.textContent = `⚠️ Errore\nSlide ${i + 1}`;
+                DOM.renderedPreviews.appendChild(errDiv);
 
-            DOM.shareModal.classList.add('active');
+            } finally {
+                // Pulisce il container di export dopo ogni slide (buon uso della memoria)
+                DOM.exportNodesContainer.innerHTML = '';
+            }
         }
 
-        async function share() {
-            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        state.isExporting      = false;
+        DOM.btnExport.disabled = false;
+        DOM.btnExport.textContent = 'Esporta Carousel';
 
-            // Se è un dispositivo mobile, usiamo ESCLUSIVAMENTE la condivisione nativa
-            if (isMobile && navigator.canShare && navigator.canShare({ files: state.renderedBlobs })) {
-                try {
-                    await navigator.share({ files: state.renderedBlobs, title: 'Carousel' });
-                } catch (e) { 
-                    console.log("Condivisione annullata o non supportata."); 
-                }
-            } else {
-                // Su Desktop (o se la condivisione fallisce/non è supportata), forziamo i download classici
-                state.renderedBlobs.forEach((file, index) => {
-                    var a = document.createElement('a');
-                    a.href = URL.createObjectURL(file);
-                    a.download = file.name;
-                    // Sfalsiamo i click di 300ms per evitare che il browser blocchi download multipli
-                    setTimeout(() => { a.click(); }, index * 300); 
-                });
-            }
-            
-            // Chiudiamo il pop-up in ogni caso dopo aver gestito l'export
-            DOM.shareModal.classList.remove('active');
+        if (state.renderedBlobs.length === 0) {
+            alert('Nessuna slide è stata generata correttamente. Riprova.');
+            return;
         }
 
-        DOM.bgUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.slides[state.activeIndex].image = res; DOM.bgUpload.value = ''; render(); });
-        DOM.logoUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.logoBase64 = res; localStorage.setItem('instagramCarouselLogo', res); render(); });
-        DOM.themeLogoUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.themeLogoBase64 = res; localStorage.setItem('instagramCarouselThemeLogo', res); render(); });
-        DOM.newsUpload.onchange = e => readImageAsBase64(e.target.files[0], res => { state.newsBase64 = res; localStorage.setItem('instagramCarouselNews', res); render(); });
-        
-        DOM.btnClearLogo.onclick = () => { state.logoBase64 = null; localStorage.removeItem('instagramCarouselLogo'); render(); };
-        DOM.btnClearThemeLogo.onclick = () => { state.themeLogoBase64 = null; localStorage.removeItem('instagramCarouselThemeLogo'); render(); };
-        DOM.btnClearNews.onclick = () => { state.newsBase64 = null; localStorage.removeItem('instagramCarouselNews'); render(); };
-        
-        DOM.inputBgColor.oninput = e => {
-            state.slides[state.activeIndex].bgColor = e.target.value;
+        // Personalizza il testo del modale in base al dispositivo
+        const descEl = DOM.shareModal.querySelector('.share-description');
+        if (descEl) {
+            descEl.textContent = IS_MOBILE
+                ? 'Le slide sono pronte! Usa il tasto blu per salvarle nel tuo Rullino Foto.'
+                : 'Le slide sono pronte! Usa il tasto blu per scaricare i file sul tuo computer.';
+        }
+        DOM.btnNativeShare.textContent = IS_MOBILE ? 'Salva in Foto / Condividi' : 'Scarica Immagini';
+        DOM.shareModal.classList.add('active');
+    }
+
+    async function share() {
+        if (IS_MOBILE && navigator.canShare && navigator.canShare({ files: state.renderedBlobs })) {
+            // Condivisione nativa su mobile
+            try {
+                await navigator.share({ files: state.renderedBlobs, title: 'Carousel' });
+            } catch (e) {
+                console.log('Condivisione annullata o non supportata.');
+            }
+        } else {
+            // Download sequenziali su desktop, sfalsati di 300ms
+            state.renderedBlobs.forEach((file, i) => {
+                const url = URL.createObjectURL(file);
+                const a   = document.createElement('a');
+                a.href     = url;
+                a.download = file.name;
+                setTimeout(() => {
+                    a.click();
+                    URL.revokeObjectURL(url); // ✅ Libera la memoria dopo il click
+                }, i * 300);
+            });
+        }
+        DOM.shareModal.classList.remove('active');
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EVENT LISTENERS
+    // ═══════════════════════════════════════════════════════════
+
+    // — Upload immagini —
+
+    DOM.bgUpload.addEventListener('change', e => {
+        readImageAsBase64(e.target.files[0], base64 => {
+            state.slides[state.activeIndex].image = base64;
+            DOM.bgUpload.value = ''; // Reset input per permettere il ri-caricamento dello stesso file
+            saveState();
             render();
-        };
+        });
+    });
 
-        DOM.inputZoom.oninput = e => {
-            var val = parseFloat(e.target.value);
-            state.slides[state.activeIndex].zoom = val;
-            DOM.zoomValue.innerText = val.toFixed(2) + "x";
+    DOM.logoUpload.addEventListener('change', e => {
+        readImageAsBase64(e.target.files[0], base64 => {
+            state.logoBase64 = base64;
+            localStorage.setItem(LS.logo, base64);
             render();
-        };
+        });
+    });
 
-        DOM.inputTitleFontSize.oninput = e => {
-            var val = parseInt(e.target.value);
-            state.slides[0].titleFontSize = val;
-            DOM.titleFontSizeValue.innerText = val + "px";
+    DOM.themeLogoUpload.addEventListener('change', e => {
+        readImageAsBase64(e.target.files[0], base64 => {
+            state.themeLogoBase64 = base64;
+            localStorage.setItem(LS.themeLogo, base64);
             render();
-        };
+        });
+    });
 
-        DOM.inputTitle.oninput = e => { state.slides[0].title = e.target.value; render(); };
-        DOM.inputBody.oninput = e => { state.slides[0].body = e.target.value; render(); };
-        DOM.inputSource.oninput = e => { state.slides[0].source = e.target.value; render(); };
+    DOM.newsUpload.addEventListener('change', e => {
+        readImageAsBase64(e.target.files[0], base64 => {
+            state.newsBase64 = base64;
+            localStorage.setItem(LS.news, base64);
+            render();
+        });
+    });
 
-        DOM.btnPrev.onclick = () => { if(state.activeIndex > 0) { state.activeIndex--; render(); } };
-        DOM.btnNext.onclick = () => { if(state.activeIndex < state.slides.length-1) { state.activeIndex++; render(); } };
-        DOM.btnMoveLeft.onclick = () => {
-            var i = state.activeIndex;
-            [state.slides[i], state.slides[i-1]] = [state.slides[i-1], state.slides[i]];
-            state.activeIndex--; render();
-        };
-        DOM.btnMoveRight.onclick = () => {
-            var i = state.activeIndex;
-            [state.slides[i], state.slides[i+1]] = [state.slides[i+1], state.slides[i]];
-            state.activeIndex++; render();
-        };
-        DOM.btnDeleteSlide.onclick = () => { state.slides.splice(state.activeIndex, 1); state.activeIndex--; render(); };
-        DOM.btnExport.onclick = exportAllSlides;
-        DOM.btnNativeShare.onclick = share;
-        DOM.btnCloseShare.onclick = () => DOM.shareModal.classList.remove('active');
-        DOM.btnHelp.onclick = () => DOM.helpModal.classList.add('active');
-        DOM.btnCloseHelp.onclick = () => DOM.helpModal.classList.remove('active');
-        
-        // Forza il refresh saltando la cache per ottenere sempre l'ultima versione
-        DOM.btnRefresh.onclick = () => { window.location.href = window.location.pathname + '?v=' + new Date().getTime(); };
+    // — Rimozione asset brand —
 
-        window.onload = render;
-        window.onresize = updateScale;
+    DOM.btnClearLogo.addEventListener('click', () => {
+        state.logoBase64 = null;
+        localStorage.removeItem(LS.logo);
+        render();
+    });
+
+    DOM.btnClearThemeLogo.addEventListener('click', () => {
+        state.themeLogoBase64 = null;
+        localStorage.removeItem(LS.themeLogo);
+        render();
+    });
+
+    DOM.btnClearNews.addEventListener('click', () => {
+        state.newsBase64 = null;
+        localStorage.removeItem(LS.news);
+        render();
+    });
+
+    // — Controlli slide: colore sfondo e zoom —
+
+    DOM.inputBgColor.addEventListener('input', e => {
+        state.slides[state.activeIndex].bgColor = e.target.value;
+        saveState();
+        // Aggiorna solo la thumbnail attiva (ottimizzazione: evita ricreare tutte)
+        const thumbs = DOM.thumbnailsContainer.querySelectorAll('[role="listitem"]');
+        if (thumbs[state.activeIndex]) {
+            thumbs[state.activeIndex].style.backgroundColor = e.target.value;
+        }
+        renderPreview();
+    });
+
+    DOM.inputZoom.addEventListener('input', e => {
+        const val = parseFloat(e.target.value);
+        state.slides[state.activeIndex].zoom = val;
+        DOM.zoomValue.textContent = val.toFixed(2) + 'x';
+        saveState();
+        renderPreview();
+    });
+
+    DOM.inputTitleFontSize.addEventListener('input', e => {
+        const val = parseInt(e.target.value, 10);
+        state.slides[0].titleFontSize = val;
+        DOM.titleFontSizeValue.textContent = val + 'px';
+        saveState();
+        renderPreview();
+    });
+
+    // — Input testo con debounce (aggiorna preview 150ms dopo che l'utente smette di scrivere) —
+
+    const debouncedPreview = debounce(() => { saveState(); renderPreview(); }, 150);
+
+    DOM.inputTitle.addEventListener('input', e => { state.slides[0].title  = e.target.value; debouncedPreview(); });
+    DOM.inputBody.addEventListener('input',  e => { state.slides[0].body   = e.target.value; debouncedPreview(); });
+    DOM.inputSource.addEventListener('input',e => { state.slides[0].source = e.target.value; debouncedPreview(); });
+
+    // — Navigazione tra slide —
+
+    DOM.btnPrev.addEventListener('click', () => {
+        if (state.activeIndex > 0) { state.activeIndex--; render(); }
+    });
+
+    DOM.btnNext.addEventListener('click', () => {
+        if (state.activeIndex < state.slides.length - 1) { state.activeIndex++; render(); }
+    });
+
+    // — Riordino slide —
+
+    DOM.btnMoveLeft.addEventListener('click', () => {
+        const i = state.activeIndex;
+        if (i > 0) {
+            [state.slides[i], state.slides[i - 1]] = [state.slides[i - 1], state.slides[i]];
+            state.activeIndex--;
+            saveState();
+            render();
+        }
+    });
+
+    DOM.btnMoveRight.addEventListener('click', () => {
+        const i = state.activeIndex;
+        if (i < state.slides.length - 1) {
+            [state.slides[i], state.slides[i + 1]] = [state.slides[i + 1], state.slides[i]];
+            state.activeIndex++;
+            saveState();
+            render();
+        }
+    });
+
+    // — Elimina slide —
+
+    DOM.btnDeleteSlide.addEventListener('click', () => {
+        if (state.slides.length <= 1) return; // Non eliminare mai l'unica slide rimasta
+        state.slides.splice(state.activeIndex, 1);
+        state.activeIndex = Math.max(0, state.activeIndex - 1); // ✅ Evita indice -1
+        saveState();
+        render();
+    });
+
+    // — Export e condivisione —
+
+    DOM.btnExport.addEventListener('click', exportAllSlides);
+    DOM.btnNativeShare.addEventListener('click', share);
+    DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
+
+    // — Modali —
+
+    DOM.btnHelp.addEventListener('click',      () => DOM.helpModal.classList.add('active'));
+    DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
+
+    // Chiudi modale cliccando sull'overlay scuro
+    DOM.shareModal.addEventListener('click', e => {
+        if (e.target === DOM.shareModal) DOM.shareModal.classList.remove('active');
+    });
+    DOM.helpModal.addEventListener('click', e => {
+        if (e.target === DOM.helpModal) DOM.helpModal.classList.remove('active');
+    });
+
+    // — Refresh forzato (bypass cache) —
+
+    DOM.btnRefresh.addEventListener('click', () => {
+        window.location.href = `${window.location.pathname}?v=${Date.now()}`;
+    });
+
+    // — Navigazione da tastiera (← →) —
+
+    document.addEventListener('keydown', e => {
+        // Non intercettare quando il focus è su un campo di testo
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+        if (e.key === 'ArrowLeft' && state.activeIndex > 0) {
+            state.activeIndex--;
+            render();
+        } else if (e.key === 'ArrowRight' && state.activeIndex < state.slides.length - 1) {
+            state.activeIndex++;
+            render();
+        }
+    });
+
+    // — Resize con debounce (il resize può sparare centinaia di eventi al secondo) —
+
+    window.addEventListener('resize', debounce(updateScale, 100));
+
+    // ═══════════════════════════════════════════════════════════
+    // INIZIALIZZAZIONE
+    // ═══════════════════════════════════════════════════════════
+
+    window.addEventListener('load', () => {
+        loadState(); // Ripristina i metadati dalla sessione precedente
+        render();    // Prima renderizzazione completa
+    });
     </script>
 </body>
 </html>
