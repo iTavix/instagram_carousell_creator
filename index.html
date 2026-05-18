@@ -20,25 +20,31 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em; }
 
-        /* Scrollbar personalizzata */
         .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #F5F5F7; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #AEAEB2; }
 
-        /* Modali */
         .modal { display: none; opacity: 0; transition: opacity 0.2s ease; }
         .modal.active { display: flex; opacity: 1; }
 
-        /* Nodo di rendering per l'export (fuori schermo) */
         #export-nodes { position: absolute; top: 0; left: -9999px; z-index: -10; }
 
-        /* Slider personalizzati */
         input[type=range] { -webkit-appearance: none; background: #E5E5EA; height: 4px; border-radius: 2px; outline: none; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #0071E3; cursor: pointer; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-        /* Utility accessibilità: visibile solo per screen reader */
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
+
+        /* Toggle switch */
+        .toggle-track { width: 40px; height: 22px; background: #D1D1D6; border-radius: 11px; position: relative; transition: background 0.2s; cursor: pointer; flex-shrink: 0; }
+        .toggle-track.on { background: #0071E3; }
+        .toggle-thumb { width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.25); pointer-events: none; }
+        .toggle-track.on .toggle-thumb { transform: translateX(18px); }
+
+        /* Overlay drag handle nell'anteprima */
+        #preview-overlay-drag { transition: outline 0.15s; }
+        #preview-overlay-drag:hover { outline: 2px dashed rgba(255,255,255,0.6); outline-offset: 8px; border-radius: 4px; }
+        #preview-overlay-drag.dragging { cursor: grabbing !important; outline: 2px solid rgba(0,113,227,0.9); outline-offset: 8px; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
@@ -48,14 +54,21 @@
     <!-- ═══════════════════════════════════════════════════ -->
     <div class="w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
 
+        <!-- Intestazione app -->
+        <div class="flex items-center gap-3 px-1">
+            <img src="logo.png" alt="Logo" class="h-9 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900 leading-tight tracking-tight">IG Carousel Creator</h1>
+                <p class="text-xs text-gray-400 font-medium">Crea i tuoi caroselli Instagram</p>
+            </div>
+        </div>
+
         <!-- Impostazioni Brand -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="font-semibold text-lg text-gray-900">Impostazioni Brand</h2>
                 <div class="flex items-center gap-2">
-                    <button id="btn-refresh"
-                            aria-label="Ricarica l'applicazione"
-                            title="Ricarica l'app"
+                    <button id="btn-refresh" aria-label="Ricarica l'applicazione" title="Ricarica l'app"
                             class="text-gray-500 hover:text-black hover:bg-gray-100 p-1.5 rounded-full transition-all">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <polyline points="23 4 23 10 17 10"></polyline>
@@ -66,18 +79,14 @@
                 </div>
             </div>
             <div class="flex flex-col gap-4">
-
-                <!-- Logo principale (alto destra) -->
                 <div>
                     <div class="flex justify-between mb-2">
                         <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
-                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden" aria-label="Rimuovi logo principale">Rimuovi</button>
+                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden" aria-label="Rimuovi logo">Rimuovi</button>
                     </div>
                     <input type="file" id="logo-upload" accept="image/png, image/jpeg"
                            class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
-
-                <!-- Logo tema (alto sinistra) -->
                 <div>
                     <div class="flex justify-between mb-2">
                         <label for="theme-logo-upload" class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
@@ -86,8 +95,6 @@
                     <input type="file" id="theme-logo-upload" accept="image/png, image/jpeg"
                            class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
-
-                <!-- Badge News -->
                 <div>
                     <div class="flex justify-between mb-2">
                         <label for="news-upload" class="text-sm font-medium text-gray-900">Badge News (Sopra il Titolo Copertina)</label>
@@ -96,9 +103,83 @@
                     <input type="file" id="news-upload" accept="image/png, image/jpeg"
                            class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer" />
                 </div>
-
             </div>
         </div>
+
+        <!-- ═══════════════════════════════════════════════ -->
+        <!-- Testo sulla Slide (tutte le slide)            -->
+        <!-- ═══════════════════════════════════════════════ -->
+        <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
+
+            <!-- Header con toggle -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-lg text-gray-900">Testo sulla Slide</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Disponibile su tutte le slide</p>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                    <div class="toggle-track" id="overlay-toggle-track">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                    <input type="checkbox" id="toggle-text-overlay" class="sr-only" />
+                </label>
+            </div>
+
+            <!-- Campi overlay — visibili solo se attivo -->
+            <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
+
+                <!-- Titolo -->
+                <div class="flex flex-col gap-1">
+                    <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
+                    <input type="text" id="overlay-title-input" placeholder="Testo grande (Bebas Neue)"
+                           class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]" />
+                </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="overlay-title-size">Dimensione Titolo</label>
+                        <span id="overlay-title-size-val" class="text-[#0071E3]">80px</span>
+                    </div>
+                    <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2" />
+                </div>
+
+                <!-- Corpo -->
+                <div class="flex flex-col gap-1">
+                    <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
+                    <textarea id="overlay-body-input" placeholder="Testo corpo (Bebas Neue)" rows="2"
+                              class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="overlay-body-size">Dimensione Corpo</label>
+                        <span id="overlay-body-size-val" class="text-[#0071E3]">40px</span>
+                    </div>
+                    <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2" />
+                </div>
+
+                <!-- Colore testo -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
+                    <div class="flex items-center gap-3">
+                        <span id="overlay-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
+                        <input type="color" id="overlay-color" value="#ffffff"
+                               class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                    </div>
+                </div>
+
+                <!-- Hint drag -->
+                <div class="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0071E3" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="flex-shrink-0 mt-0.5">
+                        <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
+                    </svg>
+                    <p class="text-xs text-blue-700 font-medium leading-relaxed">
+                        Trascina il blocco testo nell'anteprima per riposizionarlo liberamente sulla slide
+                    </p>
+                </div>
+
+            </div>
+        </div><!-- fine pannello testo overlay -->
 
         <!-- Gestione Slides / Thumbnail -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
@@ -111,78 +192,61 @@
                             class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&rarr;</button>
                 </div>
             </div>
-            <div id="thumbnails-container"
-                 class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar"
-                 role="list"
-                 aria-label="Elenco delle slide"></div>
+            <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
         </div>
 
-        <!-- Editor Slide -->
+        <!-- Editor Slide — Immagine, colori, zoom, testo copertina -->
         <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
             <div class="flex justify-between items-center mb-2">
                 <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
                 <div class="flex gap-3 items-center">
-                    <button id="btn-move-left"  class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta slide a sinistra">&larr; Sposta</button>
-                    <button id="btn-move-right" class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta slide a destra">Sposta &rarr;</button>
-                    <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden" aria-label="Elimina questa slide">Elimina</button>
+                    <button id="btn-move-left"    class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta a sinistra">&larr; Sposta</button>
+                    <button id="btn-move-right"   class="text-gray-500 text-sm hover:text-black hidden" aria-label="Sposta a destra">Sposta &rarr;</button>
+                    <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden" aria-label="Elimina slide">Elimina</button>
                 </div>
             </div>
 
-            <!-- Upload immagine di sfondo -->
             <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
-                <input type="file" id="bg-upload" accept="image/*"
-                       aria-label="Carica immagine di sfondo per la slide"
+                <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo"
                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
             </div>
 
-            <!-- Colore di sfondo -->
             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <label for="input-bg-color" class="text-xs font-bold text-gray-500 uppercase">Colore Sfondo</label>
-                <input type="color" id="input-bg-color" value="#333333"
-                       class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                <input type="color" id="input-bg-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
             </div>
 
-            <!-- Slider Zoom (visibilità controllata da JS) -->
-            <div id="zoom-container" style="display:none; flex-direction:column; gap:8px;"
-                 class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div id="zoom-container" style="display:none; flex-direction:column; gap:8px;" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
                     <label for="input-zoom">Livello Ingrandimento</label>
                     <span id="zoom-value" class="text-[#0071E3]">1.00x</span>
                 </div>
-                <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1"
-                       class="w-full mt-2" />
+                <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2" />
             </div>
 
-            <!-- Campi testo — solo per la Copertina (slide 0) -->
+            <!-- Campi testo copertina (solo slide 0) -->
             <div id="text-fields-container" class="flex flex-col gap-4 mt-2">
-
-                <label class="sr-only" for="input-title">Titolo della copertina</label>
-                <input type="text" id="input-title"
-                       placeholder="Titolo (Es. LEGO STAR WARS)"
+                <label class="sr-only" for="input-title">Titolo copertina</label>
+                <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)"
                        class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]" />
-
-                <!-- Dimensione font titolo -->
                 <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
                         <label for="input-title-font-size">Dimensione Titolo</label>
                         <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
                     </div>
-                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110"
-                           class="w-full mt-2" />
+                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2" />
                 </div>
-
-                <label class="sr-only" for="input-body">Sottotitolo della copertina</label>
+                <label class="sr-only" for="input-body">Sottotitolo copertina</label>
                 <textarea id="input-body" placeholder="Sottotitolo" rows="2"
                           class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-
                 <label class="sr-only" for="input-source">Fonte</label>
-                <input type="text" id="input-source"
-                       placeholder="Fonte (es. theverge.com)"
+                <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)"
                        class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]" />
             </div>
         </div>
-    </div>
+
+    </div><!-- fine pannello sinistro -->
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- PANNELLO DESTRO — ANTEPRIMA                        -->
@@ -196,64 +260,51 @@
             </button>
         </div>
 
-        <div id="preview-wrapper"
-             role="img"
-             aria-label="Anteprima della slide attiva"
+        <div id="preview-wrapper" role="img" aria-label="Anteprima slide attiva"
              class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden"
              style="aspect-ratio: 4/5;">
             <div id="preview-container" class="absolute top-0 left-0 origin-top-left"></div>
         </div>
     </div>
 
-    <!-- Nodi di rendering per l'export (nascosti fuori schermo) -->
     <div id="export-nodes" aria-hidden="true"></div>
 
     <!-- ═══════════════════════════════════════════════════ -->
     <!-- MODALE: GUIDA                                      -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <div id="help-modal"
-         class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+    <div id="help-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
          role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
             <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
             <div class="space-y-4 text-sm text-gray-700">
-                <p><strong>1. Brand:</strong> Carica Logo e badge News. Verranno salvati automaticamente nel browser per i prossimi utilizzi.</p>
-                <p><strong>2. Copertina:</strong> Solo la prima slide ti permette di inserire e ridimensionare il Titolo, il Sottotitolo e la Fonte.</p>
-                <p><strong>3. Zoom e Cornici:</strong> Usa lo slider "Livello Ingrandimento" in ogni slide. Se scendi sotto 1.00x, l'immagine avrà automaticamente i bordi arrotondati, mostrando il colore di sfondo.</p>
-                <p><strong>4. Colore Sfondo:</strong> Puoi cambiare il colore della cornice di sfondo per ogni singola slide.</p>
-                <p><strong>5. Ordina e Crea:</strong> Usa i tasti "Sposta" o "Elimina". Aggiungi fino a 20 slide con il tasto "+".</p>
-                <p><strong>6. Esporta e Salva:</strong> Genera il carosello. Su computer le immagini verranno scaricate, su smartphone potrai salvarle tutte insieme nel Rullino Foto.</p>
-                <p><strong>7. Navigazione da tastiera:</strong> Usa i tasti ← → per spostarti tra le slide senza cliccare.</p>
-                <p><strong>8. Persistenza:</strong> Titoli, testi e impostazioni vengono salvati automaticamente. Le immagini di sfondo devono essere ricaricate ad ogni sessione.</p>
+                <p><strong>1. Brand:</strong> Carica Logo e badge News. Vengono salvati nel browser per le sessioni future.</p>
+                <p><strong>2. Copertina:</strong> Solo la prima slide permette Titolo, Sottotitolo e Fonte nella sezione dedicata.</p>
+                <p><strong>3. Testo sulla Slide:</strong> Attiva il toggle nella sezione "Testo sulla Slide" su qualsiasi slide. Scrivi un Titolo e/o un Corpo (font Bebas Neue), scegli il colore e <strong>trascina il blocco nell'anteprima</strong> per posizionarlo dove vuoi.</p>
+                <p><strong>4. Zoom e Cornici:</strong> Lo slider "Ingrandimento" funziona su ogni slide. Sotto 1.00x appaiono bordi arrotondati.</p>
+                <p><strong>5. Colore Sfondo:</strong> Personalizzabile per ogni singola slide.</p>
+                <p><strong>6. Ordina e Crea:</strong> Usa "Sposta" o "Elimina". Aggiungi slide con il tasto "+".</p>
+                <p><strong>7. Esporta:</strong> Su desktop scarica le immagini, su smartphone le salva nel Rullino Foto.</p>
+                <p><strong>8. Tastiera:</strong> ← → per navigare tra le slide.</p>
+                <p><strong>9. Persistenza:</strong> Testi e impostazioni si salvano automaticamente. Le immagini di sfondo vanno ricaricate ogni sessione.</p>
             </div>
-            <button id="btn-close-help"
-                    class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">
+            <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">
                 Perfetto, iniziamo!
             </button>
         </div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════ -->
-    <!-- MODALE: EXPORT / CONDIVISIONE                      -->
+    <!-- MODALE: EXPORT                                     -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <div id="share-modal"
-         class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+    <div id="share-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
          role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh]">
             <h3 id="share-modal-title" class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
-            <p class="share-description text-sm text-gray-600 mb-4">
-                Usa il tasto blu per salvare le immagini.
-            </p>
-            <div id="rendered-previews"
-                 class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border"
-                 aria-label="Anteprima delle slide esportate"></div>
+            <p class="share-description text-sm text-gray-600 mb-4">Usa il tasto blu per salvare le immagini.</p>
+            <div id="rendered-previews" class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border"></div>
             <div class="flex flex-col sm:flex-row gap-3">
-                <button id="btn-close-share"
-                        class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
-                <button id="btn-native-share"
-                        class="flex-[2] bg-[#0071E3] text-white py-3 px-6 rounded-xl font-medium hover:bg-[#005bb5] transition-all">
-                    Scarica / Salva in Foto
-                </button>
+                <button id="btn-close-share" class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
+                <button id="btn-native-share" class="flex-[2] bg-[#0071E3] text-white py-3 px-6 rounded-xl font-medium hover:bg-[#005bb5] transition-all">Scarica / Salva in Foto</button>
             </div>
         </div>
     </div>
@@ -263,49 +314,31 @@
     // COSTANTI
     // ═══════════════════════════════════════════════════════════
 
-    /** Rilevamento dispositivo mobile (calcolato una volta sola) */
     const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
     const MAX_SLIDES = 20;
-
-    /** Chiavi localStorage unificate per evitare typo */
-    const LS = {
-        logo:      'icc_logo',
-        themeLogo: 'icc_theme_logo',
-        news:      'icc_news',
-        state:     'icc_state',
-    };
+    const LS = { logo: 'icc_logo', themeLogo: 'icc_theme_logo', news: 'icc_news', state: 'icc_state' };
 
     // ═══════════════════════════════════════════════════════════
-    // STATO APPLICAZIONE
+    // STATO
     // ═══════════════════════════════════════════════════════════
 
     const state = {
-        activeIndex:  0,
-        isExporting:  false,
+        activeIndex: 0,
+        isExporting: false,
         renderedBlobs: [],
-
-        // Brand assets — caricati da localStorage al primo avvio
         logoBase64:      localStorage.getItem(LS.logo)      || null,
         themeLogoBase64: localStorage.getItem(LS.themeLogo) || null,
         newsBase64:      localStorage.getItem(LS.news)      || null,
-
-        slides: [
-            {
-                id:            'slide-0',
-                image:         null,
-                title:         'Titolo Copertina',
-                body:          'Testo di copertina.',
-                source:        'Fonte: theverge.com',
-                zoom:          1,
-                bgColor:       '#333333',
-                titleFontSize: 110,
-            }
-        ],
+        slides: [{
+            id: 'slide-0', image: null,
+            title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
+            zoom: 1, bgColor: '#333333', titleFontSize: 110,
+            textOverlay: null,  // { enabled, title, body, titleSize, bodySize, color, x, y }
+        }],
     };
 
     // ═══════════════════════════════════════════════════════════
-    // CACHE RIFERIMENTI DOM
+    // RIFERIMENTI DOM
     // ═══════════════════════════════════════════════════════════
 
     const DOM = {
@@ -347,95 +380,90 @@
         btnRefresh:           document.getElementById('btn-refresh'),
         helpModal:            document.getElementById('help-modal'),
         btnCloseHelp:         document.getElementById('btn-close-help'),
+        // — Overlay —
+        toggleTextOverlay:    document.getElementById('toggle-text-overlay'),
+        overlayToggleTrack:   document.getElementById('overlay-toggle-track'),
+        overlayToggleLabel:   document.getElementById('overlay-toggle-label'),
+        overlayFields:        document.getElementById('overlay-fields'),
+        overlayTitleInput:    document.getElementById('overlay-title-input'),
+        overlayTitleSize:     document.getElementById('overlay-title-size'),
+        overlayTitleSizeVal:  document.getElementById('overlay-title-size-val'),
+        overlayBodyInput:     document.getElementById('overlay-body-input'),
+        overlayBodySize:      document.getElementById('overlay-body-size'),
+        overlayBodySizeVal:   document.getElementById('overlay-body-size-val'),
+        overlayColor:         document.getElementById('overlay-color'),
+        overlayColorHex:      document.getElementById('overlay-color-hex'),
     };
 
     // ═══════════════════════════════════════════════════════════
     // UTILITY
     // ═══════════════════════════════════════════════════════════
 
-    /**
-     * Sanifica una stringa per prevenire XSS quando inserita nell'HTML.
-     * Converte caratteri speciali in entità HTML.
-     */
     function escapeHtml(str) {
         const el = document.createElement('div');
         el.appendChild(document.createTextNode(str || ''));
         return el.innerHTML;
     }
 
-    /**
-     * Ritarda l'esecuzione di una funzione finché smette di essere chiamata.
-     * Usato sugli input di testo per evitare re-render ad ogni singolo tasto.
-     */
     function debounce(fn, ms = 150) {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), ms);
-        };
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
     }
 
-    /** Legge un file immagine e lo converte in una stringa base64 */
-    function readImageAsBase64(file, callback) {
+    function readImageAsBase64(file, cb) {
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = e => callback(e.target.result);
-        reader.readAsDataURL(file);
+        const r = new FileReader();
+        r.onload = e => cb(e.target.result);
+        r.readAsDataURL(file);
     }
 
-    /** Precarica un'immagine nel cache del browser */
     function preloadImage(src) {
         if (!src) return Promise.resolve();
         return new Promise(resolve => {
             const img = new Image();
-            img.onload  = resolve;
-            img.onerror = resolve; // Risolve comunque per non bloccare l'export
+            img.onload = img.onerror = resolve;
             img.src = src;
         });
     }
 
+    /**
+     * Garantisce che la slide attiva abbia un oggetto textOverlay inizializzato.
+     * Usato prima di ogni modifica ai campi overlay.
+     */
+    function ensureOverlay() {
+        const slide = state.slides[state.activeIndex];
+        if (!slide.textOverlay) {
+            slide.textOverlay = { enabled: true, title: '', body: '', titleSize: 80, bodySize: 40, color: '#ffffff', x: 50, y: 50 };
+        }
+        return slide.textOverlay;
+    }
+
     // ═══════════════════════════════════════════════════════════
-    // PERSISTENZA — localStorage
+    // PERSISTENZA
     // ═══════════════════════════════════════════════════════════
 
-    /**
-     * Salva i metadati delle slide (testo, zoom, colori) su localStorage.
-     * Le immagini di sfondo sono escluse perché troppo grandi (~5 MB limite).
-     */
     function saveState() {
         const toSave = {
             slides: state.slides.map(s => ({
-                id:            s.id,
-                title:         s.title,
-                body:          s.body,
-                source:        s.source,
-                zoom:          s.zoom,
-                bgColor:       s.bgColor,
-                titleFontSize: s.titleFontSize,
-                // 'image' intenzionalmente escluso: troppo pesante per localStorage
+                id: s.id, title: s.title, body: s.body, source: s.source,
+                zoom: s.zoom, bgColor: s.bgColor, titleFontSize: s.titleFontSize,
+                textOverlay: s.textOverlay,  // testo puro, nessun base64
+                // 'image' escluso: troppo pesante per localStorage
             })),
         };
-        try {
-            localStorage.setItem(LS.state, JSON.stringify(toSave));
-        } catch (e) {
-            // Quota superata: ignoriamo silenziosamente, non è un errore critico
-            console.warn('Impossibile salvare lo stato (quota localStorage superata?):', e);
-        }
+        try { localStorage.setItem(LS.state, JSON.stringify(toSave)); }
+        catch (e) { console.warn('localStorage quota superata:', e); }
     }
 
-    /** Ripristina i metadati delle slide salvati dalla sessione precedente */
     function loadState() {
         try {
             const raw = localStorage.getItem(LS.state);
             if (!raw) return;
             const saved = JSON.parse(raw);
             if (Array.isArray(saved.slides) && saved.slides.length > 0) {
-                // Merge: rispetta i dati salvati, ma azzera le immagini
                 state.slides = saved.slides.map(s => ({ ...s, image: null }));
             }
-        } catch (e) {
-            console.warn('Impossibile caricare lo stato salvato — si parte da zero:', e);
-        }
+        } catch (e) { console.warn('Impossibile caricare lo stato:', e); }
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -443,20 +471,50 @@
     // ═══════════════════════════════════════════════════════════
 
     /**
-     * Genera l'HTML della slide a 1080×1350px per la preview e l'export.
-     * TUTTI i valori testuali forniti dall'utente vengono sanificati con escapeHtml().
+     * Genera l'HTML del blocco testo overlay.
+     * @param {object}  overlay    - dati dell'overlay dalla slide
+     * @param {boolean} forPreview - se true aggiunge id drag e cursor:grab
      */
-    function generateSlideHTML(slide, index) {
-        const isCover       = (index === 0);
+    function generateOverlayHTML(overlay, forPreview) {
+        if (!overlay || !overlay.enabled) return '';
+
+        const x     = overlay.x     ?? 50;
+        const y     = overlay.y     ?? 50;
+        const color = overlay.color || '#ffffff';
+        const tsz   = overlay.titleSize || 80;
+        const bsz   = overlay.bodySize  || 40;
+
+        const titleHTML = overlay.title
+            ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${escapeHtml(overlay.title)}</div>`
+            : '';
+        const bodyHTML  = overlay.body
+            ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz * 0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(overlay.body)}</div>`
+            : '';
+
+        if (!titleHTML && !bodyHTML) return '';
+
+        const baseStyle = `position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);z-index:50;color:${color};text-align:center;padding:24px;min-width:120px;`;
+        const attrs = forPreview
+            ? `id="preview-overlay-drag" style="${baseStyle}cursor:grab;user-select:none;"`
+            : `style="${baseStyle}"`;
+
+        return `<div ${attrs}>${titleHTML}${bodyHTML}</div>`;
+    }
+
+    /**
+     * Genera l'HTML completo della slide a 1080×1350px.
+     * @param {boolean} forPreview - se true aggiunge id/drag all'overlay per la UI
+     */
+    function generateSlideHTML(slide, index, forPreview = false) {
+        const isCover       = index === 0;
         const zoom          = slide.zoom          || 1;
         const bgColor       = slide.bgColor       || '#333333';
         const titleFontSize = slide.titleFontSize  || 110;
 
-        // Bordi arrotondati quando l'immagine è ridotta (zoom < 1)
-        const borderRadiusStyle = zoom < 1 ? 'border-radius: 40px;' : '';
+        const borderRadiusStyle = zoom < 1 ? 'border-radius:40px;' : '';
         const sizeStyle = zoom < 1
-            ? 'max-width: 100%; max-height: 100%; object-fit: contain;'
-            : 'min-width: 100%; min-height: 100%; width: auto; height: auto; max-width: none; max-height: none;';
+            ? 'max-width:100%;max-height:100%;object-fit:contain;'
+            : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
 
         const bgHTML = slide.image
             ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;background-color:${bgColor};">
@@ -482,7 +540,7 @@
             ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">`
             : '';
 
-        // ✅ Testo utente sanificato con escapeHtml() — prevenzione XSS
+        // ✅ Testo copertina — sanificato con escapeHtml
         const textHTML = isCover
             ? `<div style="position:absolute;bottom:80px;left:60px;right:60px;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;">
                    ${newsHTML}
@@ -495,98 +553,133 @@
             ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.source)}</div>`
             : '';
 
-        return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;background-color:${bgColor};">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}</div>`;
+        // ✅ Overlay testo — sanificato dentro generateOverlayHTML
+        const overlayHTML = generateOverlayHTML(slide.textOverlay, forPreview);
+
+        return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;background-color:${bgColor};">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${overlayHTML}</div>`;
     }
 
     // ═══════════════════════════════════════════════════════════
-    // RENDERING — suddiviso in funzioni specializzate
+    // DRAG & DROP OVERLAY
     // ═══════════════════════════════════════════════════════════
 
     /**
-     * Ricostruisce la striscia delle thumbnail.
-     * Chiamare quando cambia il numero di slide, l'ordine, o l'indice attivo.
+     * Collega i listener per il drag del blocco testo nell'anteprima.
+     * Aggiorna il DOM direttamente durante il trascinamento per fluidità
+     * e salva lo stato solo al rilascio.
      */
+    function bindOverlayDrag() {
+        const slide = state.slides[state.activeIndex];
+        if (!slide.textOverlay || !slide.textOverlay.enabled) return;
+
+        const el = document.getElementById('preview-overlay-drag');
+        if (!el) return;
+
+        el.addEventListener('mousedown',  onStart);
+        el.addEventListener('touchstart', onStart, { passive: false });
+
+        function onStart(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            el.classList.add('dragging');
+
+            const rect   = DOM.previewWrapper.getBoundingClientRect();
+            const touch  = e.touches ? e.touches[0] : e;
+
+            // Posizione attuale del centro in pixel rispetto al wrapper
+            const cx = (slide.textOverlay.x / 100) * rect.width;
+            const cy = (slide.textOverlay.y / 100) * rect.height;
+
+            // Offset click→centro del blocco
+            const ox = touch.clientX - rect.left - cx;
+            const oy = touch.clientY - rect.top  - cy;
+
+            function onMove(e) {
+                const t  = e.touches ? e.touches[0] : e;
+                const nx = Math.max(0, Math.min(100, (t.clientX - rect.left  - ox) / rect.width  * 100));
+                const ny = Math.max(0, Math.min(100, (t.clientY - rect.top   - oy) / rect.height * 100));
+
+                // Aggiorna DOM direttamente — nessun re-render per fluidità
+                el.style.left = nx + '%';
+                el.style.top  = ny + '%';
+
+                slide.textOverlay.x = nx;
+                slide.textOverlay.y = ny;
+            }
+
+            function onEnd() {
+                el.classList.remove('dragging');
+                document.removeEventListener('mousemove',  onMove);
+                document.removeEventListener('touchmove',  onMove);
+                document.removeEventListener('mouseup',    onEnd);
+                document.removeEventListener('touchend',   onEnd);
+                saveState(); // Salva solo al termine del drag
+            }
+
+            document.addEventListener('mousemove',  onMove);
+            document.addEventListener('touchmove',  onMove, { passive: false });
+            document.addEventListener('mouseup',    onEnd);
+            document.addEventListener('touchend',   onEnd);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // RENDERING
+    // ═══════════════════════════════════════════════════════════
+
     function renderThumbnails() {
         DOM.thumbnailsContainer.innerHTML = '';
-
         state.slides.forEach((slide, i) => {
             const thumb = document.createElement('div');
             thumb.className = [
                 'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all',
-                i === state.activeIndex
-                    ? 'border-[#0071E3] scale-105 shadow-md'
-                    : 'border-transparent opacity-60',
+                i === state.activeIndex ? 'border-[#0071E3] scale-105 shadow-md' : 'border-transparent opacity-60',
             ].join(' ');
             thumb.style.backgroundColor = slide.bgColor || '#333333';
             thumb.setAttribute('role', 'listitem');
             thumb.setAttribute('aria-label', `Slide ${i + 1}${i === state.activeIndex ? ' (attiva)' : ''}`);
             thumb.setAttribute('tabindex', '0');
-
-            if (slide.image) {
-                thumb.style.backgroundImage    = `url(${slide.image})`;
-                thumb.style.backgroundSize     = 'cover';
-                thumb.style.backgroundPosition = 'center';
-            }
-
-            const selectSlide = () => { state.activeIndex = i; render(); };
-            thumb.addEventListener('click', selectSlide);
-            thumb.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSlide(); }
-            });
-
+            if (slide.image) { thumb.style.backgroundImage = `url(${slide.image})`; thumb.style.backgroundSize = 'cover'; thumb.style.backgroundPosition = 'center'; }
+            const go = () => { state.activeIndex = i; render(); };
+            thumb.addEventListener('click', go);
+            thumb.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
             DOM.thumbnailsContainer.appendChild(thumb);
         });
 
-        // Pulsante "+" per aggiungere una nuova slide (max 20)
         if (state.slides.length < MAX_SLIDES) {
-            const btnAdd = document.createElement('button');
-            btnAdd.className   = 'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
-            btnAdd.textContent = '+';
-            btnAdd.setAttribute('aria-label', 'Aggiungi nuova slide');
-            btnAdd.addEventListener('click', () => {
-                state.slides.push({ id: `slide-${Date.now()}`, image: null, zoom: 1, bgColor: '#333333' });
+            const btn = document.createElement('button');
+            btn.className   = 'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
+            btn.textContent = '+';
+            btn.setAttribute('aria-label', 'Aggiungi slide');
+            btn.addEventListener('click', () => {
+                state.slides.push({ id: `slide-${Date.now()}`, image: null, zoom: 1, bgColor: '#333333', textOverlay: null });
                 state.activeIndex = state.slides.length - 1;
-                saveState();
-                render();
+                saveState(); render();
             });
-            DOM.thumbnailsContainer.appendChild(btnAdd);
+            DOM.thumbnailsContainer.appendChild(btn);
         }
     }
 
-    /**
-     * Aggiorna i controlli dell'editor in base alla slide attiva.
-     * Non tocca la preview — più leggero di un render() completo.
-     */
     function renderEditor() {
         const slide   = state.slides[state.activeIndex];
         const isCover = state.activeIndex === 0;
 
-        // Intestazioni e titoli
         DOM.slideCountTitle.textContent = `Slides (${state.slides.length}/${MAX_SLIDES})`;
         DOM.editorTitle.textContent     = isCover ? 'Modifica Copertina' : `Modifica Slide ${state.activeIndex + 1}`;
 
-        // Visibilità sezioni contestuali
         DOM.textFieldsContainer.style.display = isCover ? 'flex' : 'none';
         DOM.zoomContainer.style.display       = 'flex';
         DOM.btnDeleteSlide.style.display      = !isCover ? 'block' : 'none';
-        DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
+        DOM.btnMoveLeft.style.display         = state.activeIndex > 0                       ? 'block' : 'none';
         DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length - 1 ? 'block' : 'none';
-
-        // Stato disabilitato dei bottoni di navigazione
         DOM.btnPrev.disabled = state.activeIndex === 0;
         DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
 
-        // Sincronizzazione valori controlli
         DOM.inputZoom.value       = slide.zoom    || 1;
         DOM.zoomValue.textContent = (slide.zoom   || 1).toFixed(2) + 'x';
         DOM.inputBgColor.value    = slide.bgColor || '#333333';
+        DOM.bgUploadLabel.textContent = slide.image ? '✓ Immagine caricata — clicca per cambiarla' : 'Carica Immagine Sfondo';
 
-        // Etichetta area di upload
-        DOM.bgUploadLabel.textContent = slide.image
-            ? '✓ Immagine caricata — clicca per cambiarla'
-            : 'Carica Immagine Sfondo';
-
-        // Campi testo (solo copertina)
         if (isCover) {
             DOM.inputTitleFontSize.value       = slide.titleFontSize || 110;
             DOM.titleFontSizeValue.textContent = (slide.titleFontSize || 110) + 'px';
@@ -595,32 +688,39 @@
             DOM.inputSource.value              = slide.source || '';
         }
 
-        // Visibilità bottoni "Rimuovi" per gli asset brand
         DOM.btnClearLogo.style.display      = state.logoBase64      ? 'block' : 'none';
         DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? 'block' : 'none';
         DOM.btnClearNews.style.display      = state.newsBase64      ? 'block' : 'none';
+
+        // — Overlay testo —
+        const ov  = slide.textOverlay;
+        const on  = !!(ov && ov.enabled);
+        DOM.toggleTextOverlay.checked      = on;
+        DOM.overlayToggleTrack.className   = 'toggle-track' + (on ? ' on' : '');
+        DOM.overlayToggleLabel.textContent = on ? 'On' : 'Off';
+        DOM.overlayFields.style.display    = on ? 'flex' : 'none';
+        if (on && ov) {
+            DOM.overlayTitleInput.value         = ov.title     || '';
+            DOM.overlayBodyInput.value          = ov.body      || '';
+            DOM.overlayTitleSize.value          = ov.titleSize || 80;
+            DOM.overlayTitleSizeVal.textContent = (ov.titleSize || 80) + 'px';
+            DOM.overlayBodySize.value           = ov.bodySize  || 40;
+            DOM.overlayBodySizeVal.textContent  = (ov.bodySize  || 40) + 'px';
+            DOM.overlayColor.value              = ov.color     || '#ffffff';
+            DOM.overlayColorHex.textContent     = (ov.color    || '#ffffff').toUpperCase();
+        }
     }
 
-    /** Aggiorna solo il contenuto della preview (il riquadro visivo a destra) */
     function renderPreview() {
-        DOM.previewContainer.innerHTML = generateSlideHTML(
-            state.slides[state.activeIndex],
-            state.activeIndex
-        );
+        DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex, true);
         updateScale();
+        bindOverlayDrag();
     }
 
-    /** Aggiorna tutto: thumbnail + editor + preview */
-    function render() {
-        renderThumbnails();
-        renderEditor();
-        renderPreview();
-    }
+    function render() { renderThumbnails(); renderEditor(); renderPreview(); }
 
-    /** Ricalcola il fattore di scala della preview in base alla larghezza disponibile */
     function updateScale() {
-        const scale = DOM.previewWrapper.offsetWidth / 1080;
-        DOM.previewContainer.style.transform = `scale(${scale})`;
+        DOM.previewContainer.style.transform = `scale(${DOM.previewWrapper.offsetWidth / 1080})`;
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -629,9 +729,8 @@
 
     async function exportAllSlides() {
         if (state.isExporting) return;
-
-        state.isExporting      = true;
-        state.renderedBlobs    = [];
+        state.isExporting = true;
+        state.renderedBlobs = [];
         DOM.renderedPreviews.innerHTML = '';
         DOM.btnExport.disabled = true;
 
@@ -639,83 +738,52 @@
 
         for (let i = 0; i < state.slides.length; i++) {
             DOM.btnExport.textContent = `Generazione ${i + 1} / ${state.slides.length}…`;
-
             try {
                 await preloadImage(state.slides[i].image);
-
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = generateSlideHTML(state.slides[i], i);
-                DOM.exportNodesContainer.appendChild(wrapper);
-
-                // Attende che il browser completi il layout prima della cattura
+                const wrap = document.createElement('div');
+                wrap.innerHTML = generateSlideHTML(state.slides[i], i, false); // false = no drag attrs
+                DOM.exportNodesContainer.appendChild(wrap);
                 await new Promise(r => setTimeout(r, 400));
-
-                const canvas  = await html2canvas(wrapper.firstChild, { scale: 1, useCORS: true });
+                const canvas  = await html2canvas(wrap.firstChild, { scale: 1, useCORS: true });
                 const dataUrl = canvas.toDataURL('image/png');
-
-                const res  = await fetch(dataUrl);
-                const blob = await res.blob();
+                const blob    = await (await fetch(dataUrl)).blob();
                 state.renderedBlobs.push(new File([blob], `slide-${i + 1}.png`, { type: 'image/png' }));
-
-                const img     = document.createElement('img');
-                img.src       = dataUrl;
-                img.alt       = `Slide ${i + 1}`;
-                img.className = 'h-48 rounded shadow-sm border flex-shrink-0';
+                const img = document.createElement('img');
+                img.src = dataUrl; img.alt = `Slide ${i + 1}`; img.className = 'h-48 rounded shadow-sm border flex-shrink-0';
                 DOM.renderedPreviews.appendChild(img);
-
             } catch (err) {
-                // ✅ Errore isolato per slide: non blocca le altre
-                console.error(`Errore nella generazione della slide ${i + 1}:`, err);
-                const errDiv       = document.createElement('div');
-                errDiv.className   = 'h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line';
-                errDiv.textContent = `⚠️ Errore\nSlide ${i + 1}`;
-                DOM.renderedPreviews.appendChild(errDiv);
-
+                console.error(`Errore slide ${i + 1}:`, err);
+                const d = document.createElement('div');
+                d.className = 'h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line';
+                d.textContent = `⚠️ Errore\nSlide ${i + 1}`;
+                DOM.renderedPreviews.appendChild(d);
             } finally {
-                // Pulisce il container di export dopo ogni slide (buon uso della memoria)
                 DOM.exportNodesContainer.innerHTML = '';
             }
         }
 
-        state.isExporting      = false;
+        state.isExporting = false;
         DOM.btnExport.disabled = false;
         DOM.btnExport.textContent = 'Esporta Carousel';
 
-        if (state.renderedBlobs.length === 0) {
-            alert('Nessuna slide è stata generata correttamente. Riprova.');
-            return;
-        }
+        if (!state.renderedBlobs.length) { alert('Nessuna slide generata. Riprova.'); return; }
 
-        // Personalizza il testo del modale in base al dispositivo
-        const descEl = DOM.shareModal.querySelector('.share-description');
-        if (descEl) {
-            descEl.textContent = IS_MOBILE
-                ? 'Le slide sono pronte! Usa il tasto blu per salvarle nel tuo Rullino Foto.'
-                : 'Le slide sono pronte! Usa il tasto blu per scaricare i file sul tuo computer.';
-        }
+        const desc = DOM.shareModal.querySelector('.share-description');
+        if (desc) desc.textContent = IS_MOBILE ? 'Le slide sono pronte! Salva nel Rullino Foto.' : 'Le slide sono pronte! Scaricale sul tuo computer.';
         DOM.btnNativeShare.textContent = IS_MOBILE ? 'Salva in Foto / Condividi' : 'Scarica Immagini';
         DOM.shareModal.classList.add('active');
     }
 
     async function share() {
         if (IS_MOBILE && navigator.canShare && navigator.canShare({ files: state.renderedBlobs })) {
-            // Condivisione nativa su mobile
-            try {
-                await navigator.share({ files: state.renderedBlobs, title: 'Carousel' });
-            } catch (e) {
-                console.log('Condivisione annullata o non supportata.');
-            }
+            try { await navigator.share({ files: state.renderedBlobs, title: 'Carousel' }); }
+            catch (e) { console.log('Condivisione annullata.'); }
         } else {
-            // Download sequenziali su desktop, sfalsati di 300ms
             state.renderedBlobs.forEach((file, i) => {
                 const url = URL.createObjectURL(file);
                 const a   = document.createElement('a');
-                a.href     = url;
-                a.download = file.name;
-                setTimeout(() => {
-                    a.click();
-                    URL.revokeObjectURL(url); // ✅ Libera la memoria dopo il click
-                }, i * 300);
+                a.href = url; a.download = file.name;
+                setTimeout(() => { a.click(); URL.revokeObjectURL(url); }, i * 300);
             });
         }
         DOM.shareModal.classList.remove('active');
@@ -725,192 +793,114 @@
     // EVENT LISTENERS
     // ═══════════════════════════════════════════════════════════
 
-    // — Upload immagini —
+    // Upload immagini
+    DOM.bgUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.slides[state.activeIndex].image = b; DOM.bgUpload.value = ''; saveState(); render(); }); });
+    DOM.logoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.logoBase64 = b; localStorage.setItem(LS.logo, b); render(); }); });
+    DOM.themeLogoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.themeLogoBase64 = b; localStorage.setItem(LS.themeLogo, b); render(); }); });
+    DOM.newsUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.newsBase64 = b; localStorage.setItem(LS.news, b); render(); }); });
 
-    DOM.bgUpload.addEventListener('change', e => {
-        readImageAsBase64(e.target.files[0], base64 => {
-            state.slides[state.activeIndex].image = base64;
-            DOM.bgUpload.value = ''; // Reset input per permettere il ri-caricamento dello stesso file
-            saveState();
-            render();
-        });
-    });
+    // Rimozione brand
+    DOM.btnClearLogo.addEventListener('click',      () => { state.logoBase64 = null;      localStorage.removeItem(LS.logo);      render(); });
+    DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64 = null; localStorage.removeItem(LS.themeLogo); render(); });
+    DOM.btnClearNews.addEventListener('click',      () => { state.newsBase64 = null;      localStorage.removeItem(LS.news);      render(); });
 
-    DOM.logoUpload.addEventListener('change', e => {
-        readImageAsBase64(e.target.files[0], base64 => {
-            state.logoBase64 = base64;
-            localStorage.setItem(LS.logo, base64);
-            render();
-        });
-    });
-
-    DOM.themeLogoUpload.addEventListener('change', e => {
-        readImageAsBase64(e.target.files[0], base64 => {
-            state.themeLogoBase64 = base64;
-            localStorage.setItem(LS.themeLogo, base64);
-            render();
-        });
-    });
-
-    DOM.newsUpload.addEventListener('change', e => {
-        readImageAsBase64(e.target.files[0], base64 => {
-            state.newsBase64 = base64;
-            localStorage.setItem(LS.news, base64);
-            render();
-        });
-    });
-
-    // — Rimozione asset brand —
-
-    DOM.btnClearLogo.addEventListener('click', () => {
-        state.logoBase64 = null;
-        localStorage.removeItem(LS.logo);
-        render();
-    });
-
-    DOM.btnClearThemeLogo.addEventListener('click', () => {
-        state.themeLogoBase64 = null;
-        localStorage.removeItem(LS.themeLogo);
-        render();
-    });
-
-    DOM.btnClearNews.addEventListener('click', () => {
-        state.newsBase64 = null;
-        localStorage.removeItem(LS.news);
-        render();
-    });
-
-    // — Controlli slide: colore sfondo e zoom —
-
+    // Colore sfondo e zoom
     DOM.inputBgColor.addEventListener('input', e => {
         state.slides[state.activeIndex].bgColor = e.target.value;
-        saveState();
-        // Aggiorna solo la thumbnail attiva (ottimizzazione: evita ricreare tutte)
         const thumbs = DOM.thumbnailsContainer.querySelectorAll('[role="listitem"]');
-        if (thumbs[state.activeIndex]) {
-            thumbs[state.activeIndex].style.backgroundColor = e.target.value;
-        }
-        renderPreview();
+        if (thumbs[state.activeIndex]) thumbs[state.activeIndex].style.backgroundColor = e.target.value;
+        saveState(); renderPreview();
     });
-
     DOM.inputZoom.addEventListener('input', e => {
-        const val = parseFloat(e.target.value);
-        state.slides[state.activeIndex].zoom = val;
-        DOM.zoomValue.textContent = val.toFixed(2) + 'x';
-        saveState();
-        renderPreview();
+        const v = parseFloat(e.target.value);
+        state.slides[state.activeIndex].zoom = v;
+        DOM.zoomValue.textContent = v.toFixed(2) + 'x';
+        saveState(); renderPreview();
     });
 
+    // Testo copertina
     DOM.inputTitleFontSize.addEventListener('input', e => {
-        const val = parseInt(e.target.value, 10);
-        state.slides[0].titleFontSize = val;
-        DOM.titleFontSizeValue.textContent = val + 'px';
-        saveState();
-        renderPreview();
+        const v = parseInt(e.target.value, 10);
+        state.slides[0].titleFontSize = v;
+        DOM.titleFontSizeValue.textContent = v + 'px';
+        saveState(); renderPreview();
     });
-
-    // — Input testo con debounce (aggiorna preview 150ms dopo che l'utente smette di scrivere) —
-
     const debouncedPreview = debounce(() => { saveState(); renderPreview(); }, 150);
+    DOM.inputTitle.addEventListener('input',  e => { state.slides[0].title  = e.target.value; debouncedPreview(); });
+    DOM.inputBody.addEventListener('input',   e => { state.slides[0].body   = e.target.value; debouncedPreview(); });
+    DOM.inputSource.addEventListener('input', e => { state.slides[0].source = e.target.value; debouncedPreview(); });
 
-    DOM.inputTitle.addEventListener('input', e => { state.slides[0].title  = e.target.value; debouncedPreview(); });
-    DOM.inputBody.addEventListener('input',  e => { state.slides[0].body   = e.target.value; debouncedPreview(); });
-    DOM.inputSource.addEventListener('input',e => { state.slides[0].source = e.target.value; debouncedPreview(); });
+    // ── Overlay testo ──────────────────────────────────────────
 
-    // — Navigazione tra slide —
-
-    DOM.btnPrev.addEventListener('click', () => {
-        if (state.activeIndex > 0) { state.activeIndex--; render(); }
+    // Toggle: click sul track visuale o sull'input hidden
+    DOM.overlayToggleTrack.addEventListener('click', () => DOM.toggleTextOverlay.click());
+    DOM.toggleTextOverlay.addEventListener('change', e => {
+        const ov = ensureOverlay();
+        ov.enabled = e.target.checked;
+        DOM.overlayToggleTrack.className   = 'toggle-track' + (ov.enabled ? ' on' : '');
+        DOM.overlayToggleLabel.textContent = ov.enabled ? 'On' : 'Off';
+        DOM.overlayFields.style.display    = ov.enabled ? 'flex' : 'none';
+        saveState(); renderPreview();
     });
 
-    DOM.btnNext.addEventListener('click', () => {
-        if (state.activeIndex < state.slides.length - 1) { state.activeIndex++; render(); }
+    const debouncedOverlay = debounce(() => { saveState(); renderPreview(); }, 150);
+    DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title = e.target.value; debouncedOverlay(); });
+    DOM.overlayBodyInput.addEventListener('input',  e => { ensureOverlay().body  = e.target.value; debouncedOverlay(); });
+
+    DOM.overlayTitleSize.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureOverlay().titleSize = v;
+        DOM.overlayTitleSizeVal.textContent = v + 'px';
+        saveState(); renderPreview();
+    });
+    DOM.overlayBodySize.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureOverlay().bodySize = v;
+        DOM.overlayBodySizeVal.textContent = v + 'px';
+        saveState(); renderPreview();
+    });
+    DOM.overlayColor.addEventListener('input', e => {
+        ensureOverlay().color = e.target.value;
+        DOM.overlayColorHex.textContent = e.target.value.toUpperCase();
+        saveState(); renderPreview();
     });
 
-    // — Riordino slide —
-
-    DOM.btnMoveLeft.addEventListener('click', () => {
-        const i = state.activeIndex;
-        if (i > 0) {
-            [state.slides[i], state.slides[i - 1]] = [state.slides[i - 1], state.slides[i]];
-            state.activeIndex--;
-            saveState();
-            render();
-        }
-    });
-
-    DOM.btnMoveRight.addEventListener('click', () => {
-        const i = state.activeIndex;
-        if (i < state.slides.length - 1) {
-            [state.slides[i], state.slides[i + 1]] = [state.slides[i + 1], state.slides[i]];
-            state.activeIndex++;
-            saveState();
-            render();
-        }
-    });
-
-    // — Elimina slide —
-
+    // Navigazione
+    DOM.btnPrev.addEventListener('click',  () => { if (state.activeIndex > 0) { state.activeIndex--; render(); } });
+    DOM.btnNext.addEventListener('click',  () => { if (state.activeIndex < state.slides.length - 1) { state.activeIndex++; render(); } });
+    DOM.btnMoveLeft.addEventListener('click',  () => { const i = state.activeIndex; if (i > 0) { [state.slides[i], state.slides[i-1]] = [state.slides[i-1], state.slides[i]]; state.activeIndex--; saveState(); render(); } });
+    DOM.btnMoveRight.addEventListener('click', () => { const i = state.activeIndex; if (i < state.slides.length-1) { [state.slides[i], state.slides[i+1]] = [state.slides[i+1], state.slides[i]]; state.activeIndex++; saveState(); render(); } });
     DOM.btnDeleteSlide.addEventListener('click', () => {
-        if (state.slides.length <= 1) return; // Non eliminare mai l'unica slide rimasta
+        if (state.slides.length <= 1) return;
         state.slides.splice(state.activeIndex, 1);
-        state.activeIndex = Math.max(0, state.activeIndex - 1); // ✅ Evita indice -1
-        saveState();
-        render();
+        state.activeIndex = Math.max(0, state.activeIndex - 1);
+        saveState(); render();
     });
 
-    // — Export e condivisione —
-
+    // Export e modali
     DOM.btnExport.addEventListener('click', exportAllSlides);
     DOM.btnNativeShare.addEventListener('click', share);
     DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
-
-    // — Modali —
-
     DOM.btnHelp.addEventListener('click',      () => DOM.helpModal.classList.add('active'));
     DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
+    DOM.shareModal.addEventListener('click', e => { if (e.target === DOM.shareModal) DOM.shareModal.classList.remove('active'); });
+    DOM.helpModal.addEventListener('click',  e => { if (e.target === DOM.helpModal)  DOM.helpModal.classList.remove('active'); });
+    DOM.btnRefresh.addEventListener('click', () => { window.location.href = `${window.location.pathname}?v=${Date.now()}`; });
 
-    // Chiudi modale cliccando sull'overlay scuro
-    DOM.shareModal.addEventListener('click', e => {
-        if (e.target === DOM.shareModal) DOM.shareModal.classList.remove('active');
-    });
-    DOM.helpModal.addEventListener('click', e => {
-        if (e.target === DOM.helpModal) DOM.helpModal.classList.remove('active');
-    });
-
-    // — Refresh forzato (bypass cache) —
-
-    DOM.btnRefresh.addEventListener('click', () => {
-        window.location.href = `${window.location.pathname}?v=${Date.now()}`;
-    });
-
-    // — Navigazione da tastiera (← →) —
-
+    // Tastiera ← →
     document.addEventListener('keydown', e => {
-        // Non intercettare quando il focus è su un campo di testo
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
-
-        if (e.key === 'ArrowLeft' && state.activeIndex > 0) {
-            state.activeIndex--;
-            render();
-        } else if (e.key === 'ArrowRight' && state.activeIndex < state.slides.length - 1) {
-            state.activeIndex++;
-            render();
-        }
+        if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+        if (e.key === 'ArrowLeft'  && state.activeIndex > 0)                       { state.activeIndex--; render(); }
+        if (e.key === 'ArrowRight' && state.activeIndex < state.slides.length - 1) { state.activeIndex++; render(); }
     });
 
-    // — Resize con debounce (il resize può sparare centinaia di eventi al secondo) —
-
+    // Resize con debounce
     window.addEventListener('resize', debounce(updateScale, 100));
 
     // ═══════════════════════════════════════════════════════════
-    // INIZIALIZZAZIONE
+    // AVVIO
     // ═══════════════════════════════════════════════════════════
-
-    window.addEventListener('load', () => {
-        loadState(); // Ripristina i metadati dalla sessione precedente
-        render();    // Prima renderizzazione completa
-    });
+    window.addEventListener('load', () => { loadState(); render(); });
     </script>
 </body>
 </html>
