@@ -36,6 +36,10 @@
         #preview-overlay-drag { transition:outline 0.15s; }
         #preview-overlay-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
         #preview-overlay-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:8px; border-radius:4px; }
+        /* Foreground image drag */
+        #preview-fg-drag { transition:outline 0.15s; }
+        #preview-fg-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:4px; border-radius:4px; }
+        #preview-fg-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:4px; border-radius:4px; }
         /* Bottoni allineamento testo */
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
         .align-btn.active { background:#0071E3; border-color:#0071E3; color:white; }
@@ -244,6 +248,27 @@
             <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2"/>
         </div>
 
+        <!-- Immagine in Primo Piano (overlay) -->
+        <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-500 uppercase">Immagine in Primo Piano</span>
+                <button id="btn-clear-fg-image" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+            </div>
+            <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+                <input type="file" id="fg-image-upload" accept="image/*" aria-label="Carica immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
+            </div>
+            <!-- Dimensione FG (visibile solo se caricata) -->
+            <div id="fg-image-size-container" style="display:none;" class="flex flex-col gap-1 mt-1">
+                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                    <label for="fg-image-size">Dimensione</label>
+                    <span id="fg-image-size-val" class="text-[#0071E3]">40%</span>
+                </div>
+                <input type="range" id="fg-image-size" min="10" max="90" step="1" value="40" class="w-full mt-1"/>
+            </div>
+            <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
+        </div>
+
         <!-- Campi testo copertina (solo slide 0) -->
         <div id="text-fields-container" class="flex flex-col gap-4 mt-2">
             <label class="sr-only" for="input-title">Titolo copertina</label>
@@ -361,12 +386,13 @@
             <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
             <p><strong>2. Testo sulla Slide:</strong> Attiva il toggle su qualsiasi slide. Scegli font, scrivi titolo e corpo, regola le dimensioni, scegli colore e allineamento, trascina il blocco nell'anteprima per posizionarlo.</p>
             <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione). Lo sfondo è indipendente per ogni slide.</p>
-            <p><strong>4. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
-            <p><strong>5. Mockup Instagram:</strong> Attiva il toggle "Feed" per vedere la slide nel contesto di un post Instagram.</p>
-            <p><strong>6. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta Carousel" genera tutte le slide.</p>
-            <p><strong>7. Duplica:</strong> Il tasto "⧉ Duplica" copia la slide attiva (immagine, sfondo, testo, posizione) e la inserisce subito dopo.</p>
-            <p><strong>8. Persistenza immagini:</strong> Le immagini di sfondo vengono salvate nel browser (IndexedDB) e ripristinate automaticamente alla riapertura.</p>
-            <p><strong>9. Tastiera:</strong> ← → per navigare tra le slide.</p>
+            <p><strong>4. Immagine in Primo Piano:</strong> Carica una seconda immagine sopra lo sfondo. Trascinala nell'anteprima per spostarla, regola la dimensione con lo slider.</p>
+            <p><strong>5. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
+            <p><strong>6. Mockup Instagram:</strong> Attiva il toggle "Feed" per vedere la slide nel contesto di un post Instagram.</p>
+            <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta Carousel" genera tutte le slide.</p>
+            <p><strong>8. Duplica:</strong> Il tasto "⧉ Duplica" copia la slide attiva (immagini, sfondo, testo, posizione) e la inserisce subito dopo.</p>
+            <p><strong>9. Persistenza immagini:</strong> Tutte le immagini (sfondo e primo piano) vengono salvate nel browser e ripristinate automaticamente.</p>
+            <p><strong>10. Tastiera:</strong> ← → per navigare tra le slide.</p>
         </div>
         <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
     </div>
@@ -468,6 +494,8 @@ const state = {
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
         titleFontSize: 110,
         textOverlay: null, // { enabled, font, title, body, titleSize, bodySize, color, align, x, y }
+        fgImage: null,     // base64 — l'immagine in primo piano (caricata su disco, non salvata in localStorage)
+        fgImageX: 50, fgImageY: 50, fgImageSize: 40,  // posizione in %, dimensione in % della larghezza
     }],
 };
 
@@ -494,6 +522,14 @@ const DOM = {
     zoomContainer:         document.getElementById('zoom-container'),
     inputZoom:             document.getElementById('input-zoom'),
     zoomValue:             document.getElementById('zoom-value'),
+    // — Foreground image —
+    fgImageUpload:         document.getElementById('fg-image-upload'),
+    fgImageUploadLabel:    document.getElementById('fg-image-upload-label'),
+    fgImageSizeContainer:  document.getElementById('fg-image-size-container'),
+    fgImageSize:           document.getElementById('fg-image-size'),
+    fgImageSizeVal:        document.getElementById('fg-image-size-val'),
+    fgImageHint:           document.getElementById('fg-image-hint'),
+    btnClearFgImage:       document.getElementById('btn-clear-fg-image'),
     inputTitle:            document.getElementById('input-title'),
     inputTitleFontSize:    document.getElementById('input-title-font-size'),
     titleFontSizeValue:    document.getElementById('title-font-size-value'),
@@ -610,6 +646,8 @@ function saveState() {
             zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
             gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
             titleFontSize: s.titleFontSize, textOverlay: s.textOverlay,
+            // Posizione e dimensione FG (l'immagine vera è in IndexedDB)
+            fgImageX: s.fgImageX, fgImageY: s.fgImageY, fgImageSize: s.fgImageSize,
         })),
     };
     try { localStorage.setItem(LS.state, JSON.stringify(toSave)); }
@@ -623,11 +661,14 @@ function loadState() {
         const saved = JSON.parse(raw);
         if (Array.isArray(saved.slides) && saved.slides.length > 0) {
             state.slides = saved.slides.map(s => ({
-                ...s, image: null,
+                ...s, image: null, fgImage: null,
                 bgMode: s.bgMode || 'solid',
                 gradColor1: s.gradColor1 || '#1a1a2e',
                 gradColor2: s.gradColor2 || '#e94560',
                 gradDir:    s.gradDir    || 'to bottom',
+                fgImageX:    s.fgImageX    ?? 50,
+                fgImageY:    s.fgImageY    ?? 50,
+                fgImageSize: s.fgImageSize ?? 40,
             }));
         }
     } catch (e) { console.warn('Impossibile caricare stato:', e); }
@@ -637,8 +678,10 @@ function loadState() {
 async function saveImagesToIDB() {
     for (const slide of state.slides) {
         try {
-            if (slide.image) await idbSet(slide.id, slide.image);
-            else             await idbDelete(slide.id);
+            if (slide.image)   await idbSet(slide.id, slide.image);
+            else               await idbDelete(slide.id);
+            if (slide.fgImage) await idbSet(slide.id + '_fg', slide.fgImage);
+            else               await idbDelete(slide.id + '_fg');
         } catch (e) { console.warn('idbSet error:', e); }
     }
 }
@@ -647,8 +690,10 @@ async function saveImagesToIDB() {
 async function loadImagesFromIDB() {
     for (const slide of state.slides) {
         try {
-            const img = await idbGet(slide.id);
-            if (img) slide.image = img;
+            const bg = await idbGet(slide.id);
+            if (bg) slide.image = bg;
+            const fg = await idbGet(slide.id + '_fg');
+            if (fg) slide.fgImage = fg;
         } catch (e) { console.warn('idbGet error:', e); }
     }
 }
@@ -656,6 +701,23 @@ async function loadImagesFromIDB() {
 // ═══════════════════════════════════════════════════════════
 // GENERAZIONE HTML SLIDE
 // ═══════════════════════════════════════════════════════════
+
+/**
+ * Genera l'HTML dell'immagine in primo piano (foreground).
+ * z-index:30 → sopra immagine sfondo e gradiente, sotto testo overlay (50).
+ */
+function generateFgImageHTML(slide, forPreview) {
+    if (!slide.fgImage) return '';
+    const x    = slide.fgImageX    ?? 50;
+    const y    = slide.fgImageY    ?? 50;
+    const size = slide.fgImageSize ?? 40;
+    const baseStyle = `position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);width:${size}%;z-index:30;pointer-events:auto;`;
+    const imgStyle  = `width:100%;height:auto;display:block;`;
+    const attrs = forPreview
+        ? `id="preview-fg-drag" style="${baseStyle}cursor:grab;user-select:none;"`
+        : `style="${baseStyle}"`;
+    return `<div ${attrs}><img src="${slide.fgImage}" alt="" style="${imgStyle}" draggable="false"></div>`;
+}
 
 function generateOverlayHTML(overlay, forPreview) {
     if (!overlay || !overlay.enabled) return '';
@@ -735,10 +797,11 @@ function generateSlideHTML(slide, index, forPreview = false) {
         ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.source)}</div>` : '';
 
     const overlayHTML = generateOverlayHTML(slide.textOverlay, forPreview);
+    const fgImageHTML = generateFgImageHTML(slide, forPreview);
 
     // Il div root usa background inline per supportare sia colore che gradiente
     const rootBgStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgColorFlat};`;
-    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${rootBgStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${overlayHTML}</div>`;
+    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${rootBgStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${fgImageHTML}${overlayHTML}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -772,6 +835,56 @@ function bindOverlayDrag() {
             el.style.top  = ny + '%';
             slide.textOverlay.x = nx;
             slide.textOverlay.y = ny;
+        }
+
+        function onEnd() {
+            el.classList.remove('dragging');
+            document.removeEventListener('mousemove',  onMove);
+            document.removeEventListener('touchmove',  onMove);
+            document.removeEventListener('mouseup',    onEnd);
+            document.removeEventListener('touchend',   onEnd);
+            saveState();
+        }
+
+        document.addEventListener('mousemove',  onMove);
+        document.addEventListener('touchmove',  onMove, { passive:false });
+        document.addEventListener('mouseup',    onEnd);
+        document.addEventListener('touchend',   onEnd);
+    }
+}
+
+/**
+ * Drag dell'immagine in primo piano nell'anteprima.
+ * Stessa logica dell'overlay testo: aggiorna direttamente il DOM
+ * durante il trascinamento e salva solo al rilascio.
+ */
+function bindFgImageDrag() {
+    const slide = state.slides[state.activeIndex];
+    if (!slide.fgImage) return;
+    const el = document.getElementById('preview-fg-drag');
+    if (!el) return;
+
+    el.addEventListener('mousedown',  onStart);
+    el.addEventListener('touchstart', onStart, { passive:false });
+
+    function onStart(e) {
+        e.preventDefault(); e.stopPropagation();
+        el.classList.add('dragging');
+        const rect  = DOM.previewWrapper.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        const cx    = ((slide.fgImageX ?? 50) / 100) * rect.width;
+        const cy    = ((slide.fgImageY ?? 50) / 100) * rect.height;
+        const ox    = touch.clientX - rect.left - cx;
+        const oy    = touch.clientY - rect.top  - cy;
+
+        function onMove(e) {
+            const t  = e.touches ? e.touches[0] : e;
+            const nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
+            const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
+            el.style.left = nx + '%';
+            el.style.top  = ny + '%';
+            slide.fgImageX = nx;
+            slide.fgImageY = ny;
         }
 
         function onEnd() {
@@ -826,7 +939,7 @@ function renderThumbnails() {
         btn.textContent = '+';
         btn.setAttribute('aria-label', 'Aggiungi slide');
         btn.addEventListener('click', () => {
-            state.slides.push({ id:`slide-${Date.now()}`, image:null, zoom:1, bgColor:'#333333', bgMode:'solid', gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom', textOverlay:null });
+            state.slides.push({ id:`slide-${Date.now()}`, image:null, zoom:1, bgColor:'#333333', bgMode:'solid', gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom', textOverlay:null, fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40 });
             state.activeIndex = state.slides.length - 1;
             saveState(); render();
         });
@@ -873,6 +986,17 @@ function renderEditor() {
     DOM.zoomValue.textContent = (slide.zoom || 1).toFixed(2) + 'x';
     DOM.bgUploadLabel.textContent = slide.image ? '✓ Immagine caricata — clicca per cambiarla' : 'Carica Immagine Sfondo';
 
+    // Foreground image
+    const hasFg = !!slide.fgImage;
+    DOM.fgImageUploadLabel.textContent = hasFg ? '✓ Immagine in primo piano caricata — clicca per cambiarla' : "Aggiungi un'immagine sopra lo sfondo";
+    DOM.fgImageSizeContainer.style.display = hasFg ? 'flex' : 'none';
+    DOM.fgImageHint.style.display          = hasFg ? 'block' : 'none';
+    DOM.btnClearFgImage.style.display      = hasFg ? 'block' : 'none';
+    if (hasFg) {
+        DOM.fgImageSize.value           = slide.fgImageSize ?? 40;
+        DOM.fgImageSizeVal.textContent  = (slide.fgImageSize ?? 40) + '%';
+    }
+
     if (isCover) {
         DOM.inputTitleFontSize.value       = slide.titleFontSize || 110;
         DOM.titleFontSizeValue.textContent = (slide.titleFontSize || 110) + 'px';
@@ -911,6 +1035,7 @@ function renderPreview() {
     DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex, true);
     updateScale();
     bindOverlayDrag();
+    bindFgImageDrag();
     // Aggiorna anche il mockup se visibile
     if (DOM.toggleMockup.checked) renderMockup();
 }
@@ -1065,6 +1190,40 @@ DOM.bgUpload.addEventListener('change', e => {
         saveState(); render();
     });
 });
+
+// Upload immagine in primo piano
+DOM.fgImageUpload.addEventListener('change', e => {
+    readImageAsBase64(e.target.files[0], async b => {
+        const slide = state.slides[state.activeIndex];
+        slide.fgImage = b;
+        // Centra se è la prima volta o se la posizione era stata persa
+        if (slide.fgImageX == null) slide.fgImageX = 50;
+        if (slide.fgImageY == null) slide.fgImageY = 50;
+        if (slide.fgImageSize == null) slide.fgImageSize = 40;
+        DOM.fgImageUpload.value = '';
+        await idbSet(slide.id + '_fg', b).catch(() => {});
+        saveState(); render();
+    });
+});
+
+// Slider dimensione FG
+DOM.fgImageSize.addEventListener('input', e => {
+    const v = parseInt(e.target.value, 10);
+    state.slides[state.activeIndex].fgImageSize = v;
+    DOM.fgImageSizeVal.textContent = v + '%';
+    // Aggiorna direttamente l'elemento nel DOM senza re-render completo (più fluido)
+    const el = document.getElementById('preview-fg-drag');
+    if (el) el.style.width = v + '%';
+    saveState();
+});
+
+// Rimuovi FG image
+DOM.btnClearFgImage.addEventListener('click', async () => {
+    const slide = state.slides[state.activeIndex];
+    slide.fgImage = null;
+    await idbDelete(slide.id + '_fg').catch(() => {});
+    saveState(); render();
+});
 DOM.logoUpload.addEventListener('change',      e => { readImageAsBase64(e.target.files[0], b => { state.logoBase64      = b; localStorage.setItem(LS.logo, b);      render(); }); });
 DOM.themeLogoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.themeLogoBase64 = b; localStorage.setItem(LS.themeLogo, b); render(); }); });
 DOM.newsUpload.addEventListener('change',      e => { readImageAsBase64(e.target.files[0], b => { state.newsBase64      = b; localStorage.setItem(LS.news, b);      render(); }); });
@@ -1191,6 +1350,7 @@ DOM.btnDeleteSlide.addEventListener('click', () => {
     if (state.slides.length <= 1) return;
     const id = state.slides[state.activeIndex].id;
     idbDelete(id).catch(() => {});
+    idbDelete(id + '_fg').catch(() => {});
     state.slides.splice(state.activeIndex, 1);
     state.activeIndex = Math.max(0, state.activeIndex - 1);
     saveState(); render();
@@ -1207,10 +1367,9 @@ DOM.btnDuplicateSlide.addEventListener('click', async () => {
         id: newId,
         textOverlay: src.textOverlay ? { ...src.textOverlay } : null,
     };
-    // Copia anche l'immagine in IndexedDB sotto il nuovo id
-    if (src.image) {
-        await idbSet(newId, src.image).catch(() => {});
-    }
+    // Copia anche le immagini in IndexedDB sotto il nuovo id
+    if (src.image)   await idbSet(newId,          src.image).catch(() => {});
+    if (src.fgImage) await idbSet(newId + '_fg',  src.fgImage).catch(() => {});
     state.slides.splice(state.activeIndex + 1, 0, copy);
     state.activeIndex++;
     saveState(); render();
