@@ -37,9 +37,9 @@
         #preview-overlay-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
         #preview-overlay-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:8px; border-radius:4px; }
         /* Foreground image drag */
-        #preview-fg-drag { transition:outline 0.15s; }
-        #preview-fg-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:4px; border-radius:4px; }
-        #preview-fg-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:4px; border-radius:4px; }
+        .preview-fg-drag { transition:outline 0.15s; }
+        .preview-fg-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:4px; border-radius:4px; }
+        .preview-fg-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:4px; border-radius:4px; }
         /* Cover text drag */
         #preview-cover-text-drag { transition:outline 0.15s; }
         #preview-cover-text-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
@@ -49,7 +49,6 @@
         /* RESPONSIVE — Ottimizzazioni mobile        */
         /* ═════════════════════════════════════════ */
 
-        /* Accordion: <details>/<summary> styling */
         details.accordion { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         details.accordion > summary {
             list-style: none; cursor: pointer; user-select: none;
@@ -66,106 +65,51 @@
         }
         details.accordion[open] > summary::after { transform: rotate(-135deg); }
         details.accordion > .accordion-body { padding: 0 20px 20px 20px; }
-        /* La summary annulla il padding del pannello, quindi compensiamo dentro */
         details.accordion .summary-meta { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-left: 8px; }
 
-        /* Strip thumbnail mobile (nascosta di default su desktop) */
         .mobile-thumb-strip { display: none; }
 
         /* MOBILE ONLY (< 768px) */
         @media (max-width: 767px) {
-            body {
-                flex-direction: column !important; /* Mantiene l'ordine naturale per il reorder con flex */
-                padding: 0 !important;
-                gap: 0 !important;
-            }
-            /* Wrapper per mantenere layout desktop ma consentire reorder dei figli su mobile */
-            .left-col {
-                display: contents; 
-            }
-            /* Header (Titolo e bottoni) su mobile in cima */
-            .header-group {
-                order: 1;
-                width: 100%;
-                padding: 16px 16px 0 16px;
-                background: #F5F5F7;
-                z-index: 101;
-            }
-            /* Pannello destro (anteprima) — sticky in alto, sotto l'header */
+            body { flex-direction: column !important; padding: 0 !important; gap: 0 !important; }
+            .left-col { display: contents; }
+            .header-group { order: 1; width: 100%; padding: 16px 16px 0 16px; background: #F5F5F7; z-index: 101; }
             .right-panel {
-                order: 2;
-                position: sticky;
-                top: 0;
-                z-index: 100;
-                background: #F5F5F7;
-                padding: 12px 16px 8px 16px;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-                gap: 8px !important;
-                /* Limite altezza per non occupare tutto */
+                order: 2; position: sticky; top: 0; z-index: 100; background: #F5F5F7;
+                padding: 12px 16px 8px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); gap: 8px !important;
                 max-height: 60vh;
             }
-            /* Pannello sinistro (controlli) in basso */
-            .left-panel {
-                order: 3;
-                width: 100% !important;
-                padding: 16px;
-                gap: 12px !important;
-            }
-            /* Anteprima ridimensionata */
-            #preview-wrapper {
-                max-width: 280px !important;
-                max-height: 40vh;
-            }
-            /* Mockup ridotto */
-            #mockup-wrapper {
-                max-width: 240px !important;
-            }
-            /* Header anteprima compatto */
+            .left-panel { order: 3; width: 100% !important; padding: 16px; gap: 12px !important; }
+            #preview-wrapper { max-width: 280px !important; max-height: 40vh; }
+            #mockup-wrapper { max-width: 240px !important; }
             .preview-header { padding: 8px 12px !important; }
             .preview-header h2 { font-size: 14px !important; }
             .preview-header button { padding: 6px 12px !important; font-size: 13px; }
-            /* Thumbnail strip compatta */
             .mobile-thumb-strip { display: flex !important; gap: 6px; overflow-x: auto; padding: 4px 0; }
             .mobile-thumb-strip > * { flex-shrink: 0; }
-            /* L'intestazione dell'app più compatta */
             .app-header h1 { font-size: 18px !important; }
             .app-header p { font-size: 11px !important; }
-            /* Accordion: tutti CHIUSI di default su mobile */
-            details.accordion:not([data-keep-open]) { /* (regola applicata via JS) */ }
         }
 
-        /* DESKTOP ONLY: il bottone fullscreen e la strip thumb mobile sono nascosti */
+        /* DESKTOP ONLY */
         @media (min-width: 768px) {
             .mobile-thumb-strip { display: none !important; }
-            .btn-fullscreen-preview { display: none !important; }
-            /* Su desktop, gli accordion sono SEMPRE aperti per non perdere usabilità */
-            details.accordion { /* gestito via JS per forzare open */ }
+            #btn-popup-editor { display: none !important; }
         }
 
-        /* FULLSCREEN MODE — l'anteprima copre tutto */
-        body.fullscreen-preview .left-col { display: none !important; }
-        body.fullscreen-preview .right-panel {
-            max-height: 100vh !important;
-            min-height: 100vh;
-            position: fixed !important;
-            top: 0; left: 0; right: 0; bottom: 0;
-            padding: 24px !important;
-            justify-content: center;
+        /* Modal Preview Styles */
+        #popup-editor-modal #preview-wrapper {
+            max-width: min(95vw, 65vh) !important;
+            max-height: 100% !important;
         }
-        body.fullscreen-preview #preview-wrapper {
-            max-width: min(95vw, 70vh) !important;
-            max-height: 85vh !important;
-        }
-        /* Bottoni allineamento testo */
+
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
         .align-btn.active { background:#0071E3; border-color:#0071E3; color:white; }
-        /* Progress bar export */
         #export-progress-bar { transition:width 0.3s ease; }
-        /* Mockup toggle */
         #mockup-wrapper { display:none; }
         #mockup-wrapper.active { display:block; }
 
-        /* Dark Mode (Apple minimal style) */
+        /* Dark Mode */
         body.dark-mode { background-color: #000000 !important; color: #F5F5F7 !important; }
         body.dark-mode .bg-\[\#F5F5F7\] { background-color: #000000 !important; }
         body.dark-mode .header-group, body.dark-mode .right-panel { background-color: #000000 !important; }
@@ -189,18 +133,16 @@
         body.dark-mode #mockup-wrapper svg { stroke: #EBEBF5 !important; }
         body.dark-mode #btn-export-single, body.dark-mode .align-btn:not(.active), body.dark-mode .grad-dir-btn:not(.active-dir) { background-color: #1C1C1E !important; color: #FFFFFF !important; border-color: #38383A !important; }
         body.dark-mode #btn-export-single:hover, body.dark-mode .align-btn:not(.active):hover, body.dark-mode .grad-dir-btn:not(.active-dir):hover { background-color: #2C2C2E !important; }
+        /* Popup editor dark mode fixes */
+        body.dark-mode #popup-editor-modal { background-color: #000000 !important; }
+        body.dark-mode #popup-controls { background-color: #1C1C1E !important; border-top-color: #38383A !important; }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PANNELLO SINISTRO (Controlli e Header Integrati)    -->
-<!-- ═══════════════════════════════════════════════════ -->
+<!-- PANNELLO SINISTRO (Controlli e Header Integrati) -->
 <div class="left-col w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
-
-    <!-- Title and Core Settings (Spostati all'inizio) -->
     <div class="header-group flex justify-between items-center w-full px-1">
-        <!-- Intestazione app -->
         <div class="app-header flex items-center gap-3">
             <img src="logo.png" alt="Logo" class="h-9 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">
             <div>
@@ -208,30 +150,22 @@
                 <p class="text-xs text-gray-400 font-medium">Crea i tuoi caroselli Instagram</p>
             </div>
         </div>
-
-        <!-- Bottoni Extra (Refresh, Guida) -->
         <div class="flex items-center gap-2">
-            <button id="btn-theme-toggle" aria-label="Modalità scura" title="Modalità scura"
-                    class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
+            <button id="btn-theme-toggle" aria-label="Modalità scura" title="Modalità scura" class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
                 <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </button>
-            <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app"
-                    class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
+            <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app" class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
             </button>
             <button id="btn-help" class="text-xs font-medium text-[#0071E3] hover:underline bg-gray-200 px-3 py-1 rounded-full">Guida</button>
         </div>
     </div>
 
-    <!-- Resto dei controlli (.left-panel) -->
+    <!-- Controlli -->
     <div class="left-panel w-full flex flex-col gap-6">
-
-        <!-- Impostazioni Brand -->
         <details class="accordion" open>
-            <summary>
-                <span>Impostazioni Brand</span>
-            </summary>
+            <summary><span>Impostazioni Brand</span></summary>
             <div class="accordion-body flex flex-col gap-4">
                 <div>
                     <div class="flex justify-between mb-2">
@@ -257,20 +191,16 @@
             </div>
         </details>
 
-        <!-- Testo sulla Slide -->
         <details class="accordion">
             <summary><span>Testo sulla Slide</span></summary>
             <div class="accordion-body flex flex-col gap-4">
-                <p class="text-xs text-gray-500 -mt-2">Tre layout indipendenti, attivabili insieme o singolarmente</p>
+                <p class="text-xs text-gray-500 -mt-2">Layout indipendenti, attivabili insieme o singolarmente</p>
 
-            <!-- ─────────────────────────────────────────── -->
-            <!-- Sotto-sezione 1: Layout Titolo + Sottotitolo -->
-            <!-- ─────────────────────────────────────────── -->
             <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="font-semibold text-sm text-gray-900">Layout Titolo + Sottotitolo</h3>
-                        <p class="text-xs text-gray-500">Per copertine con titolo grande, sottotitolo e fonte</p>
+                        <p class="text-xs text-gray-500">Per copertine con titolo grande e fonte</p>
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <span id="cover-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
@@ -279,7 +209,6 @@
                     </label>
                 </div>
                 <div id="cover-fields" style="display:none;" class="flex flex-col gap-3">
-                    <!-- Titolo -->
                     <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
                     <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
@@ -288,15 +217,13 @@
                         </div>
                         <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
                     </div>
-                    <!-- Sottotitolo -->
                     <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-                    <!-- Fonte -->
-                    <input type="text" id="input-source" placeholder="Fonte (es. theverge.com) — opzionale" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-                    <!-- Stile Copertina (sotto-toggle) -->
+                    <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    
                     <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-3 bg-blue-50 rounded-lg border border-blue-100">
                         <div>
                             <span class="text-sm font-semibold text-blue-900">Stile Copertina</span>
-                            <p class="text-xs text-blue-700 mt-0.5">Maiuscolo automatico, gradiente scuro, badge News</p>
+                            <p class="text-xs text-blue-700 mt-0.5">Maiuscolo, gradiente scuro, badge News</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span id="cover-style-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
@@ -308,14 +235,11 @@
                 </div>
             </div>
 
-            <!-- ─────────────────────────────────────────── -->
-            <!-- Sotto-sezione 2: Testo Libero (overlay)      -->
-            <!-- ─────────────────────────────────────────── -->
             <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="font-semibold text-sm text-gray-900">Testo Libero</h3>
-                        <p class="text-xs text-gray-500">Titolo + corpo con font, colore e allineamento personalizzabili</p>
+                        <p class="text-xs text-gray-500">Titolo + corpo personalizzabili</p>
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer select-none">
                         <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
@@ -324,7 +248,6 @@
                     </label>
                 </div>
                 <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
-                    <!-- Font -->
                     <div class="flex flex-col gap-1">
                         <label for="overlay-font" class="text-xs font-bold text-gray-500 uppercase">Font</label>
                         <select id="overlay-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
@@ -335,7 +258,6 @@
                             <option value="DM Sans">DM Sans</option>
                         </select>
                     </div>
-                    <!-- Titolo -->
                     <div class="flex flex-col gap-1">
                         <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
                         <input type="text" id="overlay-title-input" placeholder="Testo grande" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
@@ -347,7 +269,6 @@
                         </div>
                         <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2"/>
                     </div>
-                    <!-- Corpo -->
                     <div class="flex flex-col gap-1">
                         <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
                         <textarea id="overlay-body-input" placeholder="Testo corpo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
@@ -359,7 +280,6 @@
                         </div>
                         <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2"/>
                     </div>
-                    <!-- Colore -->
                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
                         <div class="flex items-center gap-3">
@@ -367,7 +287,6 @@
                             <input type="color" id="overlay-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
                         </div>
                     </div>
-                    <!-- Allineamento -->
                     <div class="flex flex-col gap-2">
                         <span class="text-xs font-bold text-gray-500 uppercase">Allineamento</span>
                         <div class="flex gap-2">
@@ -382,7 +301,6 @@
             </div>
         </details>
 
-        <!-- Gestione Slides -->
         <details class="accordion" open data-keep-open>
             <summary>
                 <span id="slide-count-title">Slides (1/20)</span>
@@ -396,7 +314,6 @@
             </div>
         </details>
 
-        <!-- Editor Slide -->
         <details class="accordion" open data-keep-open>
             <summary>
                 <span id="editor-title">Modifica Slide 1</span>
@@ -408,24 +325,23 @@
                 </div>
             </summary>
             <div class="accordion-body flex flex-col gap-4">
-                <!-- Upload sfondo -->
+            
+            <!-- Upload sfondo -->
             <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
                 <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                 <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
             </div>
 
-            <!-- Sfondo: colore piatto o gradiente -->
+            <!-- Sfondo controlli -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex gap-2 text-xs font-bold">
                     <button id="bg-mode-solid"    class="flex-1 py-1.5 rounded bg-[#0071E3] text-white transition-all" aria-pressed="true">Colore Piatto</button>
                     <button id="bg-mode-gradient" class="flex-1 py-1.5 rounded bg-white text-gray-600 border border-gray-200 transition-all" aria-pressed="false">Gradiente</button>
                 </div>
-                <!-- Colore piatto -->
                 <div id="bg-solid-row" class="flex items-center justify-between">
                     <label for="input-bg-color" class="text-xs font-bold text-gray-500 uppercase">Colore</label>
                     <input type="color" id="input-bg-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
                 </div>
-                <!-- Gradiente -->
                 <div id="bg-gradient-rows" style="display:none;" class="flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <label for="input-grad-color1" class="text-xs font-bold text-gray-500 uppercase">Colore 1</label>
@@ -455,42 +371,33 @@
                 <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2"/>
             </div>
 
-            <!-- Immagine in Primo Piano (overlay) -->
+            <!-- Immagini in Primo Piano (Multiple) -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-500 uppercase">Immagine in Primo Piano</span>
-                    <button id="btn-clear-fg-image" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                    <span class="text-xs font-bold text-gray-500 uppercase">Immagini in Primo Piano</span>
                 </div>
                 <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
-                    <input type="file" id="fg-image-upload" accept="image/*" aria-label="Carica immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <input type="file" id="fg-image-upload" accept="image/*" aria-label="Aggiungi immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                     <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
                 </div>
-                <!-- Dimensione FG (visibile solo se caricata) -->
-                <div id="fg-image-size-container" style="display:none;" class="flex flex-col gap-1 mt-1">
-                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                        <label for="fg-image-size">Dimensione</label>
-                        <span id="fg-image-size-val" class="text-[#0071E3]">40%</span>
-                    </div>
-                    <input type="range" id="fg-image-size" min="10" max="100" step="1" value="40" class="w-full mt-1"/>
-                </div>
-                <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
+                
+                <!-- Lista immagini in primo piano aggiunte -->
+                <div id="fg-images-list" class="flex flex-col gap-2 empty:hidden"></div>
+                
+                <p class="text-xs text-blue-700 font-medium mt-1">Trascina le immagini nell'anteprima per riposizionarle</p>
             </div>
 
             </div>
         </details>
     </div>
-</div><!-- fine pannello sinistro combinato -->
+</div>
 
-<!-- ═══════════════════════════════════════════════════ -->
-<!-- PANNELLO DESTRO — ANTEPRIMA                        -->
-<!-- ═══════════════════════════════════════════════════ -->
-<div class="right-panel flex-grow flex flex-col items-center gap-6">
+<!-- PANNELLO DESTRO — ANTEPRIMA -->
+<div class="right-panel flex-grow flex flex-col items-center gap-6 relative">
 
-    <!-- Barra superiore anteprima -->
     <div class="preview-header w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
         <div class="flex items-center gap-3">
             <h2 class="font-semibold text-lg text-gray-900">Anteprima</h2>
-            <!-- Toggle mockup Instagram -->
             <label class="flex items-center gap-1.5 cursor-pointer select-none" title="Mostra mockup Instagram">
                 <div class="toggle-track" id="mockup-toggle-track"><div class="toggle-thumb"></div></div>
                 <span class="text-xs font-medium text-gray-500" id="mockup-toggle-label">Feed</span>
@@ -498,26 +405,22 @@
             </label>
         </div>
         <div class="flex gap-2 items-center">
-            <!-- Bottone fullscreen (solo mobile) -->
-            <button id="btn-fullscreen-preview" class="btn-fullscreen-preview p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-full transition-all" aria-label="Anteprima a tutto schermo" title="Anteprima fullscreen">
-                <svg id="icon-fullscreen-enter" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-                <svg id="icon-fullscreen-exit" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+            <!-- Tasto Pop-up Editor (Sostituisce il vecchio fullscreen per Mobile) -->
+            <button id="btn-popup-editor" class="p-2 text-[#0071E3] bg-blue-50 hover:bg-blue-100 rounded-full transition-all" aria-label="Modifica in Pop-up" title="Modifica in Pop-up (Mobile)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
             </button>
-            <!-- Esporta slide singola -->
-            <button id="btn-export-single" class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed" title="Esporta solo questa slide">↓ Singola</button>
-            <!-- Esporta tutto -->
-            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">Esporta Carousel</button>
+            <button id="btn-export-single" class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed">↓ Singola</button>
+            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">Esporta</button>
         </div>
     </div>
 
-    <!-- Strip thumbnail mobile + bottoni navigazione (visibile solo su mobile) -->
+    <!-- Mobile strip -->
     <div class="mobile-thumb-strip w-full bg-white border border-black/[0.08] rounded-[10px] p-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] items-center">
-        <button id="btn-prev-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0" aria-label="Slide precedente">&larr;</button>
+        <button id="btn-prev-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0">&larr;</button>
         <div id="thumbnails-container-mobile" class="flex gap-2 overflow-x-auto px-1 custom-scrollbar" style="flex:1;"></div>
-        <button id="btn-next-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0" aria-label="Slide successiva">&rarr;</button>
+        <button id="btn-next-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0">&rarr;</button>
     </div>
 
-    <!-- Progress bar export (nascosta di default) -->
     <div id="export-progress-container" style="display:none;" class="w-full bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
         <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
             <span id="export-progress-label">Generazione slide 1/1…</span>
@@ -528,17 +431,17 @@
         </div>
     </div>
 
-    <!-- Anteprima normale -->
-    <div id="preview-wrapper" role="img" aria-label="Anteprima slide attiva"
-         class="w-full max-w-[500px] relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden"
-         style="aspect-ratio:4/5;">
-        <div id="preview-container" class="absolute top-0 left-0 origin-top-left"></div>
+    <!-- L'host originale dell'anteprima -->
+    <div id="original-preview-host" class="w-full max-w-[500px] flex justify-center">
+        <div id="preview-wrapper" role="img" aria-label="Anteprima slide attiva"
+             class="w-full relative bg-white border border-black/[0.08] rounded-[12px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden"
+             style="aspect-ratio:4/5;">
+            <div id="preview-container" class="absolute top-0 left-0 origin-top-left"></div>
+        </div>
     </div>
 
-    <!-- Mockup Instagram (nascosto finché toggle è off) -->
     <div id="mockup-wrapper" class="w-full max-w-[400px]">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-            <!-- Header profilo -->
             <div class="flex items-center gap-3 p-3 border-b border-gray-100">
                 <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center flex-shrink-0">
                     <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
@@ -551,11 +454,9 @@
                 </div>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
             </div>
-            <!-- Slide nel mockup -->
             <div style="aspect-ratio:4/5; position:relative; overflow:hidden; background:#1a1a1a;">
                 <div id="mockup-preview-container" class="absolute top-0 left-0 origin-top-left"></div>
             </div>
-            <!-- Footer azioni -->
             <div class="p-3">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex gap-4">
@@ -569,42 +470,49 @@
             </div>
         </div>
     </div>
-
-</div><!-- fine pannello destro -->
+</div>
 
 <div id="export-nodes" aria-hidden="true"></div>
 
+<!-- MODALE: POP-UP EDITOR MOBILE -->
+<div id="popup-editor-modal" class="modal fixed inset-0 z-[10000] bg-[#F5F5F7] flex-col items-center justify-start">
+    <div class="w-full flex justify-between items-center bg-white p-4 shadow-sm z-20 flex-shrink-0">
+        <h3 class="font-bold text-lg">Modifica Layout</h3>
+        <button id="btn-close-popup" class="text-[#0071E3] font-medium px-4 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-all">Chiudi</button>
+    </div>
+    <!-- Area che ospiterà momentaneamente l'anteprima gigante -->
+    <div id="popup-preview-host" class="w-full flex items-center justify-center p-4 overflow-hidden relative" style="height: calc(100vh - 60px - 35vh);">
+        <!-- preview-wrapper injected here during edit mode -->
+    </div>
+    <!-- Controlli contestuali rigenerati dinamicamente -->
+    <div id="popup-controls" class="w-full bg-white border-t border-gray-200 p-4 overflow-y-auto flex flex-col gap-4 z-20 custom-scrollbar flex-shrink-0" style="height: 35vh; box-shadow: 0 -4px 16px rgba(0,0,0,0.05);">
+        <!-- Sliders injected dynamically -->
+    </div>
+</div>
+
 <!-- MODALE: GUIDA -->
-<div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col"
-     role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+<div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
+        <h3 class="text-2xl font-bold mb-4">Guida all'uso</h3>
         <div class="space-y-4 text-sm text-gray-700">
             <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
-            <p><strong>2. Testo sulla Slide:</strong> Tre layout indipendenti, attivabili insieme o singolarmente su qualsiasi slide:</p>
-            <ul class="ml-4 space-y-1 text-xs list-disc">
-                <li><strong>Layout Titolo + Sottotitolo:</strong> per copertine con titolo grande, sottotitolo e fonte. Trascina il blocco nell'anteprima per riposizionarlo.</li>
-                <li><strong>Stile Copertina:</strong> sotto-opzione del precedente. Attiva maiuscolo automatico, gradiente scuro per leggibilità e badge News sopra il titolo.</li>
-                <li><strong>Testo Libero:</strong> titolo + corpo con font, dimensione, colore e allineamento personalizzabili. Anche questo trascinabile.</li>
-            </ul>
-            <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione). Lo sfondo è indipendente per ogni slide.</p>
-            <p><strong>4. Immagine in Primo Piano:</strong> Carica una seconda immagine sopra lo sfondo. Trascinala nell'anteprima per spostarla, regola la dimensione con lo slider.</p>
-            <p><strong>5. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
-            <p><strong>6. Mockup Instagram:</strong> Attiva il toggle "Feed" per vedere la slide nel contesto di un post Instagram.</p>
-            <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta Carousel" genera tutte le slide.</p>
-            <p><strong>8. Duplica:</strong> Il tasto "⧉ Duplica" copia la slide attiva (immagini, sfondo, testo, posizione) e la inserisce subito dopo.</p>
-            <p><strong>9. Persistenza immagini:</strong> Tutte le immagini (sfondo e primo piano) vengono salvate nel browser e ripristinate automaticamente.</p>
-            <p><strong>10. Tastiera:</strong> ← → per navigare tra le slide.</p>
+            <p><strong>2. Testo sulla Slide:</strong> Due layout indipendenti. Trascinali nell'anteprima per riposizionarli.</p>
+            <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione).</p>
+            <p><strong>4. Immagini in Primo Piano Multiple:</strong> Carica quante immagini vuoi sopra lo sfondo. Trascinale nell'anteprima per spostarle, regola la loro dimensione dai pannelli o tramite la Modifica in Pop-up.</p>
+            <p><strong>5. Modifica in Pop-up (Mobile):</strong> Usa il tasto con le freccette blu nell'area Anteprima per aprire una vista a schermo intero confortevole dove trascinare le immagini e regolarne la grandezza al volo.</p>
+            <p><strong>6. Mockup Instagram:</strong> Attiva "Feed" per vedere la slide nel contesto di un post.</p>
+            <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
+            <p><strong>8. Duplica:</strong> Il tasto "⧉" copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
+            <p><strong>9. Persistenza:</strong> Tutte le immagini vengono salvate nel browser (IndexedDB) e ripristinate automaticamente.</p>
         </div>
         <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
     </div>
 </div>
 
 <!-- MODALE: EXPORT -->
-<div id="share-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col"
-     role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+<div id="share-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh]">
-        <h3 id="share-modal-title" class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
+        <h3 class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
         <p class="share-description text-sm text-gray-600 mb-4">Usa il tasto blu per salvare le immagini.</p>
         <div id="rendered-previews" class="flex gap-4 overflow-x-auto pb-4 custom-scrollbar mb-4 bg-gray-50 p-4 rounded-xl border"></div>
         <div class="flex flex-col sm:flex-row gap-3">
@@ -615,17 +523,12 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
 // COSTANTI
-// ═══════════════════════════════════════════════════════════
-
-const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const MAX_SLIDES = 20;
 const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state' };
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
 
-// Font disponibili per l'overlay
 const FONTS = {
     'Bebas Neue':      "'Bebas Neue',sans-serif",
     'Oswald':          "'Oswald',sans-serif",
@@ -634,12 +537,8 @@ const FONTS = {
     'DM Sans':         "'DM Sans',sans-serif",
 };
 
-// ═══════════════════════════════════════════════════════════
-// INDEXEDDB — Persistenza immagini di sfondo
-// ═══════════════════════════════════════════════════════════
-
+// INDEXEDDB
 let idb = null;
-
 function openIDB() {
     return new Promise((resolve, reject) => {
         const req = indexedDB.open(IDB_NAME, IDB_VER);
@@ -648,7 +547,6 @@ function openIDB() {
         req.onerror    = e => reject(e.target.error);
     });
 }
-
 function idbSet(key, value) {
     if (!idb) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -658,7 +556,6 @@ function idbSet(key, value) {
         req.onerror   = e => reject(e.target.error);
     });
 }
-
 function idbGet(key) {
     if (!idb) return Promise.resolve(null);
     return new Promise((resolve, reject) => {
@@ -667,7 +564,6 @@ function idbGet(key) {
         req.onerror   = e => reject(e.target.error);
     });
 }
-
 function idbDelete(key) {
     if (!idb) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -678,10 +574,7 @@ function idbDelete(key) {
     });
 }
 
-// ═══════════════════════════════════════════════════════════
 // STATO
-// ═══════════════════════════════════════════════════════════
-
 const state = {
     activeIndex:   0,
     isExporting:   false,
@@ -691,27 +584,17 @@ const state = {
     newsBase64:      localStorage.getItem(LS.news)      || null,
     slides: [{
         id: 'slide-0', image: null,
-        // Layout Titolo+Sottotitolo (ex-copertina)
-        coverEnabled: true,     // toggle "Layout Titolo+Sottotitolo"
-        coverStyle:   true,     // toggle "Stile Copertina" (uppercase, gradiente, badge)
+        coverEnabled: true, coverStyle: true,
         title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
-        titleFontSize: 110,
-        coverTextX: 5.5, coverTextY: 60,
-        // Sfondo
+        titleFontSize: 110, coverTextX: 5.5, coverTextY: 60,
         zoom: 1, bgColor: '#333333', bgMode: 'solid',
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
-        // Overlay testo libero
         textOverlay: null,
-        // Foreground image
-        fgImage: null,
-        fgImageX: 50, fgImageY: 50, fgImageSize: 40,
+        fgImages: [], // Multi-immagini: [{id, url, x, y, size}]
     }],
 };
 
-// ═══════════════════════════════════════════════════════════
 // RIFERIMENTI DOM
-// ═══════════════════════════════════════════════════════════
-
 const DOM = {
     thumbnailsContainer:   document.getElementById('thumbnails-container'),
     editorTitle:           document.getElementById('editor-title'),
@@ -731,20 +614,17 @@ const DOM = {
     zoomContainer:         document.getElementById('zoom-container'),
     inputZoom:             document.getElementById('input-zoom'),
     zoomValue:             document.getElementById('zoom-value'),
-    // — Foreground image —
+    
+    // Foreground images multiple
     fgImageUpload:         document.getElementById('fg-image-upload'),
     fgImageUploadLabel:    document.getElementById('fg-image-upload-label'),
-    fgImageSizeContainer:  document.getElementById('fg-image-size-container'),
-    fgImageSize:           document.getElementById('fg-image-size'),
-    fgImageSizeVal:        document.getElementById('fg-image-size-val'),
-    fgImageHint:           document.getElementById('fg-image-hint'),
-    btnClearFgImage:       document.getElementById('btn-clear-fg-image'),
+    fgImagesList:          document.getElementById('fg-images-list'),
+
     inputTitle:            document.getElementById('input-title'),
     inputTitleFontSize:    document.getElementById('input-title-font-size'),
     titleFontSizeValue:    document.getElementById('title-font-size-value'),
     inputBody:             document.getElementById('input-body'),
     inputSource:           document.getElementById('input-source'),
-    // — Layout Titolo+Sottotitolo —
     toggleCoverLayout:     document.getElementById('toggle-cover-layout'),
     coverToggleTrack:      document.getElementById('cover-toggle-track'),
     coverToggleLabel:      document.getElementById('cover-toggle-label'),
@@ -752,13 +632,23 @@ const DOM = {
     toggleCoverStyle:      document.getElementById('toggle-cover-style'),
     coverStyleToggleTrack: document.getElementById('cover-style-toggle-track'),
     coverStyleToggleLabel: document.getElementById('cover-style-toggle-label'),
+    
     previewContainer:      document.getElementById('preview-container'),
     previewWrapper:        document.getElementById('preview-wrapper'),
+    originalPreviewHost:   document.getElementById('original-preview-host'),
     mockupPreviewContainer:document.getElementById('mockup-preview-container'),
     mockupWrapper:         document.getElementById('mockup-wrapper'),
     toggleMockup:          document.getElementById('toggle-mockup'),
     mockupToggleTrack:     document.getElementById('mockup-toggle-track'),
     mockupToggleLabel:     document.getElementById('mockup-toggle-label'),
+    
+    // Popup Editor
+    popupEditorModal:      document.getElementById('popup-editor-modal'),
+    popupPreviewHost:      document.getElementById('popup-preview-host'),
+    popupControls:         document.getElementById('popup-controls'),
+    btnPopupEditor:        document.getElementById('btn-popup-editor'),
+    btnClosePopup:         document.getElementById('btn-close-popup'),
+
     exportNodesContainer:  document.getElementById('export-nodes'),
     slideCountTitle:       document.getElementById('slide-count-title'),
     btnPrev:               document.getElementById('btn-prev'),
@@ -766,21 +656,20 @@ const DOM = {
     btnPrevMobile:         document.getElementById('btn-prev-mobile'),
     btnNextMobile:         document.getElementById('btn-next-mobile'),
     thumbnailsContainerMobile: document.getElementById('thumbnails-container-mobile'),
-    btnFullscreenPreview:  document.getElementById('btn-fullscreen-preview'),
-    iconFullscreenEnter:   document.getElementById('icon-fullscreen-enter'),
-    iconFullscreenExit:    document.getElementById('icon-fullscreen-exit'),
     btnExport:             document.getElementById('btn-export'),
     btnExportSingle:       document.getElementById('btn-export-single'),
     exportProgressContainer: document.getElementById('export-progress-container'),
     exportProgressBar:     document.getElementById('export-progress-bar'),
     exportProgressLabel:   document.getElementById('export-progress-label'),
     exportProgressPct:     document.getElementById('export-progress-pct'),
+    
     logoUpload:            document.getElementById('logo-upload'),
     themeLogoUpload:       document.getElementById('theme-logo-upload'),
     newsUpload:            document.getElementById('news-upload'),
     btnClearLogo:          document.getElementById('btn-clear-logo'),
     btnClearThemeLogo:     document.getElementById('btn-clear-theme-logo'),
     btnClearNews:          document.getElementById('btn-clear-news'),
+    
     shareModal:            document.getElementById('share-modal'),
     renderedPreviews:      document.getElementById('rendered-previews'),
     btnCloseShare:         document.getElementById('btn-close-share'),
@@ -792,7 +681,7 @@ const DOM = {
     iconSun:               document.getElementById('icon-sun'),
     helpModal:             document.getElementById('help-modal'),
     btnCloseHelp:          document.getElementById('btn-close-help'),
-    // Overlay
+    
     toggleTextOverlay:     document.getElementById('toggle-text-overlay'),
     overlayToggleTrack:    document.getElementById('overlay-toggle-track'),
     overlayToggleLabel:    document.getElementById('overlay-toggle-label'),
@@ -810,80 +699,31 @@ const DOM = {
     gradDirBtns:           document.querySelectorAll('.grad-dir-btn'),
 };
 
-// ═══════════════════════════════════════════════════════════
 // UTILITY
-// ═══════════════════════════════════════════════════════════
+function escapeHtml(str) { const el = document.createElement('div'); el.appendChild(document.createTextNode(str || '')); return el.innerHTML; }
+function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
+function readImageAsBase64(file, cb) { if(!file)return; const r = new FileReader(); r.onload = e => cb(e.target.result); r.readAsDataURL(file); }
+function preloadImage(src) { if(!src)return Promise.resolve(); return new Promise(resolve => { const img = new Image(); img.onload=img.onerror=resolve; img.src=src; }); }
+function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOverlay)s.textOverlay={enabled:true,font:'Bebas Neue',title:'',body:'',titleSize:80,bodySize:40,color:'#ffffff',align:'left',x:50,y:50}; return s.textOverlay; }
+function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
+function generateId() { return Math.random().toString(36).substr(2, 9); }
 
-function escapeHtml(str) {
-    const el = document.createElement('div');
-    el.appendChild(document.createTextNode(str || ''));
-    return el.innerHTML;
-}
-
-function debounce(fn, ms = 150) {
-    let t;
-    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-}
-
-function readImageAsBase64(file, cb) {
-    if (!file) return;
-    const r = new FileReader();
-    r.onload = e => cb(e.target.result);
-    r.readAsDataURL(file);
-}
-
-function preloadImage(src) {
-    if (!src) return Promise.resolve();
-    return new Promise(resolve => {
-        const img = new Image();
-        img.onload = img.onerror = resolve;
-        img.src = src;
-    });
-}
-
-function ensureOverlay() {
-    const slide = state.slides[state.activeIndex];
-    if (!slide.textOverlay) {
-        slide.textOverlay = { enabled:true, font:'Bebas Neue', title:'', body:'', titleSize:80, bodySize:40, color:'#ffffff', align:'left', x:50, y:50 };
-    }
-    return slide.textOverlay;
-}
-
-// Genera il background CSS (piatto o gradiente) per una slide
-function slideBg(slide) {
-    if (slide.bgMode === 'gradient') {
-        const c1  = slide.gradColor1 || '#1a1a2e';
-        const c2  = slide.gradColor2 || '#e94560';
-        const dir = slide.gradDir    || 'to bottom';
-        return `linear-gradient(${dir},${c1},${c2})`;
-    }
-    return slide.bgColor || '#333333';
-}
-
-// ═══════════════════════════════════════════════════════════
-// PERSISTENZA — localStorage + IndexedDB
-// ═══════════════════════════════════════════════════════════
-
+// PERSISTENZA
 function saveState() {
     const toSave = {
         slides: state.slides.map(s => ({
-            id: s.id,
-            // Layout copertina e relativo stile (flag per-slide)
-            coverEnabled: s.coverEnabled, coverStyle: s.coverStyle,
-            title: s.title, body: s.body, source: s.source,
-            titleFontSize: s.titleFontSize,
+            id: s.id, coverEnabled: s.coverEnabled, coverStyle: s.coverStyle,
+            title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
             coverTextX: s.coverTextX, coverTextY: s.coverTextY,
-            // Sfondo
             zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
             gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
-            // Overlay testo libero
             textOverlay: s.textOverlay,
-            // Foreground image (metadati)
-            fgImageX: s.fgImageX, fgImageY: s.fgImageY, fgImageSize: s.fgImageSize,
+            // Rimuovi grandi base64 URL dal localStorage per non bloccarlo
+            fgImages: (s.fgImages || []).map(f => ({ id: f.id, url: null, x: f.x, y: f.y, size: f.size })),
+            hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
         })),
     };
-    try { localStorage.setItem(LS.state, JSON.stringify(toSave)); }
-    catch (e) { console.warn('localStorage quota:', e); }
+    try { localStorage.setItem(LS.state, JSON.stringify(toSave)); } catch (e) { console.warn('localStorage quota:', e); }
 }
 
 function loadState() {
@@ -892,491 +732,270 @@ function loadState() {
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (Array.isArray(saved.slides) && saved.slides.length > 0) {
-            state.slides = saved.slides.map((s, idx) => ({
-                ...s, image: null, fgImage: null,
-                // Migrazione retro-compatibile: vecchie slide non avevano coverEnabled.
-                // Lo stato precedente era: solo slide 0 = copertina → assumiamo che la prima slide
-                // di una sessione vecchia avesse l'effetto copertina attivo.
-                coverEnabled: s.coverEnabled ?? (idx === 0),
-                coverStyle:   s.coverStyle   ?? (idx === 0),
-                bgMode:       s.bgMode || 'solid',
-                gradColor1:   s.gradColor1 || '#1a1a2e',
-                gradColor2:   s.gradColor2 || '#e94560',
-                gradDir:      s.gradDir    || 'to bottom',
-                fgImageX:     s.fgImageX    ?? 50,
-                fgImageY:     s.fgImageY    ?? 50,
-                fgImageSize:  s.fgImageSize ?? 40,
-            }));
+            state.slides = saved.slides.map((s, idx) => {
+                const pSlide = {
+                    ...s, image: null, fgImages: s.fgImages || [],
+                    coverEnabled: s.coverEnabled ?? (idx === 0),
+                    coverStyle:   s.coverStyle   ?? (idx === 0),
+                    bgMode:       s.bgMode || 'solid',
+                    gradColor1:   s.gradColor1 || '#1a1a2e',
+                    gradColor2:   s.gradColor2 || '#e94560',
+                    gradDir:      s.gradDir    || 'to bottom',
+                };
+                // Retro-compatibilità vecchia immagine singola in localStorage
+                if (s.fgImageX !== undefined && pSlide.fgImages.length === 0 && (s.hasLegacyFg || s.fgImageSize)) {
+                    pSlide.fgImages.push({ id: 'fg-legacy', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40 });
+                }
+                return pSlide;
+            });
         }
-    } catch (e) { console.warn('Impossibile caricare stato:', e); }
+    } catch (e) { console.warn('Caricamento stato fallito:', e); }
 }
 
-/** Salva tutte le immagini di sfondo in IndexedDB */
-async function saveImagesToIDB() {
-    for (const slide of state.slides) {
-        try {
-            if (slide.image)   await idbSet(slide.id, slide.image);
-            else               await idbDelete(slide.id);
-            if (slide.fgImage) await idbSet(slide.id + '_fg', slide.fgImage);
-            else               await idbDelete(slide.id + '_fg');
-        } catch (e) { console.warn('idbSet error:', e); }
-    }
-}
-
-/** Ripristina le immagini di sfondo da IndexedDB */
 async function loadImagesFromIDB() {
     for (const slide of state.slides) {
         try {
             const bg = await idbGet(slide.id);
             if (bg) slide.image = bg;
-            const fg = await idbGet(slide.id + '_fg');
-            if (fg) slide.fgImage = fg;
+            
+            // Multiple FG images (nuova struttura)
+            const fgs = await idbGet(slide.id + '_fgs');
+            if (fgs && Array.isArray(fgs)) {
+                fgs.forEach(savedFg => {
+                    const target = slide.fgImages.find(f => f.id === savedFg.id);
+                    if (target) target.url = savedFg.url;
+                    else if (savedFg.url) slide.fgImages.push({ id: savedFg.id, url: savedFg.url, x: 50, y: 50, size: 40 });
+                });
+            }
+            
+            // Legacy single FG image (vecchia struttura)
+            const legacyFg = await idbGet(slide.id + '_fg');
+            if (legacyFg) {
+                let target = slide.fgImages.find(f => f.id === 'fg-legacy');
+                if (!target) slide.fgImages.push({ id: 'fg-legacy', url: legacyFg, x: 50, y: 50, size: 40 });
+                else target.url = legacyFg;
+            }
+            
+            // Filtra quelle caricate male
+            slide.fgImages = slide.fgImages.filter(f => f.url);
         } catch (e) { console.warn('idbGet error:', e); }
     }
 }
 
-// ═══════════════════════════════════════════════════════════
 // GENERAZIONE HTML SLIDE
-// ═══════════════════════════════════════════════════════════
-
-/**
- * Genera l'HTML dell'immagine in primo piano (foreground).
- * z-index:30 → sopra immagine sfondo e gradiente, sotto testo overlay (50).
- */
-function generateFgImageHTML(slide, forPreview) {
-    if (!slide.fgImage) return '';
-    const x    = slide.fgImageX    ?? 50;
-    const y    = slide.fgImageY    ?? 50;
-    const size = slide.fgImageSize ?? 40;
-    const baseStyle = `position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);width:${size}%;z-index:30;pointer-events:auto;`;
-    const imgStyle  = `width:100%;height:auto;display:block;`;
-    const attrs = forPreview
-        ? `id="preview-fg-drag" style="${baseStyle}cursor:grab;user-select:none;"`
-        : `style="${baseStyle}"`;
-    return `<div ${attrs}><img src="${slide.fgImage}" alt="" style="${imgStyle}" draggable="false"></div>`;
+function generateFgImagesHTML(slide, forPreview) {
+    if (!slide.fgImages || !slide.fgImages.length) return '';
+    return slide.fgImages.map(fg => {
+        if (!fg.url) return '';
+        const baseStyle = `position:absolute;left:${fg.x??50}%;top:${fg.y??50}%;transform:translate(-50%,-50%);width:${fg.size??40}%;z-index:30;pointer-events:auto;`;
+        const attrs = forPreview 
+            ? `class="preview-fg-drag" data-fg-id="${fg.id}" style="${baseStyle}cursor:grab;user-select:none;"`
+            : `style="${baseStyle}"`;
+        return `<div ${attrs}><img src="${fg.url}" alt="" style="width:100%;height:auto;display:block;" draggable="false"></div>`;
+    }).join('');
 }
 
 function generateOverlayHTML(overlay, forPreview) {
     if (!overlay || !overlay.enabled) return '';
-    const x      = overlay.x     ?? 50;
-    const y      = overlay.y     ?? 50;
-    const color  = overlay.color || '#ffffff';
-    const tsz    = overlay.titleSize || 80;
-    const bsz    = overlay.bodySize  || 40;
-    const align  = overlay.align || 'left';
-    const fontFn = FONTS[overlay.font] || FONTS['Bebas Neue'];
-
-    const titleHTML = overlay.title
-        ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${escapeHtml(overlay.title)}</div>` : '';
-    const bodyHTML  = overlay.body
-        ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(overlay.body)}</div>` : '';
-
+    const tsz = overlay.titleSize || 80, bsz = overlay.bodySize || 40, align = overlay.align || 'left', fontFn = FONTS[overlay.font] || FONTS['Bebas Neue'];
+    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${escapeHtml(overlay.title)}</div>` : '';
+    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(overlay.body)}</div>` : '';
     if (!titleHTML && !bodyHTML) return '';
 
-    // Trasla in base all'allineamento: sin→0%, centro→-50%, des→-100%
     const txMap = { left:'0%', center:'-50%', right:'-100%' };
-    const tx = txMap[align] || '-50%';
-    const baseStyle = `position:absolute;left:${x}%;top:${y}%;transform:translate(${tx},-50%);z-index:50;color:${color};text-align:${align};padding:24px;min-width:120px;`;
-    const attrs = forPreview
-        ? `id="preview-overlay-drag" style="${baseStyle}cursor:grab;user-select:none;"`
-        : `style="${baseStyle}"`;
-
+    const baseStyle = `position:absolute;left:${overlay.x??50}%;top:${overlay.y??50}%;transform:translate(${txMap[align]||'-50%'},-50%);z-index:50;color:${overlay.color||'#ffffff'};text-align:${align};padding:24px;min-width:120px;`;
+    const attrs = forPreview ? `id="preview-overlay-drag" style="${baseStyle}cursor:grab;user-select:none;"` : `style="${baseStyle}"`;
     return `<div ${attrs}>${titleHTML}${bodyHTML}</div>`;
 }
 
 function generateSlideHTML(slide, index, forPreview = false) {
-    // Layout copertina (titolo+sottotitolo) e stile copertina ora sono flag per-slide,
-    // non più legati all'indice 0.
-    const coverEnabled = !!slide.coverEnabled;
-    const coverStyle   = !!slide.coverStyle;
-    const zoom          = slide.zoom          || 1;
-    const titleFontSize = slide.titleFontSize  || 110;
-    const bg            = slideBg(slide);
-    const bgColorFlat   = (slide.bgMode === 'gradient') ? slide.gradColor1 || '#333' : (slide.bgColor || '#333333');
-
+    const cE = !!slide.coverEnabled, cS = !!slide.coverStyle, zoom = slide.zoom || 1, bg = slideBg(slide);
+    const bgFlat = (slide.bgMode === 'gradient') ? slide.gradColor1 || '#333' : (slide.bgColor || '#333333');
     const borderRadiusStyle = zoom < 1 ? 'border-radius:40px;' : '';
-    const sizeStyle = zoom < 1
-        ? 'max-width:100%;max-height:100%;object-fit:contain;'
-        : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
-
-    const bgWrapStyle = slide.bgMode === 'gradient'
-        ? `background:${bg};`
-        : `background-color:${bgColorFlat};`;
-
+    const sizeStyle = zoom < 1 ? 'max-width:100%;max-height:100%;object-fit:contain;' : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
+    const bgWrapStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgFlat};`;
+    
     const bgHTML = slide.image
-        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}">
-               <img src="${slide.image}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}">
-           </div>`
+        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}"><img src="${slide.image}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}"></div>`
         : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;${bgWrapStyle}"></div>`;
-
-    const topLogosHTML = `
-        <div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;">
-            <div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">
-                ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}
-            </div>
-            <div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">
-                ${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}
-            </div>
-        </div>`;
-
-    // Gradiente scuro: solo se "Stile Copertina" è attivo
-    const gradientHTML = (coverEnabled && coverStyle)
-        ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
-
-    // Badge news: solo se "Stile Copertina" è attivo (sopra il titolo)
-    const newsHTML = (coverEnabled && coverStyle && state.newsBase64)
-        ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
-
-    // Posizione blocco titolo+sottotitolo (% del canvas)
-    const coverTextX = slide.coverTextX ?? 5.5;
-    const coverTextY = slide.coverTextY ?? 60;
-
-    // Stile titolo: maiuscolo se "Stile Copertina" è attivo
-    const titleUppercase = coverStyle ? 'text-transform:uppercase;' : '';
-
-    const textHTML = coverEnabled
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${coverTextX}%;top:${coverTextY}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">
-               ${newsHTML}
-               <h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFontSize}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2>
-               <p  style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p>
-           </div>` : '';
-
-    // Fonte in basso a destra: solo se layout attivo e c'è il testo (a prescindere da Stile Copertina)
-    const sourceHTML = (coverEnabled && slide.source)
-        ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
-
-    const overlayHTML = generateOverlayHTML(slide.textOverlay, forPreview);
-    const fgImageHTML = generateFgImageHTML(slide, forPreview);
-
-    const rootBgStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgColorFlat};`;
-    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${rootBgStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${fgImageHTML}${overlayHTML}</div>`;
+    
+    const topLogosHTML = `<div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
+    const gradientHTML = (cE && cS) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
+    const newsHTML = (cE && cS && state.newsBase64) ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
+    
+    const titleUppercase = cS ? 'text-transform:uppercase;' : '';
+    const textHTML = cE
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
+    
+    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
 
-// ═══════════════════════════════════════════════════════════
-// DRAG & DROP OVERLAY
-// ═══════════════════════════════════════════════════════════
-
-function bindOverlayDrag() {
-    const slide = state.slides[state.activeIndex];
-    if (!slide.textOverlay || !slide.textOverlay.enabled) return;
-    const el = document.getElementById('preview-overlay-drag');
-    if (!el) return;
-
-    el.addEventListener('mousedown',  onStart);
+// DRAG & DROP MULTIPLO
+function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
+    if(!el) return;
+    el.addEventListener('mousedown', onStart);
     el.addEventListener('touchstart', onStart, { passive:false });
 
     function onStart(e) {
+        if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
         e.preventDefault(); e.stopPropagation();
         el.classList.add('dragging');
-        const rect  = DOM.previewWrapper.getBoundingClientRect();
+        
+        const rect = DOM.previewWrapper.getBoundingClientRect();
         const touch = e.touches ? e.touches[0] : e;
-        const cx    = (slide.textOverlay.x / 100) * rect.width;
-        const cy    = (slide.textOverlay.y / 100) * rect.height;
-        const ox    = touch.clientX - rect.left - cx;
-        const oy    = touch.clientY - rect.top  - cy;
+        const targetObj = dataFinder();
+        if (!targetObj) { el.classList.remove('dragging'); return; }
 
-        function onMove(e) {
-            const t  = e.touches ? e.touches[0] : e;
-            const nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
-            const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
-            el.style.left = nx + '%';
-            el.style.top  = ny + '%';
-            slide.textOverlay.x = nx;
-            slide.textOverlay.y = ny;
-        }
-
-        function onEnd() {
-            el.classList.remove('dragging');
-            document.removeEventListener('mousemove',  onMove);
-            document.removeEventListener('touchmove',  onMove);
-            document.removeEventListener('mouseup',    onEnd);
-            document.removeEventListener('touchend',   onEnd);
-            saveState();
-        }
-
-        document.addEventListener('mousemove',  onMove);
-        document.addEventListener('touchmove',  onMove, { passive:false });
-        document.addEventListener('mouseup',    onEnd);
-        document.addEventListener('touchend',   onEnd);
-    }
-}
-
-/**
- * Drag dell'immagine in primo piano nell'anteprima.
- * Stessa logica dell'overlay testo: aggiorna direttamente il DOM
- * durante il trascinamento e salva solo al rilascio.
- */
-function bindFgImageDrag() {
-    const slide = state.slides[state.activeIndex];
-    if (!slide.fgImage) return;
-    const el = document.getElementById('preview-fg-drag');
-    if (!el) return;
-
-    el.addEventListener('mousedown',  onStart);
-    el.addEventListener('touchstart', onStart, { passive:false });
-
-    function onStart(e) {
-        e.preventDefault(); e.stopPropagation();
-        el.classList.add('dragging');
-        const rect  = DOM.previewWrapper.getBoundingClientRect();
-        const touch = e.touches ? e.touches[0] : e;
-        const cx    = ((slide.fgImageX ?? 50) / 100) * rect.width;
-        const cy    = ((slide.fgImageY ?? 50) / 100) * rect.height;
-        const ox    = touch.clientX - rect.left - cx;
-        const oy    = touch.clientY - rect.top  - cy;
-
-        function onMove(e) {
-            const t  = e.touches ? e.touches[0] : e;
-            const nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
-            const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
-            el.style.left = nx + '%';
-            el.style.top  = ny + '%';
-            slide.fgImageX = nx;
-            slide.fgImageY = ny;
-        }
-
-        function onEnd() {
-            el.classList.remove('dragging');
-            document.removeEventListener('mousemove',  onMove);
-            document.removeEventListener('touchmove',  onMove);
-            document.removeEventListener('mouseup',    onEnd);
-            document.removeEventListener('touchend',   onEnd);
-            saveState();
-        }
-
-        document.addEventListener('mousemove',  onMove);
-        document.addEventListener('touchmove',  onMove, { passive:false });
-        document.addEventListener('mouseup',    onEnd);
-        document.addEventListener('touchend',   onEnd);
-    }
-}
-
-/**
- * Drag del blocco testo della copertina (slide 0).
- * A differenza degli altri drag, qui l'elemento è ancorato al suo angolo top-left
- * (nessun translate), quindi la conversione click→percentuale è diretta.
- */
-function bindCoverTextDrag() {
-    const slide = state.slides[state.activeIndex];
-    if (!slide.coverEnabled) return; // Solo se il layout titolo+sottotitolo è attivo
-    const el = document.getElementById('preview-cover-text-drag');
-    if (!el) return;
-
-    el.addEventListener('mousedown',  onStart);
-    el.addEventListener('touchstart', onStart, { passive:false });
-
-    function onStart(e) {
-        if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) return;
-        e.preventDefault(); e.stopPropagation();
-        el.classList.add('dragging');
-        const rect  = DOM.previewWrapper.getBoundingClientRect();
-        const touch = e.touches ? e.touches[0] : e;
-        const cx = ((slide.coverTextX ?? 5.5) / 100) * rect.width;
-        const cy = ((slide.coverTextY ?? 60)  / 100) * rect.height;
+        const cx = ((targetObj[ox_key] ?? 50) / 100) * rect.width;
+        const cy = ((targetObj[oy_key] ?? 50) / 100) * rect.height;
         const ox = touch.clientX - rect.left - cx;
         const oy = touch.clientY - rect.top  - cy;
 
         function onMove(e) {
-            const t  = e.touches ? e.touches[0] : e;
-            const nx = Math.max(0, Math.min(90,  (t.clientX - rect.left - ox) / rect.width  * 100));
+            const t = e.touches ? e.touches[0] : e;
+            const nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
             const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
-            el.style.left = nx + '%';
-            el.style.top  = ny + '%';
-            slide.coverTextX = nx;
-            slide.coverTextY = ny;
+            el.style.left = nx + '%'; el.style.top = ny + '%';
+            targetObj[ox_key] = nx; targetObj[oy_key] = ny;
         }
 
         function onEnd() {
             el.classList.remove('dragging');
-            document.removeEventListener('mousemove',  onMove);
-            document.removeEventListener('touchmove',  onMove);
-            document.removeEventListener('mouseup',    onEnd);
-            document.removeEventListener('touchend',   onEnd);
+            document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd);
+            if(afterDrag) afterDrag();
             saveState();
         }
-
-        document.addEventListener('mousemove',  onMove);
-        document.addEventListener('touchmove',  onMove, { passive:false });
-        document.addEventListener('mouseup',    onEnd);
-        document.addEventListener('touchend',   onEnd);
+        document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive:false });
+        document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd);
     }
 }
 
-/** Crea un singolo elemento thumbnail per una slide. Usato sia desktop che mobile. */
+function bindAllDrags() {
+    const s = state.slides[state.activeIndex];
+    bindDragElement(document.getElementById('preview-overlay-drag'), 'x', 'y', () => s.textOverlay?.enabled ? s.textOverlay : null);
+    bindDragElement(document.getElementById('preview-cover-text-drag'), 'coverTextX', 'coverTextY', () => s.coverEnabled ? s : null);
+    
+    document.querySelectorAll('.preview-fg-drag').forEach(el => {
+        bindDragElement(el, 'x', 'y', () => s.fgImages.find(f => f.id === el.dataset.fgId));
+    });
+}
+
+// UI RENDERING
 function createThumbElement(slide, i, sizePx) {
     const thumb = document.createElement('div');
-    const size = sizePx || 72;
-    thumb.className = [
-        `w-[${size}px] h-[${size}px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all`,
-        i === state.activeIndex ? 'border-[#0071E3] scale-105 shadow-md' : 'border-gray-300 opacity-80',
-    ].join(' ');
-    thumb.style.width  = size + 'px';
-    thumb.style.height = size + 'px';
-
-    // Sfondo thumbnail: gradiente o colore piatto
-    if (slide.bgMode === 'gradient') {
-        thumb.style.background = slideBg(slide);
-    } else {
-        thumb.style.backgroundColor = slide.bgColor || '#333333';
-    }
-
-    thumb.setAttribute('role', 'listitem');
-    thumb.setAttribute('aria-label', `Slide ${i+1}${i === state.activeIndex ? ' (attiva)' : ''}`);
-    thumb.setAttribute('tabindex', '0');
-    if (slide.image) {
-        thumb.style.backgroundImage    = `url(${slide.image})`;
-        thumb.style.backgroundSize     = 'cover';
-        thumb.style.backgroundPosition = 'center';
-    }
-    const go = () => { state.activeIndex = i; render(); };
-    thumb.addEventListener('click', go);
-    thumb.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); go(); } });
+    thumb.className = `w-[${sizePx}px] h-[${sizePx}px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all ${i===state.activeIndex?'border-[#0071E3] scale-105 shadow-md':'border-gray-300 opacity-80'}`;
+    thumb.style.width = sizePx+'px'; thumb.style.height = sizePx+'px';
+    thumb.style.background = slide.bgMode==='gradient'?slideBg(slide):(slide.bgColor||'#333333');
+    thumb.setAttribute('role', 'listitem'); thumb.setAttribute('tabindex', '0');
+    if (slide.image) { thumb.style.backgroundImage=`url(${slide.image})`; thumb.style.backgroundSize='cover'; thumb.style.backgroundPosition='center'; }
+    thumb.addEventListener('click', () => { state.activeIndex=i; render(); });
     return thumb;
 }
 
-/** Crea il bottone "+" per aggiungere una slide. */
-function createAddSlideButton(sizePx) {
-    const size = sizePx || 72;
-    const btn = document.createElement('button');
-    btn.className   = 'flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
-    btn.style.width  = size + 'px';
-    btn.style.height = size + 'px';
-    btn.textContent = '+';
-    btn.setAttribute('aria-label', 'Aggiungi slide');
-    btn.addEventListener('click', () => {
-        state.slides.push({
-            id:`slide-${Date.now()}`, image:null,
-            coverEnabled:false, coverStyle:false,
-            title:'', body:'', source:'', titleFontSize:110,
-            coverTextX:5.5, coverTextY:60,
-            zoom:1, bgColor:'#333333', bgMode:'solid',
-            gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom',
-            textOverlay:null,
-            fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40,
-        });
-        state.activeIndex = state.slides.length - 1;
-        saveState(); render();
-    });
-    return btn;
-}
-
 function renderThumbnails() {
-    // Popola entrambe le strip (desktop + mobile). Su desktop la mobile è display:none via CSS.
-    const containers = [DOM.thumbnailsContainer, DOM.thumbnailsContainerMobile].filter(Boolean);
-    containers.forEach(container => {
-        container.innerHTML = '';
-        // Su mobile usiamo thumb più piccole
-        const isMobileStrip = container.id === 'thumbnails-container-mobile';
-        const size = isMobileStrip ? 52 : 72;
-
-        state.slides.forEach((slide, i) => container.appendChild(createThumbElement(slide, i, size)));
-        if (state.slides.length < MAX_SLIDES) container.appendChild(createAddSlideButton(size));
+    [DOM.thumbnailsContainer, DOM.thumbnailsContainerMobile].filter(Boolean).forEach(c => {
+        c.innerHTML = '';
+        const size = c.id==='thumbnails-container-mobile'?52:72;
+        state.slides.forEach((s, i) => c.appendChild(createThumbElement(s, i, size)));
+        if (state.slides.length < MAX_SLIDES) {
+            const btn = document.createElement('button');
+            btn.className = 'flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
+            btn.style.width = size+'px'; btn.style.height = size+'px'; btn.textContent = '+';
+            btn.onclick = () => {
+                state.slides.push({
+                    id:`slide-${Date.now()}`, image:null, coverEnabled:false, coverStyle:false, title:'', body:'', source:'', titleFontSize:110, coverTextX:5.5, coverTextY:60, zoom:1, bgColor:'#333333', bgMode:'solid', gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom', textOverlay:null, fgImages:[],
+                }); state.activeIndex = state.slides.length-1; saveState(); render();
+            };
+            c.appendChild(btn);
+        }
     });
-
-    // Aggiorna stato disabled dei bottoni mobile prev/next
-    if (DOM.btnPrevMobile) DOM.btnPrevMobile.disabled = state.activeIndex === 0;
-    if (DOM.btnNextMobile) DOM.btnNextMobile.disabled = state.activeIndex === state.slides.length - 1;
+    if(DOM.btnPrevMobile) DOM.btnPrevMobile.disabled=state.activeIndex===0;
+    if(DOM.btnNextMobile) DOM.btnNextMobile.disabled=state.activeIndex===state.slides.length-1;
 }
 
 function renderEditor() {
-    const slide   = state.slides[state.activeIndex];
-
+    const slide = state.slides[state.activeIndex];
     DOM.slideCountTitle.textContent = `Slides (${state.slides.length}/${MAX_SLIDES})`;
     DOM.editorTitle.textContent     = `Modifica Slide ${state.activeIndex + 1}`;
-
     DOM.zoomContainer.style.display       = 'flex';
     DOM.btnDeleteSlide.style.display      = state.slides.length > 1 ? 'block' : 'none';
     DOM.btnDuplicateSlide.style.display   = state.slides.length < MAX_SLIDES ? 'block' : 'none';
     DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
     DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length-1 ? 'block' : 'none';
-    DOM.btnPrev.disabled = state.activeIndex === 0;
-    DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
+    DOM.btnPrev.disabled = state.activeIndex === 0; DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
 
     // Sfondo
     const isGrad = slide.bgMode === 'gradient';
-    DOM.bgModeSolid.style.background    = isGrad ? '' : '#0071E3';
-    DOM.bgModeSolid.style.color         = isGrad ? '' : 'white';
-    DOM.bgModeGradient.style.background = isGrad ? '#0071E3' : '';
-    DOM.bgModeGradient.style.color      = isGrad ? 'white' : '';
-    DOM.bgSolidRow.style.display        = isGrad ? 'none' : 'flex';
-    DOM.bgGradientRows.style.display    = isGrad ? 'flex' : 'none';
-    DOM.inputBgColor.value              = slide.bgColor    || '#333333';
-    DOM.inputGradColor1.value           = slide.gradColor1 || '#1a1a2e';
-    DOM.inputGradColor2.value           = slide.gradColor2 || '#e94560';
-    DOM.gradDirBtns.forEach(b => {
-        const active = b.dataset.dir === (slide.gradDir || 'to bottom');
-        b.style.background   = active ? '#0071E3' : '';
-        b.style.color        = active ? 'white'   : '';
-        b.style.borderColor  = active ? '#0071E3' : '';
-    });
-
-    DOM.inputZoom.value       = slide.zoom || 1;
-    DOM.zoomValue.textContent = (slide.zoom || 1).toFixed(2) + 'x';
+    DOM.bgModeSolid.style.background = isGrad?'':'#0071E3'; DOM.bgModeSolid.style.color = isGrad?'':'white';
+    DOM.bgModeGradient.style.background = isGrad?'#0071E3':''; DOM.bgModeGradient.style.color = isGrad?'white':'';
+    DOM.bgSolidRow.style.display = isGrad?'none':'flex'; DOM.bgGradientRows.style.display = isGrad?'flex':'none';
+    DOM.inputBgColor.value = slide.bgColor||'#333333'; DOM.inputGradColor1.value = slide.gradColor1||'#1a1a2e'; DOM.inputGradColor2.value = slide.gradColor2||'#e94560';
+    DOM.gradDirBtns.forEach(b => { const a = b.dataset.dir===(slide.gradDir||'to bottom'); b.style.background=a?'#0071E3':''; b.style.color=a?'white':''; b.style.borderColor=a?'#0071E3':''; });
+    DOM.inputZoom.value = slide.zoom||1; DOM.zoomValue.textContent = (slide.zoom||1).toFixed(2)+'x';
     DOM.bgUploadLabel.textContent = slide.image ? '✓ Immagine caricata — clicca per cambiarla' : 'Carica Immagine Sfondo';
 
-    // Foreground image
-    const hasFg = !!slide.fgImage;
-    DOM.fgImageUploadLabel.textContent = hasFg ? '✓ Immagine in primo piano caricata — clicca per cambiarla' : "Aggiungi un'immagine sopra lo sfondo";
-    DOM.fgImageSizeContainer.style.display = hasFg ? 'flex' : 'none';
-    DOM.fgImageHint.style.display          = hasFg ? 'block' : 'none';
-    DOM.btnClearFgImage.style.display      = hasFg ? 'block' : 'none';
-    if (hasFg) {
-        DOM.fgImageSize.value           = slide.fgImageSize ?? 40;
-        DOM.fgImageSizeVal.textContent  = (slide.fgImageSize ?? 40) + '%';
+    // FG Images list
+    DOM.fgImagesList.innerHTML = '';
+    DOM.fgImageUploadLabel.textContent = slide.fgImages?.length ? 'Aggiungi un\'altra immagine' : "Aggiungi un'immagine sopra lo sfondo";
+    if (slide.fgImages && slide.fgImages.length > 0) {
+        slide.fgImages.forEach((fg, idx) => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-lg shadow-sm mt-1';
+            row.innerHTML = `
+                <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center" style="background-image: url(${fg.url})"></div>
+                <div class="flex-grow flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Img ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
+                    <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
+                </div>
+                <button class="text-red-500 hover:text-red-700 p-2 fg-delete-btn bg-red-50 rounded-lg transition-all" data-id="${fg.id}" title="Rimuovi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+            `;
+            DOM.fgImagesList.appendChild(row);
+        });
+        // Binds
+        DOM.fgImagesList.querySelectorAll('.fg-size-slider').forEach(slider => {
+            slider.addEventListener('input', e => {
+                const f = slide.fgImages.find(x => x.id === e.target.dataset.id);
+                if (f) {
+                    f.size = parseInt(e.target.value, 10);
+                    e.target.previousElementSibling.querySelector('span:last-child').textContent = f.size + '%';
+                    const el = document.querySelector(`.preview-fg-drag[data-fg-id="${f.id}"]`);
+                    if (el) el.style.width = f.size + '%';
+                    saveState();
+                }
+            });
+        });
+        DOM.fgImagesList.querySelectorAll('.fg-delete-btn').forEach(btn => {
+            btn.addEventListener('click', async e => {
+                const id = e.currentTarget.dataset.id;
+                slide.fgImages = slide.fgImages.filter(x => x.id !== id);
+                await idbSet(slide.id + '_fgs', slide.fgImages.map(x => ({ id: x.id, url: x.url })));
+                saveState(); render();
+            });
+        });
     }
 
-    // ── Layout Titolo + Sottotitolo (toggle + campi) ──
-    const coverOn = !!slide.coverEnabled;
-    DOM.toggleCoverLayout.checked      = coverOn;
-    DOM.coverToggleTrack.className     = 'toggle-track' + (coverOn ? ' on' : '');
-    DOM.coverToggleLabel.textContent   = coverOn ? 'On' : 'Off';
-    DOM.coverFields.style.display      = coverOn ? 'flex' : 'none';
-    if (coverOn) {
-        DOM.inputTitleFontSize.value       = slide.titleFontSize || 110;
-        DOM.titleFontSizeValue.textContent = (slide.titleFontSize || 110) + 'px';
-        DOM.inputTitle.value               = slide.title  || '';
-        DOM.inputBody.value                = slide.body   || '';
-        DOM.inputSource.value              = slide.source || '';
-    }
+    // Altri controlli (Toggle, Testi)
+    const cOn = !!slide.coverEnabled, sOn = !!slide.coverStyle;
+    DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; }
+    DOM.toggleCoverStyle.checked=sOn; DOM.coverStyleToggleTrack.className='toggle-track'+(sOn?' on':''); DOM.coverStyleToggleLabel.textContent=sOn?'On':'Off';
 
-    // ── Stile Copertina (sotto-toggle del precedente) ──
-    const styleOn = !!slide.coverStyle;
-    DOM.toggleCoverStyle.checked            = styleOn;
-    DOM.coverStyleToggleTrack.className     = 'toggle-track' + (styleOn ? ' on' : '');
-    DOM.coverStyleToggleLabel.textContent   = styleOn ? 'On' : 'Off';
+    DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
 
-    DOM.btnClearLogo.style.display      = state.logoBase64      ? 'block' : 'none';
-    DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? 'block' : 'none';
-    DOM.btnClearNews.style.display      = state.newsBase64      ? 'block' : 'none';
+    const ov = slide.textOverlay, oOn = !!(ov && ov.enabled);
+    DOM.toggleTextOverlay.checked=oOn; DOM.overlayToggleTrack.className='toggle-track'+(oOn?' on':''); DOM.overlayToggleLabel.textContent=oOn?'On':'Off'; DOM.overlayFields.style.display=oOn?'flex':'none';
+    if(oOn&&ov){ DOM.overlayFont.value=ov.font||'Bebas Neue'; DOM.overlayTitleInput.value=ov.title||''; DOM.overlayBodyInput.value=ov.body||''; DOM.overlayTitleSize.value=ov.titleSize||80; DOM.overlayTitleSizeVal.textContent=(ov.titleSize||80)+'px'; DOM.overlayBodySize.value=ov.bodySize||40; DOM.overlayBodySizeVal.textContent=(ov.bodySize||40)+'px'; DOM.overlayColor.value=ov.color||'#ffffff'; DOM.overlayColorHex.textContent=(ov.color||'#ffffff').toUpperCase(); DOM.alignBtns.forEach(b=>b.classList.toggle('active',b.dataset.align===(ov.align||'left'))); }
+}
 
-    // Overlay (testo libero)
-    const ov = slide.textOverlay;
-    const on = !!(ov && ov.enabled);
-    DOM.toggleTextOverlay.checked      = on;
-    DOM.overlayToggleTrack.className   = 'toggle-track' + (on ? ' on' : '');
-    DOM.overlayToggleLabel.textContent = on ? 'On' : 'Off';
-    DOM.overlayFields.style.display    = on ? 'flex' : 'none';
-    if (on && ov) {
-        DOM.overlayFont.value               = ov.font      || 'Bebas Neue';
-        DOM.overlayTitleInput.value         = ov.title     || '';
-        DOM.overlayBodyInput.value          = ov.body      || '';
-        DOM.overlayTitleSize.value          = ov.titleSize || 80;
-        DOM.overlayTitleSizeVal.textContent = (ov.titleSize || 80) + 'px';
-        DOM.overlayBodySize.value           = ov.bodySize  || 40;
-        DOM.overlayBodySizeVal.textContent  = (ov.bodySize  || 40) + 'px';
-        DOM.overlayColor.value              = ov.color     || '#ffffff';
-        DOM.overlayColorHex.textContent     = (ov.color    || '#ffffff').toUpperCase();
-        DOM.alignBtns.forEach(b => b.classList.toggle('active', b.dataset.align === (ov.align || 'left')));
-    }
+function updateScale() {
+    DOM.previewContainer.style.transform = `scale(${DOM.previewWrapper.offsetWidth / 1080})`;
 }
 
 function renderPreview() {
     DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex, true);
-    updateScale();
-    bindOverlayDrag();
-    bindFgImageDrag();
-    bindCoverTextDrag();
-    // Aggiorna anche il mockup se visibile
+    updateScale(); bindAllDrags();
     if (DOM.toggleMockup.checked) renderMockup();
 }
 
@@ -1386,425 +1005,216 @@ function renderMockup() {
     DOM.mockupPreviewContainer.style.transform = `scale(${scale})`;
 }
 
-function render() { renderThumbnails(); renderEditor(); renderPreview(); }
+function render() { renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); }
 
-function updateScale() {
-    DOM.previewContainer.style.transform = `scale(${DOM.previewWrapper.offsetWidth / 1080})`;
-}
-
-// ═══════════════════════════════════════════════════════════
-// PROGRESS BAR EXPORT
-// ═══════════════════════════════════════════════════════════
-
-function setProgress(current, total) {
-    const pct = Math.round((current / total) * 100);
-    DOM.exportProgressBar.style.width  = pct + '%';
-    DOM.exportProgressPct.textContent  = pct + '%';
-    DOM.exportProgressLabel.textContent= `Generazione slide ${current}/${total}…`;
-}
-
-// ═══════════════════════════════════════════════════════════
 // EXPORT
-// ═══════════════════════════════════════════════════════════
-
-/** Renderizza una slide in un canvas e restituisce { dataUrl, blob, file } */
 async function renderSlideToFile(slide, index, fileName) {
     await preloadImage(slide.image);
-    const wrap = document.createElement('div');
-    wrap.innerHTML = generateSlideHTML(slide, index, false);
-    DOM.exportNodesContainer.appendChild(wrap);
-    await new Promise(r => setTimeout(r, 400));
+    const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(slide, index, false);
+    DOM.exportNodesContainer.appendChild(wrap); await new Promise(r => setTimeout(r, 400));
     try {
-        const canvas  = await html2canvas(wrap.firstChild, { scale:1, useCORS:true });
+        const canvas = await html2canvas(wrap.firstChild, { scale:1, useCORS:true });
         const dataUrl = canvas.toDataURL('image/png');
-        const blob    = await (await fetch(dataUrl)).blob();
+        const blob = await (await fetch(dataUrl)).blob();
         return { dataUrl, blob, file: new File([blob], fileName, { type:'image/png' }) };
-    } finally {
-        DOM.exportNodesContainer.innerHTML = '';
-    }
+    } finally { DOM.exportNodesContainer.innerHTML = ''; }
 }
 
-/** Esporta tutte le slide */
 async function exportAllSlides() {
-    if (state.isExporting) return;
-    state.isExporting = true;
-    state.renderedBlobs = [];
-    DOM.renderedPreviews.innerHTML = '';
-    DOM.btnExport.disabled       = true;
-    DOM.btnExportSingle.disabled = true;
-    DOM.exportProgressContainer.style.display = 'block';
-    setProgress(0, state.slides.length);
-
+    if (state.isExporting) return; state.isExporting = true; state.renderedBlobs = [];
+    DOM.renderedPreviews.innerHTML=''; DOM.btnExport.disabled=true; DOM.btnExportSingle.disabled=true; DOM.exportProgressContainer.style.display='block';
     await document.fonts.ready;
-
     for (let i = 0; i < state.slides.length; i++) {
-        setProgress(i + 1, state.slides.length);
+        const pct = Math.round(((i+1)/state.slides.length)*100); DOM.exportProgressBar.style.width=pct+'%'; DOM.exportProgressPct.textContent=pct+'%'; DOM.exportProgressLabel.textContent=`Generazione slide ${i+1}/${state.slides.length}…`;
         try {
             const { dataUrl, file } = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
             state.renderedBlobs.push(file);
-            const img = document.createElement('img');
-            img.src = dataUrl; img.alt = `Slide ${i+1}`; img.className = 'h-48 rounded shadow-sm border flex-shrink-0';
-            DOM.renderedPreviews.appendChild(img);
-        } catch (err) {
-            console.error(`Errore slide ${i+1}:`, err);
-            const d = document.createElement('div');
-            d.className   = 'h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line';
-            d.textContent = `⚠️ Errore\nSlide ${i+1}`;
-            DOM.renderedPreviews.appendChild(d);
+            const img = document.createElement('img'); img.src=dataUrl; img.className='h-48 rounded shadow-sm border flex-shrink-0'; DOM.renderedPreviews.appendChild(img);
+        } catch (e) {
+            const d = document.createElement('div'); d.className='h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line'; d.textContent=`⚠️ Errore\nSlide ${i+1}`; DOM.renderedPreviews.appendChild(d);
         }
     }
-
-    state.isExporting = false;
-    DOM.btnExport.disabled       = false;
-    DOM.btnExportSingle.disabled = false;
-    DOM.exportProgressContainer.style.display = 'none';
-    DOM.btnExport.textContent = 'Esporta Carousel';
-
-    if (!state.renderedBlobs.length) { alert('Nessuna slide generata. Riprova.'); return; }
-
-    const desc = DOM.shareModal.querySelector('.share-description');
-    if (desc) desc.textContent = IS_MOBILE ? 'Pronte! Salva nel Rullino Foto.' : 'Pronte! Scaricale sul tuo computer.';
-    DOM.btnNativeShare.textContent = IS_MOBILE ? 'Salva in Foto / Condividi' : 'Scarica Immagini';
-    DOM.shareModal.classList.add('active');
+    state.isExporting=false; DOM.btnExport.disabled=false; DOM.btnExportSingle.disabled=false; DOM.exportProgressContainer.style.display='none'; DOM.btnExport.textContent='Esporta';
+    if (!state.renderedBlobs.length) { alert('Nessuna slide generata.'); return; }
+    const d=DOM.shareModal.querySelector('.share-description'); if(d)d.textContent=IS_MOBILE?'Pronte! Salva nel Rullino Foto.':'Pronte! Scaricale sul tuo computer.';
+    DOM.btnNativeShare.textContent=IS_MOBILE?'Salva in Foto / Condividi':'Scarica Immagini'; DOM.shareModal.classList.add('active');
 }
 
-/** Esporta solo la slide attiva */
 async function exportSingleSlide() {
-    if (state.isExporting) return;
-    state.isExporting = true;
-    DOM.btnExport.disabled       = true;
-    DOM.btnExportSingle.disabled = true;
-    DOM.btnExportSingle.textContent = '…';
-
-    await document.fonts.ready;
-    const i = state.activeIndex;
-
+    if (state.isExporting) return; state.isExporting = true; DOM.btnExport.disabled=true; DOM.btnExportSingle.disabled=true; DOM.btnExportSingle.textContent='…';
+    await document.fonts.ready; const i = state.activeIndex;
     try {
         const { file } = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
-
-        if (IS_MOBILE && navigator.canShare && navigator.canShare({ files:[file] })) {
-            await navigator.share({ files:[file], title:`Slide ${i+1}` });
-        } else {
-            const url = URL.createObjectURL(file);
-            const a   = document.createElement('a');
-            a.href = url; a.download = file.name;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    } catch (err) {
-        console.error('Errore esportazione singola:', err);
-        alert('Errore durante l\'esportazione. Riprova.');
-    }
-
-    state.isExporting = false;
-    DOM.btnExport.disabled       = false;
-    DOM.btnExportSingle.disabled = false;
-    DOM.btnExportSingle.textContent = '↓ Singola';
+        if (IS_MOBILE && navigator.canShare && navigator.canShare({ files:[file] })) await navigator.share({ files:[file], title:`Slide ${i+1}` });
+        else { const u = URL.createObjectURL(file); const a = document.createElement('a'); a.href=u; a.download=file.name; a.click(); URL.revokeObjectURL(u); }
+    } catch (e) { alert('Errore esportazione.'); }
+    state.isExporting=false; DOM.btnExport.disabled=false; DOM.btnExportSingle.disabled=false; DOM.btnExportSingle.textContent='↓ Singola';
 }
 
 async function share() {
     if (IS_MOBILE && navigator.canShare && navigator.canShare({ files:state.renderedBlobs })) {
-        try { await navigator.share({ files:state.renderedBlobs, title:'Carousel' }); }
-        catch (e) { console.log('Condivisione annullata.'); }
+        try { await navigator.share({ files:state.renderedBlobs, title:'Carousel' }); } catch (e) {}
     } else {
-        state.renderedBlobs.forEach((file, i) => {
-            const url = URL.createObjectURL(file);
-            const a   = document.createElement('a');
-            a.href = url; a.download = file.name;
-            setTimeout(() => { a.click(); URL.revokeObjectURL(url); }, i * 300);
-        });
+        state.renderedBlobs.forEach((f, i) => { const u=URL.createObjectURL(f); const a=document.createElement('a'); a.href=u; a.download=f.name; setTimeout(()=> { a.click(); URL.revokeObjectURL(u); }, i*300); });
     }
     DOM.shareModal.classList.remove('active');
 }
 
-// ═══════════════════════════════════════════════════════════
-// EVENT LISTENERS
-// ═══════════════════════════════════════════════════════════
+// POPUP EDITOR MOBILE
+function renderPopupControls() {
+    const slide = state.slides[state.activeIndex];
+    let html = `
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Zoom Sfondo</span><span id="pop-zoom-val" class="text-[#0071E3]">${(slide.zoom || 1).toFixed(2)}x</span></div>
+            <input type="range" id="pop-zoom" min="0.1" max="3" step="0.05" value="${slide.zoom || 1}" class="w-full">
+        </div>`;
+    if (slide.coverEnabled) {
+        html += `<div class="flex flex-col gap-1">
+            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo Copertina</span><span id="pop-title-size-val" class="text-[#0071E3]">${slide.titleFontSize || 110}px</span></div>
+            <input type="range" id="pop-title-size" min="40" max="200" step="2" value="${slide.titleFontSize || 110}" class="w-full">
+        </div>`;
+    }
+    if (slide.textOverlay && slide.textOverlay.enabled) {
+        html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo Libero</span><span id="pop-ov-title-size-val" class="text-[#0071E3]">${slide.textOverlay.titleSize || 80}px</span></div><input type="range" id="pop-ov-title-size" min="30" max="200" step="2" value="${slide.textOverlay.titleSize || 80}" class="w-full"></div>`;
+        html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Corpo Libero</span><span id="pop-ov-body-size-val" class="text-[#0071E3]">${slide.textOverlay.bodySize || 40}px</span></div><input type="range" id="pop-ov-body-size" min="20" max="120" step="2" value="${slide.textOverlay.bodySize || 40}" class="w-full"></div>`;
+    }
+    if (slide.fgImages && slide.fgImages.length > 0) {
+        slide.fgImages.forEach((fg, i) => {
+            html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Img Primo Piano ${i+1}</span><span id="pop-fg-size-val-${fg.id}" class="text-[#0071E3]">${fg.size}%</span></div><input type="range" data-pop-fg-id="${fg.id}" min="10" max="100" step="1" value="${fg.size}" class="w-full pop-fg-size"></div>`;
+        });
+    }
+    DOM.popupControls.innerHTML = html;
 
-// Upload immagini — salva anche in IndexedDB
-DOM.bgUpload.addEventListener('change', e => {
-    readImageAsBase64(e.target.files[0], async b => {
-        state.slides[state.activeIndex].image = b;
-        DOM.bgUpload.value = '';
-        await idbSet(state.slides[state.activeIndex].id, b).catch(() => {});
-        saveState(); render();
+    const bindRange = (id, keyFn, valId, suffix, domSync = null) => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', e => {
+            const val = parseFloat(e.target.value); keyFn(val);
+            document.getElementById(valId).textContent = val + suffix;
+            if (domSync) domSync(val);
+            saveState(); renderPreview();
+        });
+    };
+    bindRange('pop-zoom', v=>slide.zoom=v, 'pop-zoom-val', 'x', v=>{DOM.inputZoom.value=v; DOM.zoomValue.textContent=v.toFixed(2)+'x';});
+    bindRange('pop-title-size', v=>slide.titleFontSize=v, 'pop-title-size-val', 'px', v=>{DOM.inputTitleFontSize.value=v; DOM.titleFontSizeValue.textContent=v+'px';});
+    if (slide.textOverlay) {
+        bindRange('pop-ov-title-size', v=>slide.textOverlay.titleSize=v, 'pop-ov-title-size-val', 'px', v=>{DOM.overlayTitleSize.value=v; DOM.overlayTitleSizeVal.textContent=v+'px';});
+        bindRange('pop-ov-body-size', v=>slide.textOverlay.bodySize=v, 'pop-ov-body-size-val', 'px', v=>{DOM.overlayBodySize.value=v; DOM.overlayBodySizeVal.textContent=v+'px';});
+    }
+    document.querySelectorAll('.pop-fg-size').forEach(slider => {
+        slider.addEventListener('input', e => {
+            const fg = slide.fgImages.find(f => f.id === e.target.getAttribute('data-pop-fg-id'));
+            if (fg) {
+                fg.size = parseInt(e.target.value, 10);
+                document.getElementById(`pop-fg-size-val-${fg.id}`).textContent = fg.size + '%';
+                const sMain = DOM.fgImagesList.querySelector(`.fg-size-slider[data-id="${fg.id}"]`);
+                if (sMain) { sMain.value = fg.size; sMain.previousElementSibling.querySelector('span:last-child').textContent = fg.size + '%'; }
+                const el = document.querySelector(`.preview-fg-drag[data-fg-id="${fg.id}"]`);
+                if (el) el.style.width = fg.size + '%';
+                saveState();
+            }
+        });
     });
+}
+
+DOM.btnPopupEditor.addEventListener('click', () => {
+    DOM.popupEditorModal.classList.add('active');
+    DOM.popupPreviewHost.appendChild(DOM.previewWrapper);
+    renderPopupControls();
+    setTimeout(updateScale, 50); // Attendiamo che il modal sia visibile per calcolare le width
+});
+DOM.btnClosePopup.addEventListener('click', () => {
+    DOM.popupEditorModal.classList.remove('active');
+    DOM.originalPreviewHost.appendChild(DOM.previewWrapper);
+    renderEditor(); // sync eventuali variazioni non catturate
+    setTimeout(updateScale, 50);
 });
 
-// Upload immagine in primo piano
+// EVENT LISTENERS COMPONENTI MAIN
+DOM.bgUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], async b => { state.slides[state.activeIndex].image=b; DOM.bgUpload.value=''; await idbSet(state.slides[state.activeIndex].id, b).catch(()=>{}); saveState(); render(); }); });
 DOM.fgImageUpload.addEventListener('change', e => {
     readImageAsBase64(e.target.files[0], async b => {
-        const slide = state.slides[state.activeIndex];
-        slide.fgImage = b;
-        // Centra se è la prima volta o se la posizione era stata persa
-        if (slide.fgImageX == null) slide.fgImageX = 50;
-        if (slide.fgImageY == null) slide.fgImageY = 50;
-        if (slide.fgImageSize == null) slide.fgImageSize = 40;
-        DOM.fgImageUpload.value = '';
-        await idbSet(slide.id + '_fg', b).catch(() => {});
-        saveState(); render();
+        const s = state.slides[state.activeIndex];
+        if(!s.fgImages) s.fgImages = [];
+        s.fgImages.push({ id: generateId(), url: b, x: 50, y: 50, size: 40 });
+        DOM.fgImageUpload.value=''; await idbSet(s.id + '_fgs', s.fgImages.map(f => ({ id: f.id, url: f.url }))).catch(()=>{}); saveState(); render();
     });
 });
+DOM.logoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.logoBase64=b; localStorage.setItem(LS.logo, b); render(); }); });
+DOM.themeLogoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.themeLogoBase64=b; localStorage.setItem(LS.themeLogo, b); render(); }); });
+DOM.newsUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.newsBase64=b; localStorage.setItem(LS.news, b); render(); }); });
+DOM.btnClearLogo.addEventListener('click', () => { state.logoBase64=null; localStorage.removeItem(LS.logo); render(); });
+DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; localStorage.removeItem(LS.themeLogo); render(); });
+DOM.btnClearNews.addEventListener('click', () => { state.newsBase64=null; localStorage.removeItem(LS.news); render(); });
 
-// Slider dimensione FG
-DOM.fgImageSize.addEventListener('input', e => {
-    const v = parseInt(e.target.value, 10);
-    state.slides[state.activeIndex].fgImageSize = v;
-    DOM.fgImageSizeVal.textContent = v + '%';
-    // Aggiorna direttamente l'elemento nel DOM senza re-render completo (più fluido)
-    const el = document.getElementById('preview-fg-drag');
-    if (el) el.style.width = v + '%';
-    saveState();
-});
-
-// Rimuovi FG image
-DOM.btnClearFgImage.addEventListener('click', async () => {
-    const slide = state.slides[state.activeIndex];
-    slide.fgImage = null;
-    await idbDelete(slide.id + '_fg').catch(() => {});
-    saveState(); render();
-});
-DOM.logoUpload.addEventListener('change',      e => { readImageAsBase64(e.target.files[0], b => { state.logoBase64      = b; localStorage.setItem(LS.logo, b);      render(); }); });
-DOM.themeLogoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.themeLogoBase64 = b; localStorage.setItem(LS.themeLogo, b); render(); }); });
-DOM.newsUpload.addEventListener('change',      e => { readImageAsBase64(e.target.files[0], b => { state.newsBase64      = b; localStorage.setItem(LS.news, b);      render(); }); });
-
-// Rimozione brand
-DOM.btnClearLogo.addEventListener('click',      () => { state.logoBase64      = null; localStorage.removeItem(LS.logo);      render(); });
-DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64 = null; localStorage.removeItem(LS.themeLogo); render(); });
-DOM.btnClearNews.addEventListener('click',      () => { state.newsBase64      = null; localStorage.removeItem(LS.news);      render(); });
-
-// Sfondo: modalità
-DOM.bgModeSolid.addEventListener('click', () => {
-    state.slides[state.activeIndex].bgMode = 'solid';
-    saveState(); render();
-});
-DOM.bgModeGradient.addEventListener('click', () => {
-    state.slides[state.activeIndex].bgMode = 'gradient';
-    saveState(); render();
-});
-
-// Sfondo: colore piatto
-DOM.inputBgColor.addEventListener('input', e => {
-    state.slides[state.activeIndex].bgColor = e.target.value;
-    const thumbs = DOM.thumbnailsContainer.querySelectorAll('[role="listitem"]');
-    if (thumbs[state.activeIndex]) thumbs[state.activeIndex].style.backgroundColor = e.target.value;
-    saveState(); renderPreview();
-});
-
-// Sfondo: gradiente
-DOM.inputGradColor1.addEventListener('input', e => { state.slides[state.activeIndex].gradColor1 = e.target.value; saveState(); renderPreview(); });
-DOM.inputGradColor2.addEventListener('input', e => { state.slides[state.activeIndex].gradColor2 = e.target.value; saveState(); renderPreview(); });
-
-DOM.gradDirBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        state.slides[state.activeIndex].gradDir = btn.dataset.dir;
-        DOM.gradDirBtns.forEach(b => { b.style.background = ''; b.style.color = ''; b.style.borderColor = ''; });
-        btn.style.background = '#0071E3'; btn.style.color = 'white'; btn.style.borderColor = '#0071E3';
-        saveState(); renderPreview();
-    });
-});
-
-// Zoom
-DOM.inputZoom.addEventListener('input', e => {
-    const v = parseFloat(e.target.value);
-    state.slides[state.activeIndex].zoom = v;
-    DOM.zoomValue.textContent = v.toFixed(2) + 'x';
-    saveState(); renderPreview();
-});
-
-// ── Layout Titolo + Sottotitolo (ex-copertina, ora per-slide) ──
+DOM.bgModeSolid.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='solid'; saveState(); render(); });
+DOM.bgModeGradient.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='gradient'; saveState(); render(); });
+DOM.inputBgColor.addEventListener('input', e => { state.slides[state.activeIndex].bgColor=e.target.value; const t=DOM.thumbnailsContainer.querySelectorAll('[role="listitem"]')[state.activeIndex]; if(t)t.style.backgroundColor=e.target.value; saveState(); renderPreview(); });
+DOM.inputGradColor1.addEventListener('input', e => { state.slides[state.activeIndex].gradColor1=e.target.value; saveState(); renderPreview(); });
+DOM.inputGradColor2.addEventListener('input', e => { state.slides[state.activeIndex].gradColor2=e.target.value; saveState(); renderPreview(); });
+DOM.gradDirBtns.forEach(btn => btn.addEventListener('click', () => { state.slides[state.activeIndex].gradDir=btn.dataset.dir; DOM.gradDirBtns.forEach(b=>{b.style.background='';b.style.color='';b.style.borderColor='';}); btn.style.background='#0071E3'; btn.style.color='white'; btn.style.borderColor='#0071E3'; saveState(); renderPreview(); }));
+DOM.inputZoom.addEventListener('input', e => { const v=parseFloat(e.target.value); state.slides[state.activeIndex].zoom=v; DOM.zoomValue.textContent=v.toFixed(2)+'x'; saveState(); renderPreview(); });
 
 DOM.coverToggleTrack.addEventListener('click', () => DOM.toggleCoverLayout.click());
-DOM.toggleCoverLayout.addEventListener('change', e => {
-    state.slides[state.activeIndex].coverEnabled = e.target.checked;
-    DOM.coverToggleTrack.className   = 'toggle-track' + (e.target.checked ? ' on' : '');
-    DOM.coverToggleLabel.textContent = e.target.checked ? 'On' : 'Off';
-    DOM.coverFields.style.display    = e.target.checked ? 'flex' : 'none';
-    saveState(); renderPreview();
-});
-
+DOM.toggleCoverLayout.addEventListener('change', e => { state.slides[state.activeIndex].coverEnabled=e.target.checked; DOM.coverToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.coverToggleLabel.textContent=e.target.checked?'On':'Off'; DOM.coverFields.style.display=e.target.checked?'flex':'none'; saveState(); renderPreview(); });
 DOM.coverStyleToggleTrack.addEventListener('click', () => DOM.toggleCoverStyle.click());
-DOM.toggleCoverStyle.addEventListener('change', e => {
-    state.slides[state.activeIndex].coverStyle = e.target.checked;
-    DOM.coverStyleToggleTrack.className   = 'toggle-track' + (e.target.checked ? ' on' : '');
-    DOM.coverStyleToggleLabel.textContent = e.target.checked ? 'On' : 'Off';
-    saveState(); renderPreview();
-});
-
-// Campi: scrivono sempre sulla slide ATTIVA (non più solo slide 0)
-DOM.inputTitleFontSize.addEventListener('input', e => {
-    const v = parseInt(e.target.value, 10);
-    state.slides[state.activeIndex].titleFontSize = v;
-    DOM.titleFontSizeValue.textContent = v + 'px';
-    saveState(); renderPreview();
-});
+DOM.toggleCoverStyle.addEventListener('change', e => { state.slides[state.activeIndex].coverStyle=e.target.checked; DOM.coverStyleToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.coverStyleToggleLabel.textContent=e.target.checked?'On':'Off'; saveState(); renderPreview(); });
+DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; saveState(); renderPreview(); });
 const debouncedPreview = debounce(() => { saveState(); renderPreview(); }, 150);
-DOM.inputTitle.addEventListener('input',  e => { state.slides[state.activeIndex].title  = e.target.value; debouncedPreview(); });
-DOM.inputBody.addEventListener('input',   e => { state.slides[state.activeIndex].body   = e.target.value; debouncedPreview(); });
-DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source = e.target.value; debouncedPreview(); });
-
-// ── Overlay ────────────────────────────────────────────────
+DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreview(); });
+DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreview(); });
+DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreview(); });
 
 DOM.overlayToggleTrack.addEventListener('click', () => DOM.toggleTextOverlay.click());
-DOM.toggleTextOverlay.addEventListener('change', e => {
-    const ov = ensureOverlay();
-    ov.enabled = e.target.checked;
-    DOM.overlayToggleTrack.className   = 'toggle-track' + (ov.enabled ? ' on' : '');
-    DOM.overlayToggleLabel.textContent = ov.enabled ? 'On' : 'Off';
-    DOM.overlayFields.style.display    = ov.enabled ? 'flex' : 'none';
-    saveState(); renderPreview();
-});
-
-DOM.overlayFont.addEventListener('change', e => { ensureOverlay().font = e.target.value; saveState(); renderPreview(); });
-
-const debouncedOverlay = debounce(() => { saveState(); renderPreview(); }, 150);
-DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title = e.target.value; debouncedOverlay(); });
-DOM.overlayBodyInput.addEventListener('input',  e => { ensureOverlay().body  = e.target.value; debouncedOverlay(); });
-
-DOM.overlayTitleSize.addEventListener('input', e => {
-    const v = parseInt(e.target.value, 10);
-    ensureOverlay().titleSize = v;
-    DOM.overlayTitleSizeVal.textContent = v + 'px';
-    saveState(); renderPreview();
-});
-DOM.overlayBodySize.addEventListener('input', e => {
-    const v = parseInt(e.target.value, 10);
-    ensureOverlay().bodySize = v;
-    DOM.overlayBodySizeVal.textContent = v + 'px';
-    saveState(); renderPreview();
-});
-DOM.overlayColor.addEventListener('input', e => {
-    ensureOverlay().color = e.target.value;
-    DOM.overlayColorHex.textContent = e.target.value.toUpperCase();
-    saveState(); renderPreview();
-});
-
-// Allineamento testo overlay
-DOM.alignBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        ensureOverlay().align = btn.dataset.align;
-        DOM.alignBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        saveState(); renderPreview();
-    });
-});
-
-// ── Mockup Instagram ───────────────────────────────────────
+DOM.toggleTextOverlay.addEventListener('change', e => { const ov=ensureOverlay(); ov.enabled=e.target.checked; DOM.overlayToggleTrack.className='toggle-track'+(ov.enabled?' on':''); DOM.overlayToggleLabel.textContent=ov.enabled?'On':'Off'; DOM.overlayFields.style.display=ov.enabled?'flex':'none'; saveState(); renderPreview(); });
+DOM.overlayFont.addEventListener('change', e => { ensureOverlay().font=e.target.value; saveState(); renderPreview(); });
+DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title=e.target.value; debouncedPreview(); });
+DOM.overlayBodyInput.addEventListener('input', e => { ensureOverlay().body=e.target.value; debouncedPreview(); });
+DOM.overlayTitleSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().titleSize=v; DOM.overlayTitleSizeVal.textContent=v+'px'; saveState(); renderPreview(); });
+DOM.overlayBodySize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().bodySize=v; DOM.overlayBodySizeVal.textContent=v+'px'; saveState(); renderPreview(); });
+DOM.overlayColor.addEventListener('input', e => { ensureOverlay().color=e.target.value; DOM.overlayColorHex.textContent=e.target.value.toUpperCase(); saveState(); renderPreview(); });
+DOM.alignBtns.forEach(btn => btn.addEventListener('click', () => { ensureOverlay().align=btn.dataset.align; DOM.alignBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); saveState(); renderPreview(); }));
 
 DOM.mockupToggleTrack.addEventListener('click', () => DOM.toggleMockup.click());
-DOM.toggleMockup.addEventListener('change', e => {
-    DOM.mockupToggleTrack.className   = 'toggle-track' + (e.target.checked ? ' on' : '');
-    DOM.mockupToggleLabel.textContent = e.target.checked ? 'Feed On' : 'Feed';
-    DOM.mockupWrapper.classList.toggle('active', e.target.checked);
-    if (e.target.checked) renderMockup();
-});
+DOM.toggleMockup.addEventListener('change', e => { DOM.mockupToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.mockupToggleLabel.textContent=e.target.checked?'Feed On':'Feed'; DOM.mockupWrapper.classList.toggle('active', e.target.checked); if(e.target.checked) renderMockup(); });
 
-// ── Navigazione ────────────────────────────────────────────
+DOM.btnPrev.addEventListener('click',  () => { if (state.activeIndex>0) { state.activeIndex--; render(); } });
+DOM.btnNext.addEventListener('click',  () => { if (state.activeIndex<state.slides.length-1) { state.activeIndex++; render(); } });
+if(DOM.btnPrevMobile) DOM.btnPrevMobile.addEventListener('click', () => { if (state.activeIndex>0) { state.activeIndex--; render(); } });
+if(DOM.btnNextMobile) DOM.btnNextMobile.addEventListener('click', () => { if (state.activeIndex<state.slides.length-1) { state.activeIndex++; render(); } });
+DOM.btnMoveLeft.addEventListener('click',  () => { const i=state.activeIndex; if (i>0) { [state.slides[i],state.slides[i-1]]=[state.slides[i-1],state.slides[i]]; state.activeIndex--; saveState(); render(); } });
+DOM.btnMoveRight.addEventListener('click', () => { const i=state.activeIndex; if (i<state.slides.length-1) { [state.slides[i],state.slides[i+1]]=[state.slides[i+1],state.slides[i]]; state.activeIndex++; saveState(); render(); } });
 
-DOM.btnPrev.addEventListener('click',  () => { if (state.activeIndex > 0) { state.activeIndex--; render(); } });
-DOM.btnNext.addEventListener('click',  () => { if (state.activeIndex < state.slides.length-1) { state.activeIndex++; render(); } });
-// Versioni mobile (gemelle)
-if (DOM.btnPrevMobile) DOM.btnPrevMobile.addEventListener('click', () => { if (state.activeIndex > 0) { state.activeIndex--; render(); } });
-if (DOM.btnNextMobile) DOM.btnNextMobile.addEventListener('click', () => { if (state.activeIndex < state.slides.length-1) { state.activeIndex++; render(); } });
-
-// Bottone fullscreen anteprima (solo mobile, ma il listener c'è sempre)
-if (DOM.btnFullscreenPreview) {
-    DOM.btnFullscreenPreview.addEventListener('click', () => {
-        const on = !document.body.classList.contains('fullscreen-preview');
-        document.body.classList.toggle('fullscreen-preview', on);
-        DOM.iconFullscreenEnter.style.display = on ? 'none'  : 'block';
-        DOM.iconFullscreenExit.style.display  = on ? 'block' : 'none';
-        // Ricalcola la scala perché il wrapper è cambiato di dimensione
-        setTimeout(updateScale, 50);
-    });
-}
-DOM.btnMoveLeft.addEventListener('click',  () => { const i = state.activeIndex; if (i>0) { [state.slides[i],state.slides[i-1]]=[state.slides[i-1],state.slides[i]]; state.activeIndex--; saveState(); render(); } });
-DOM.btnMoveRight.addEventListener('click', () => { const i = state.activeIndex; if (i<state.slides.length-1) { [state.slides[i],state.slides[i+1]]=[state.slides[i+1],state.slides[i]]; state.activeIndex++; saveState(); render(); } });
 DOM.btnDeleteSlide.addEventListener('click', () => {
-    if (state.slides.length <= 1) return;
-    const id = state.slides[state.activeIndex].id;
-    idbDelete(id).catch(() => {});
-    idbDelete(id + '_fg').catch(() => {});
-    state.slides.splice(state.activeIndex, 1);
-    state.activeIndex = Math.max(0, state.activeIndex - 1);
-    saveState(); render();
+    if (state.slides.length <= 1) return; const id = state.slides[state.activeIndex].id;
+    idbDelete(id).catch(()=>{}); idbDelete(id+'_fgs').catch(()=>{});
+    state.slides.splice(state.activeIndex, 1); state.activeIndex = Math.max(0, state.activeIndex-1); saveState(); render();
 });
-
-// Duplica slide
 DOM.btnDuplicateSlide.addEventListener('click', async () => {
-    if (state.slides.length >= MAX_SLIDES) return;
-    const src   = state.slides[state.activeIndex];
-    const newId = `slide-${Date.now()}`;
-    // Deep clone: spread copia i campi semplici, textOverlay va clonato a parte
-    const copy = {
-        ...src,
-        id: newId,
-        textOverlay: src.textOverlay ? { ...src.textOverlay } : null,
-    };
-    // Copia anche le immagini in IndexedDB sotto il nuovo id
-    if (src.image)   await idbSet(newId,          src.image).catch(() => {});
-    if (src.fgImage) await idbSet(newId + '_fg',  src.fgImage).catch(() => {});
-    state.slides.splice(state.activeIndex + 1, 0, copy);
-    state.activeIndex++;
-    saveState(); render();
+    if (state.slides.length >= MAX_SLIDES) return; const src = state.slides[state.activeIndex]; const newId = `slide-${Date.now()}`;
+    const copy = { ...src, id: newId, textOverlay: src.textOverlay ? { ...src.textOverlay } : null, fgImages: (src.fgImages || []).map(f => ({ ...f, id: generateId() })) };
+    if (src.image) await idbSet(newId, src.image).catch(()=>{});
+    if (copy.fgImages.length) await idbSet(newId + '_fgs', copy.fgImages.map(f => ({ id: f.id, url: f.url }))).catch(()=>{});
+    state.slides.splice(state.activeIndex+1, 0, copy); state.activeIndex++; saveState(); render();
 });
 
-// Export
-DOM.btnExport.addEventListener('click',       exportAllSlides);
-DOM.btnExportSingle.addEventListener('click', exportSingleSlide);
-DOM.btnNativeShare.addEventListener('click',  share);
-DOM.btnCloseShare.addEventListener('click',   () => DOM.shareModal.classList.remove('active'));
-
-// Modali
-DOM.btnHelp.addEventListener('click',      () => DOM.helpModal.classList.add('active'));
-DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
-DOM.shareModal.addEventListener('click',   e => { if (e.target===DOM.shareModal) DOM.shareModal.classList.remove('active'); });
-DOM.helpModal.addEventListener('click',    e => { if (e.target===DOM.helpModal)  DOM.helpModal.classList.remove('active'); });
-DOM.btnRefresh.addEventListener('click',   () => { window.location.href = `${window.location.pathname}?v=${Date.now()}`; });
-
-// Theme Toggle
-const savedTheme = localStorage.getItem('icc_theme');
-if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.body.classList.add('dark-mode');
-    if (DOM.iconMoon) DOM.iconMoon.style.display = 'none';
-    if (DOM.iconSun) DOM.iconSun.style.display = 'block';
-}
-if (DOM.btnThemeToggle) {
-    DOM.btnThemeToggle.addEventListener('click', () => {
-        const isDark = document.body.classList.toggle('dark-mode');
-        DOM.iconMoon.style.display = isDark ? 'none' : 'block';
-        DOM.iconSun.style.display  = isDark ? 'block' : 'none';
-        localStorage.setItem('icc_theme', isDark ? 'dark' : 'light');
-    });
-}
-
-// Tastiera
-document.addEventListener('keydown', e => {
-    if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-    if (e.key==='ArrowLeft'  && state.activeIndex > 0)                       { state.activeIndex--; render(); }
-    if (e.key==='ArrowRight' && state.activeIndex < state.slides.length - 1) { state.activeIndex++; render(); }
-});
-
-// Resize
+DOM.btnExport.addEventListener('click', exportAllSlides); DOM.btnExportSingle.addEventListener('click', exportSingleSlide);
+DOM.btnNativeShare.addEventListener('click', share); DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
+DOM.btnHelp.addEventListener('click', () => DOM.helpModal.classList.add('active')); DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
+DOM.btnRefresh.addEventListener('click', () => window.location.href=`${window.location.pathname}?v=${Date.now()}`);
+document.addEventListener('keydown', e => { if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return; if(e.key==='ArrowLeft'&&state.activeIndex>0) {state.activeIndex--;render();} if(e.key==='ArrowRight'&&state.activeIndex<state.slides.length-1) {state.activeIndex++;render();} });
 window.addEventListener('resize', debounce(updateScale, 100));
 
-// ═══════════════════════════════════════════════════════════
+// Dark mode
+const savedTheme = localStorage.getItem('icc_theme');
+if (savedTheme==='dark'||(!savedTheme&&window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.body.classList.add('dark-mode'); if(DOM.iconMoon)DOM.iconMoon.style.display='none'; if(DOM.iconSun)DOM.iconSun.style.display='block'; }
+if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { const d=document.body.classList.toggle('dark-mode'); DOM.iconMoon.style.display=d?'none':'block'; DOM.iconSun.style.display=d?'block':'none'; localStorage.setItem('icc_theme', d?'dark':'light'); });
+
 // AVVIO
-// ═══════════════════════════════════════════════════════════
-
 window.addEventListener('load', async () => {
-    await openIDB().catch(e => console.warn('IndexedDB non disponibile:', e));
-    loadState();
-    await loadImagesFromIDB();
-    render();
-
-    // Su mobile: chiudi gli accordion non essenziali al primo avvio per ridurre lo scroll.
-    // Restano aperti solo quelli con `data-keep-open` (Slides + Editor Slide).
-    // L'utente può comunque riaprirli toccando l'header.
+    await openIDB().catch(e => console.warn('IDB non disponibile:', e));
+    loadState(); await loadImagesFromIDB(); render();
     if (window.matchMedia('(max-width: 767px)').matches) {
-        document.querySelectorAll('details.accordion').forEach(d => {
-            if (!d.hasAttribute('data-keep-open')) d.removeAttribute('open');
-        });
+        document.querySelectorAll('details.accordion').forEach(d => { if (!d.hasAttribute('data-keep-open')) d.removeAttribute('open'); });
     }
 });
 </script>
