@@ -190,9 +190,10 @@
         <div class="flex justify-between items-center mb-2">
             <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
             <div class="flex gap-3 items-center">
-                <button id="btn-move-left"    class="text-gray-500 text-sm hover:text-black hidden">&larr; Sposta</button>
-                <button id="btn-move-right"   class="text-gray-500 text-sm hover:text-black hidden">Sposta &rarr;</button>
-                <button id="btn-delete-slide" class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina</button>
+                <button id="btn-move-left"      class="text-gray-500 text-sm hover:text-black hidden">&larr; Sposta</button>
+                <button id="btn-move-right"     class="text-gray-500 text-sm hover:text-black hidden">Sposta &rarr;</button>
+                <button id="btn-duplicate-slide" class="text-[#0071E3] text-sm font-medium hover:underline" title="Duplica questa slide">⧉ Duplica</button>
+                <button id="btn-delete-slide"   class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina</button>
             </div>
         </div>
 
@@ -363,8 +364,9 @@
             <p><strong>4. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
             <p><strong>5. Mockup Instagram:</strong> Attiva il toggle "Feed" per vedere la slide nel contesto di un post Instagram.</p>
             <p><strong>6. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta Carousel" genera tutte le slide.</p>
-            <p><strong>7. Persistenza immagini:</strong> Le immagini di sfondo vengono salvate nel browser (IndexedDB) e ripristinate automaticamente alla riapertura.</p>
-            <p><strong>8. Tastiera:</strong> ← → per navigare tra le slide.</p>
+            <p><strong>7. Duplica:</strong> Il tasto "⧉ Duplica" copia la slide attiva (immagine, sfondo, testo, posizione) e la inserisce subito dopo.</p>
+            <p><strong>8. Persistenza immagini:</strong> Le immagini di sfondo vengono salvate nel browser (IndexedDB) e ripristinate automaticamente alla riapertura.</p>
+            <p><strong>9. Tastiera:</strong> ← → per navigare tra le slide.</p>
         </div>
         <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
     </div>
@@ -479,6 +481,7 @@ const DOM = {
     btnMoveLeft:           document.getElementById('btn-move-left'),
     btnMoveRight:          document.getElementById('btn-move-right'),
     btnDeleteSlide:        document.getElementById('btn-delete-slide'),
+    btnDuplicateSlide:     document.getElementById('btn-duplicate-slide'),
     bgUpload:              document.getElementById('bg-upload'),
     bgUploadLabel:         document.getElementById('bg-upload-label'),
     inputBgColor:          document.getElementById('input-bg-color'),
@@ -706,12 +709,12 @@ function generateSlideHTML(slide, index, forPreview = false) {
         : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;${bgWrapStyle}"></div>`;
 
     const topLogosHTML = `
-        <div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:center;z-index:40;">
-            <div style="display:flex;align-items:center;justify-content:flex-start;width:50%;height:100%;">
-                ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:80px;max-width:200px;object-fit:contain;">` : ''}
+        <div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;">
+            <div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">
+                ${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}
             </div>
-            <div style="display:flex;align-items:center;justify-content:flex-end;width:50%;height:100%;">
-                ${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;">` : ''}
+            <div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">
+                ${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}
             </div>
         </div>`;
 
@@ -841,6 +844,7 @@ function renderEditor() {
     DOM.textFieldsContainer.style.display = isCover ? 'flex' : 'none';
     DOM.zoomContainer.style.display       = 'flex';
     DOM.btnDeleteSlide.style.display      = !isCover ? 'block' : 'none';
+    DOM.btnDuplicateSlide.style.display   = state.slides.length < MAX_SLIDES ? 'block' : 'none';
     DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
     DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length-1 ? 'block' : 'none';
     DOM.btnPrev.disabled = state.activeIndex === 0;
@@ -1189,6 +1193,26 @@ DOM.btnDeleteSlide.addEventListener('click', () => {
     idbDelete(id).catch(() => {});
     state.slides.splice(state.activeIndex, 1);
     state.activeIndex = Math.max(0, state.activeIndex - 1);
+    saveState(); render();
+});
+
+// Duplica slide
+DOM.btnDuplicateSlide.addEventListener('click', async () => {
+    if (state.slides.length >= MAX_SLIDES) return;
+    const src   = state.slides[state.activeIndex];
+    const newId = `slide-${Date.now()}`;
+    // Deep clone: spread copia i campi semplici, textOverlay va clonato a parte
+    const copy = {
+        ...src,
+        id: newId,
+        textOverlay: src.textOverlay ? { ...src.textOverlay } : null,
+    };
+    // Copia anche l'immagine in IndexedDB sotto il nuovo id
+    if (src.image) {
+        await idbSet(newId, src.image).catch(() => {});
+    }
+    state.slides.splice(state.activeIndex + 1, 0, copy);
+    state.activeIndex++;
     saveState(); render();
 });
 
