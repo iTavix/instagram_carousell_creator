@@ -933,7 +933,13 @@ function renderEditor() {
     DOM.bgModeGradient.style.background = isGrad?'#0071E3':''; DOM.bgModeGradient.style.color = isGrad?'white':'';
     DOM.bgSolidRow.style.display = isGrad?'none':'flex'; DOM.bgGradientRows.style.display = isGrad?'flex':'none';
     DOM.inputBgColor.value = slide.bgColor||'#333333'; DOM.inputGradColor1.value = slide.gradColor1||'#1a1a2e'; DOM.inputGradColor2.value = slide.gradColor2||'#e94560';
-    DOM.gradDirBtns.forEach(b => { const a = b.dataset.dir===(slide.gradDir||'to bottom'); b.style.background=a?'#0071E3':''; b.style.color=a?'white':''; b.style.borderColor=a?'#0071E3':''; });
+    DOM.gradDirBtns.forEach(b => {
+        const a = b.dataset.dir === (slide.gradDir || 'to bottom');
+        b.style.background = a ? '#0071E3' : '';
+        b.style.color = a ? 'white' : '';
+        b.style.borderColor = a ? '#0071E3' : '';
+        b.classList.toggle('active-dir', a); // FIX BUG 3: tieni in sync la classe
+    });
     DOM.inputZoom.value = slide.zoom||1; DOM.zoomValue.textContent = (slide.zoom||1).toFixed(2)+'x';
     DOM.bgUploadLabel.textContent = slide.image ? '✓ Immagine caricata — clicca per cambiarla' : 'Carica Immagine Sfondo';
 
@@ -1147,12 +1153,62 @@ DOM.btnClearLogo.addEventListener('click', () => { state.logoBase64=null; localS
 DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; localStorage.removeItem(LS.themeLogo); render(); });
 DOM.btnClearNews.addEventListener('click', () => { state.newsBase64=null; localStorage.removeItem(LS.news); render(); });
 
+// ─── FIX BUG 1+2: aggiorna thumbnail attive su entrambi i container (desktop + mobile)
+function updateActiveThumb() {
+    const slide = state.slides[state.activeIndex];
+    [DOM.thumbnailsContainer, DOM.thumbnailsContainerMobile].filter(Boolean).forEach(c => {
+        const t = c.querySelectorAll('[role="listitem"]')[state.activeIndex];
+        if (!t) return;
+        // Reset eventuale immagine sopra se non c'è image
+        if (!slide.image) {
+            t.style.backgroundImage = '';
+            t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
+        } else {
+            // se c'è image, mantieni l'immagine ma aggiorna comunque il bg sottostante
+            t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
+            t.style.backgroundImage = `url(${slide.image})`;
+            t.style.backgroundSize = 'cover';
+            t.style.backgroundPosition = 'center';
+        }
+    });
+}
+
+// ─── FIX BUG 6: saveState debounced per i color picker / range continui (riduce scritture localStorage)
+const debouncedSave = debounce(saveState, 200);
+
 DOM.bgModeSolid.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='solid'; saveState(); render(); });
 DOM.bgModeGradient.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='gradient'; saveState(); render(); });
-DOM.inputBgColor.addEventListener('input', e => { state.slides[state.activeIndex].bgColor=e.target.value; const t=DOM.thumbnailsContainer.querySelectorAll('[role="listitem"]')[state.activeIndex]; if(t)t.style.backgroundColor=e.target.value; saveState(); renderPreview(); });
-DOM.inputGradColor1.addEventListener('input', e => { state.slides[state.activeIndex].gradColor1=e.target.value; saveState(); renderPreview(); });
-DOM.inputGradColor2.addEventListener('input', e => { state.slides[state.activeIndex].gradColor2=e.target.value; saveState(); renderPreview(); });
-DOM.gradDirBtns.forEach(btn => btn.addEventListener('click', () => { state.slides[state.activeIndex].gradDir=btn.dataset.dir; DOM.gradDirBtns.forEach(b=>{b.style.background='';b.style.color='';b.style.borderColor='';}); btn.style.background='#0071E3'; btn.style.color='white'; btn.style.borderColor='#0071E3'; saveState(); renderPreview(); }));
+DOM.inputBgColor.addEventListener('input', e => {
+    state.slides[state.activeIndex].bgColor = e.target.value;
+    updateActiveThumb();
+    renderPreview();
+    debouncedSave();
+});
+DOM.inputGradColor1.addEventListener('input', e => {
+    state.slides[state.activeIndex].gradColor1 = e.target.value;
+    updateActiveThumb();
+    renderPreview();
+    debouncedSave();
+});
+DOM.inputGradColor2.addEventListener('input', e => {
+    state.slides[state.activeIndex].gradColor2 = e.target.value;
+    updateActiveThumb();
+    renderPreview();
+    debouncedSave();
+});
+// ─── FIX BUG 3: gestione corretta della classe active-dir (oltre agli inline styles)
+DOM.gradDirBtns.forEach(btn => btn.addEventListener('click', () => {
+    state.slides[state.activeIndex].gradDir = btn.dataset.dir;
+    DOM.gradDirBtns.forEach(b => {
+        b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
+        b.classList.remove('active-dir');
+    });
+    btn.style.background = '#0071E3'; btn.style.color = 'white'; btn.style.borderColor = '#0071E3';
+    btn.classList.add('active-dir');
+    updateActiveThumb();
+    saveState();
+    renderPreview();
+}));
 DOM.inputZoom.addEventListener('input', e => { const v=parseFloat(e.target.value); state.slides[state.activeIndex].zoom=v; DOM.zoomValue.textContent=v.toFixed(2)+'x'; saveState(); renderPreview(); });
 
 DOM.coverToggleTrack.addEventListener('click', () => DOM.toggleCoverLayout.click());
