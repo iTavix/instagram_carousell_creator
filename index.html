@@ -109,74 +109,125 @@
 
     <!-- Testo sulla Slide -->
     <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h2 class="font-semibold text-lg text-gray-900">Testo sulla Slide</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Disponibile su tutte le slide</p>
-            </div>
-            <label class="flex items-center gap-2 cursor-pointer select-none">
-                <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
-                <div class="toggle-track" id="overlay-toggle-track"><div class="toggle-thumb"></div></div>
-                <input type="checkbox" id="toggle-text-overlay" class="sr-only"/>
-            </label>
+        <div>
+            <h2 class="font-semibold text-lg text-gray-900">Testo sulla Slide</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Tre layout indipendenti, attivabili insieme o singolarmente</p>
         </div>
-        <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
-            <!-- Font -->
-            <div class="flex flex-col gap-1">
-                <label for="overlay-font" class="text-xs font-bold text-gray-500 uppercase">Font</label>
-                <select id="overlay-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
-                    <option value="Bebas Neue">Bebas Neue</option>
-                    <option value="Oswald">Oswald</option>
-                    <option value="Montserrat">Montserrat</option>
-                    <option value="Playfair Display">Playfair Display</option>
-                    <option value="DM Sans">DM Sans</option>
-                </select>
-            </div>
-            <!-- Titolo -->
-            <div class="flex flex-col gap-1">
-                <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
-                <input type="text" id="overlay-title-input" placeholder="Testo grande" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-            </div>
-            <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                    <label for="overlay-title-size">Dimensione Titolo</label>
-                    <span id="overlay-title-size-val" class="text-[#0071E3]">80px</span>
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- Sotto-sezione 1: Layout Titolo + Sottotitolo -->
+        <!-- ─────────────────────────────────────────── -->
+        <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-semibold text-sm text-gray-900">Layout Titolo + Sottotitolo</h3>
+                    <p class="text-xs text-gray-500">Per copertine con titolo grande, sottotitolo e fonte</p>
                 </div>
-                <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2"/>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <span id="cover-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                    <div class="toggle-track" id="cover-toggle-track"><div class="toggle-thumb"></div></div>
+                    <input type="checkbox" id="toggle-cover-layout" class="sr-only"/>
+                </label>
             </div>
-            <!-- Corpo -->
-            <div class="flex flex-col gap-1">
-                <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
-                <textarea id="overlay-body-input" placeholder="Testo corpo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-            </div>
-            <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                    <label for="overlay-body-size">Dimensione Corpo</label>
-                    <span id="overlay-body-size-val" class="text-[#0071E3]">40px</span>
+            <div id="cover-fields" style="display:none;" class="flex flex-col gap-3">
+                <!-- Titolo -->
+                <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="input-title-font-size">Dimensione Titolo</label>
+                        <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
+                    </div>
+                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
                 </div>
-                <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2"/>
+                <!-- Sottotitolo -->
+                <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                <!-- Fonte -->
+                <input type="text" id="input-source" placeholder="Fonte (es. theverge.com) — opzionale" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                <!-- Stile Copertina (sotto-toggle) -->
+                <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <div>
+                        <span class="text-sm font-semibold text-blue-900">Stile Copertina</span>
+                        <p class="text-xs text-blue-700 mt-0.5">Maiuscolo automatico, gradiente scuro, badge News</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="cover-style-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                        <div class="toggle-track" id="cover-style-toggle-track"><div class="toggle-thumb"></div></div>
+                        <input type="checkbox" id="toggle-cover-style" class="sr-only"/>
+                    </div>
+                </label>
+                <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
             </div>
-            <!-- Colore -->
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
-                <div class="flex items-center gap-3">
-                    <span id="overlay-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
-                    <input type="color" id="overlay-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+        </div>
+
+        <!-- ─────────────────────────────────────────── -->
+        <!-- Sotto-sezione 2: Testo Libero (overlay)      -->
+        <!-- ─────────────────────────────────────────── -->
+        <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-semibold text-sm text-gray-900">Testo Libero</h3>
+                    <p class="text-xs text-gray-500">Titolo + corpo con font, colore e allineamento personalizzabili</p>
                 </div>
+                <label class="flex items-center gap-2 cursor-pointer select-none">
+                    <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                    <div class="toggle-track" id="overlay-toggle-track"><div class="toggle-thumb"></div></div>
+                    <input type="checkbox" id="toggle-text-overlay" class="sr-only"/>
+                </label>
             </div>
-            <!-- Allineamento testo -->
-            <div class="flex flex-col gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase">Allineamento</span>
-                <div class="flex gap-2">
-                    <button class="align-btn active" data-align="left"   aria-label="Allinea a sinistra">&#9664; Sin</button>
-                    <button class="align-btn"        data-align="center" aria-label="Centra">&#9632; Centro</button>
-                    <button class="align-btn"        data-align="right"  aria-label="Allinea a destra">Des &#9654;</button>
+            <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
+                <!-- Font -->
+                <div class="flex flex-col gap-1">
+                    <label for="overlay-font" class="text-xs font-bold text-gray-500 uppercase">Font</label>
+                    <select id="overlay-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
+                        <option value="Bebas Neue">Bebas Neue</option>
+                        <option value="Oswald">Oswald</option>
+                        <option value="Montserrat">Montserrat</option>
+                        <option value="Playfair Display">Playfair Display</option>
+                        <option value="DM Sans">DM Sans</option>
+                    </select>
                 </div>
-            </div>
-            <!-- Hint drag -->
-            <div class="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="flex-shrink-0 mt-0.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
-                <p class="text-xs text-blue-700 font-medium leading-relaxed">Trascina il blocco nell'anteprima per riposizionarlo</p>
+                <!-- Titolo -->
+                <div class="flex flex-col gap-1">
+                    <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
+                    <input type="text" id="overlay-title-input" placeholder="Testo grande" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="overlay-title-size">Dimensione Titolo</label>
+                        <span id="overlay-title-size-val" class="text-[#0071E3]">80px</span>
+                    </div>
+                    <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2"/>
+                </div>
+                <!-- Corpo -->
+                <div class="flex flex-col gap-1">
+                    <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
+                    <textarea id="overlay-body-input" placeholder="Testo corpo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="overlay-body-size">Dimensione Corpo</label>
+                        <span id="overlay-body-size-val" class="text-[#0071E3]">40px</span>
+                    </div>
+                    <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2"/>
+                </div>
+                <!-- Colore -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
+                    <div class="flex items-center gap-3">
+                        <span id="overlay-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
+                        <input type="color" id="overlay-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    </div>
+                </div>
+                <!-- Allineamento -->
+                <div class="flex flex-col gap-2">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Allineamento</span>
+                    <div class="flex gap-2">
+                        <button class="align-btn active" data-align="left">&#9664; Sin</button>
+                        <button class="align-btn"        data-align="center">&#9632; Centro</button>
+                        <button class="align-btn"        data-align="right">Des &#9654;</button>
+                    </div>
+                </div>
+                <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
             </div>
         </div>
     </div>
@@ -273,22 +324,6 @@
             <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
         </div>
 
-        <!-- Campi testo copertina (solo slide 0) -->
-        <div id="text-fields-container" class="flex flex-col gap-4 mt-2">
-            <label class="sr-only" for="input-title">Titolo copertina</label>
-            <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-            <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                    <label for="input-title-font-size">Dimensione Titolo</label>
-                    <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
-                </div>
-                <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
-            </div>
-            <label class="sr-only" for="input-body">Sottotitolo copertina</label>
-            <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-            <label class="sr-only" for="input-source">Fonte</label>
-            <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-        </div>
     </div>
 
 </div><!-- fine pannello sinistro -->
@@ -388,7 +423,12 @@
         <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
         <div class="space-y-4 text-sm text-gray-700">
             <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
-            <p><strong>2. Testo sulla Slide:</strong> Attiva il toggle su qualsiasi slide. Scegli font, scrivi titolo e corpo, regola le dimensioni, scegli colore e allineamento, trascina il blocco nell'anteprima per posizionarlo. <strong>Anche il testo della copertina è ora trascinabile</strong> (utile per evitare la sovrapposizione con icone di Instagram).</p>
+            <p><strong>2. Testo sulla Slide:</strong> Tre layout indipendenti, attivabili insieme o singolarmente su qualsiasi slide:</p>
+            <ul class="ml-4 space-y-1 text-xs list-disc">
+                <li><strong>Layout Titolo + Sottotitolo:</strong> per copertine con titolo grande, sottotitolo e fonte. Trascina il blocco nell'anteprima per riposizionarlo.</li>
+                <li><strong>Stile Copertina:</strong> sotto-opzione del precedente. Attiva maiuscolo automatico, gradiente scuro per leggibilità e badge News sopra il titolo.</li>
+                <li><strong>Testo Libero:</strong> titolo + corpo con font, dimensione, colore e allineamento personalizzabili. Anche questo trascinabile.</li>
+            </ul>
             <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione). Lo sfondo è indipendente per ogni slide.</p>
             <p><strong>4. Immagine in Primo Piano:</strong> Carica una seconda immagine sopra lo sfondo. Trascinala nell'anteprima per spostarla, regola la dimensione con lo slider.</p>
             <p><strong>5. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
@@ -493,13 +533,20 @@ const state = {
     newsBase64:      localStorage.getItem(LS.news)      || null,
     slides: [{
         id: 'slide-0', image: null,
+        // Layout Titolo+Sottotitolo (ex-copertina)
+        coverEnabled: true,     // toggle "Layout Titolo+Sottotitolo"
+        coverStyle:   true,     // toggle "Stile Copertina" (uppercase, gradiente, badge)
         title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
+        titleFontSize: 110,
+        coverTextX: 5.5, coverTextY: 60,
+        // Sfondo
         zoom: 1, bgColor: '#333333', bgMode: 'solid',
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
-        titleFontSize: 110,
-        textOverlay: null, // { enabled, font, title, body, titleSize, bodySize, color, align, x, y }
-        fgImage: null,     // base64 — l'immagine in primo piano (caricata su disco, non salvata in localStorage)
-        fgImageX: 50, fgImageY: 50, fgImageSize: 40,  // posizione in %, dimensione in % della larghezza
+        // Overlay testo libero
+        textOverlay: null,
+        // Foreground image
+        fgImage: null,
+        fgImageX: 50, fgImageY: 50, fgImageSize: 40,
     }],
 };
 
@@ -539,7 +586,14 @@ const DOM = {
     titleFontSizeValue:    document.getElementById('title-font-size-value'),
     inputBody:             document.getElementById('input-body'),
     inputSource:           document.getElementById('input-source'),
-    textFieldsContainer:   document.getElementById('text-fields-container'),
+    // — Layout Titolo+Sottotitolo —
+    toggleCoverLayout:     document.getElementById('toggle-cover-layout'),
+    coverToggleTrack:      document.getElementById('cover-toggle-track'),
+    coverToggleLabel:      document.getElementById('cover-toggle-label'),
+    coverFields:           document.getElementById('cover-fields'),
+    toggleCoverStyle:      document.getElementById('toggle-cover-style'),
+    coverStyleToggleTrack: document.getElementById('cover-style-toggle-track'),
+    coverStyleToggleLabel: document.getElementById('cover-style-toggle-label'),
     previewContainer:      document.getElementById('preview-container'),
     previewWrapper:        document.getElementById('preview-wrapper'),
     mockupPreviewContainer:document.getElementById('mockup-preview-container'),
@@ -646,14 +700,19 @@ function slideBg(slide) {
 function saveState() {
     const toSave = {
         slides: state.slides.map(s => ({
-            id: s.id, title: s.title, body: s.body, source: s.source,
+            id: s.id,
+            // Layout copertina e relativo stile (flag per-slide)
+            coverEnabled: s.coverEnabled, coverStyle: s.coverStyle,
+            title: s.title, body: s.body, source: s.source,
+            titleFontSize: s.titleFontSize,
+            coverTextX: s.coverTextX, coverTextY: s.coverTextY,
+            // Sfondo
             zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
             gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
-            titleFontSize: s.titleFontSize, textOverlay: s.textOverlay,
-            // Posizione e dimensione FG (l'immagine vera è in IndexedDB)
+            // Overlay testo libero
+            textOverlay: s.textOverlay,
+            // Foreground image (metadati)
             fgImageX: s.fgImageX, fgImageY: s.fgImageY, fgImageSize: s.fgImageSize,
-            // Posizione testo copertina (solo slide 0 lo usa, ma salviamo sempre)
-            coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         })),
     };
     try { localStorage.setItem(LS.state, JSON.stringify(toSave)); }
@@ -666,15 +725,20 @@ function loadState() {
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (Array.isArray(saved.slides) && saved.slides.length > 0) {
-            state.slides = saved.slides.map(s => ({
+            state.slides = saved.slides.map((s, idx) => ({
                 ...s, image: null, fgImage: null,
-                bgMode: s.bgMode || 'solid',
-                gradColor1: s.gradColor1 || '#1a1a2e',
-                gradColor2: s.gradColor2 || '#e94560',
-                gradDir:    s.gradDir    || 'to bottom',
-                fgImageX:    s.fgImageX    ?? 50,
-                fgImageY:    s.fgImageY    ?? 50,
-                fgImageSize: s.fgImageSize ?? 40,
+                // Migrazione retro-compatibile: vecchie slide non avevano coverEnabled.
+                // Lo stato precedente era: solo slide 0 = copertina → assumiamo che la prima slide
+                // di una sessione vecchia avesse l'effetto copertina attivo.
+                coverEnabled: s.coverEnabled ?? (idx === 0),
+                coverStyle:   s.coverStyle   ?? (idx === 0),
+                bgMode:       s.bgMode || 'solid',
+                gradColor1:   s.gradColor1 || '#1a1a2e',
+                gradColor2:   s.gradColor2 || '#e94560',
+                gradDir:      s.gradDir    || 'to bottom',
+                fgImageX:     s.fgImageX    ?? 50,
+                fgImageY:     s.fgImageY    ?? 50,
+                fgImageSize:  s.fgImageSize ?? 40,
             }));
         }
     } catch (e) { console.warn('Impossibile caricare stato:', e); }
@@ -754,11 +818,13 @@ function generateOverlayHTML(overlay, forPreview) {
 }
 
 function generateSlideHTML(slide, index, forPreview = false) {
-    const isCover       = index === 0;
+    // Layout copertina (titolo+sottotitolo) e stile copertina ora sono flag per-slide,
+    // non più legati all'indice 0.
+    const coverEnabled = !!slide.coverEnabled;
+    const coverStyle   = !!slide.coverStyle;
     const zoom          = slide.zoom          || 1;
     const titleFontSize = slide.titleFontSize  || 110;
     const bg            = slideBg(slide);
-    // Per background piatto, anche come colore CSS semplice
     const bgColorFlat   = (slide.bgMode === 'gradient') ? slide.gradColor1 || '#333' : (slide.bgColor || '#333333');
 
     const borderRadiusStyle = zoom < 1 ? 'border-radius:40px;' : '';
@@ -786,31 +852,35 @@ function generateSlideHTML(slide, index, forPreview = false) {
             </div>
         </div>`;
 
-    const gradientHTML = isCover
+    // Gradiente scuro: solo se "Stile Copertina" è attivo
+    const gradientHTML = (coverEnabled && coverStyle)
         ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
 
-    const newsHTML = state.newsBase64
+    // Badge news: solo se "Stile Copertina" è attivo (sopra il titolo)
+    const newsHTML = (coverEnabled && coverStyle && state.newsBase64)
         ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
 
-    // Posizione del blocco testo copertina (in % del canvas 1080×1350).
-    // Default: angolo basso-sinistra (≈ left 5.5%, top 60% del canvas).
+    // Posizione blocco titolo+sottotitolo (% del canvas)
     const coverTextX = slide.coverTextX ?? 5.5;
     const coverTextY = slide.coverTextY ?? 60;
 
-    const textHTML = isCover
+    // Stile titolo: maiuscolo se "Stile Copertina" è attivo
+    const titleUppercase = coverStyle ? 'text-transform:uppercase;' : '';
+
+    const textHTML = coverEnabled
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${coverTextX}%;top:${coverTextY}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">
                ${newsHTML}
-               <h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFontSize}px;line-height:1;margin:0 0 16px 0;text-transform:uppercase;">${escapeHtml(slide.title)}</h2>
+               <h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFontSize}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2>
                <p  style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p>
            </div>` : '';
 
-    const sourceHTML = (isCover && slide.source)
-        ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.source)}</div>` : '';
+    // Fonte in basso a destra: solo se layout attivo e c'è il testo (a prescindere da Stile Copertina)
+    const sourceHTML = (coverEnabled && slide.source)
+        ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
 
     const overlayHTML = generateOverlayHTML(slide.textOverlay, forPreview);
     const fgImageHTML = generateFgImageHTML(slide, forPreview);
 
-    // Il div root usa background inline per supportare sia colore che gradiente
     const rootBgStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgColorFlat};`;
     return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${rootBgStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${fgImageHTML}${overlayHTML}</div>`;
 }
@@ -920,8 +990,8 @@ function bindFgImageDrag() {
  * (nessun translate), quindi la conversione click→percentuale è diretta.
  */
 function bindCoverTextDrag() {
-    if (state.activeIndex !== 0) return; // Solo sulla copertina
-    const slide = state.slides[0];
+    const slide = state.slides[state.activeIndex];
+    if (!slide.coverEnabled) return; // Solo se il layout titolo+sottotitolo è attivo
     const el = document.getElementById('preview-cover-text-drag');
     if (!el) return;
 
@@ -929,22 +999,18 @@ function bindCoverTextDrag() {
     el.addEventListener('touchstart', onStart, { passive:false });
 
     function onStart(e) {
-        // Non interferire se l'utente sta cliccando dentro un input/textarea
         if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) return;
         e.preventDefault(); e.stopPropagation();
         el.classList.add('dragging');
         const rect  = DOM.previewWrapper.getBoundingClientRect();
         const touch = e.touches ? e.touches[0] : e;
-        // Posizione attuale dell'angolo top-left in pixel
         const cx = ((slide.coverTextX ?? 5.5) / 100) * rect.width;
         const cy = ((slide.coverTextY ?? 60)  / 100) * rect.height;
-        // Offset tra il click e l'angolo top-left del blocco
         const ox = touch.clientX - rect.left - cx;
         const oy = touch.clientY - rect.top  - cy;
 
         function onMove(e) {
             const t  = e.touches ? e.touches[0] : e;
-            // Clamp generoso: 0–90 perché il blocco è largo 89%, evita di farlo uscire a destra
             const nx = Math.max(0, Math.min(90,  (t.clientX - rect.left - ox) / rect.width  * 100));
             const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
             el.style.left = nx + '%';
@@ -1001,7 +1067,16 @@ function renderThumbnails() {
         btn.textContent = '+';
         btn.setAttribute('aria-label', 'Aggiungi slide');
         btn.addEventListener('click', () => {
-            state.slides.push({ id:`slide-${Date.now()}`, image:null, zoom:1, bgColor:'#333333', bgMode:'solid', gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom', textOverlay:null, fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40 });
+            state.slides.push({
+                id:`slide-${Date.now()}`, image:null,
+                coverEnabled:false, coverStyle:false,  // Nuove slide: layout copertina disattivo
+                title:'', body:'', source:'', titleFontSize:110,
+                coverTextX:5.5, coverTextY:60,
+                zoom:1, bgColor:'#333333', bgMode:'solid',
+                gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom',
+                textOverlay:null,
+                fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40,
+            });
             state.activeIndex = state.slides.length - 1;
             saveState(); render();
         });
@@ -1011,14 +1086,12 @@ function renderThumbnails() {
 
 function renderEditor() {
     const slide   = state.slides[state.activeIndex];
-    const isCover = state.activeIndex === 0;
 
     DOM.slideCountTitle.textContent = `Slides (${state.slides.length}/${MAX_SLIDES})`;
-    DOM.editorTitle.textContent     = isCover ? 'Modifica Copertina' : `Modifica Slide ${state.activeIndex+1}`;
+    DOM.editorTitle.textContent     = `Modifica Slide ${state.activeIndex + 1}`;
 
-    DOM.textFieldsContainer.style.display = isCover ? 'flex' : 'none';
     DOM.zoomContainer.style.display       = 'flex';
-    DOM.btnDeleteSlide.style.display      = !isCover ? 'block' : 'none';
+    DOM.btnDeleteSlide.style.display      = state.slides.length > 1 ? 'block' : 'none';
     DOM.btnDuplicateSlide.style.display   = state.slides.length < MAX_SLIDES ? 'block' : 'none';
     DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
     DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length-1 ? 'block' : 'none';
@@ -1036,7 +1109,6 @@ function renderEditor() {
     DOM.inputBgColor.value              = slide.bgColor    || '#333333';
     DOM.inputGradColor1.value           = slide.gradColor1 || '#1a1a2e';
     DOM.inputGradColor2.value           = slide.gradColor2 || '#e94560';
-    // Direzione gradiente: evidenzia bottone attivo
     DOM.gradDirBtns.forEach(b => {
         const active = b.dataset.dir === (slide.gradDir || 'to bottom');
         b.style.background   = active ? '#0071E3' : '';
@@ -1059,7 +1131,13 @@ function renderEditor() {
         DOM.fgImageSizeVal.textContent  = (slide.fgImageSize ?? 40) + '%';
     }
 
-    if (isCover) {
+    // ── Layout Titolo + Sottotitolo (toggle + campi) ──
+    const coverOn = !!slide.coverEnabled;
+    DOM.toggleCoverLayout.checked      = coverOn;
+    DOM.coverToggleTrack.className     = 'toggle-track' + (coverOn ? ' on' : '');
+    DOM.coverToggleLabel.textContent   = coverOn ? 'On' : 'Off';
+    DOM.coverFields.style.display      = coverOn ? 'flex' : 'none';
+    if (coverOn) {
         DOM.inputTitleFontSize.value       = slide.titleFontSize || 110;
         DOM.titleFontSizeValue.textContent = (slide.titleFontSize || 110) + 'px';
         DOM.inputTitle.value               = slide.title  || '';
@@ -1067,11 +1145,17 @@ function renderEditor() {
         DOM.inputSource.value              = slide.source || '';
     }
 
+    // ── Stile Copertina (sotto-toggle del precedente) ──
+    const styleOn = !!slide.coverStyle;
+    DOM.toggleCoverStyle.checked            = styleOn;
+    DOM.coverStyleToggleTrack.className     = 'toggle-track' + (styleOn ? ' on' : '');
+    DOM.coverStyleToggleLabel.textContent   = styleOn ? 'On' : 'Off';
+
     DOM.btnClearLogo.style.display      = state.logoBase64      ? 'block' : 'none';
     DOM.btnClearThemeLogo.style.display = state.themeLogoBase64 ? 'block' : 'none';
     DOM.btnClearNews.style.display      = state.newsBase64      ? 'block' : 'none';
 
-    // Overlay
+    // Overlay (testo libero)
     const ov = slide.textOverlay;
     const on = !!(ov && ov.enabled);
     DOM.toggleTextOverlay.checked      = on;
@@ -1088,7 +1172,6 @@ function renderEditor() {
         DOM.overlayBodySizeVal.textContent  = (ov.bodySize  || 40) + 'px';
         DOM.overlayColor.value              = ov.color     || '#ffffff';
         DOM.overlayColorHex.textContent     = (ov.color    || '#ffffff').toUpperCase();
-        // Allineamento
         DOM.alignBtns.forEach(b => b.classList.toggle('active', b.dataset.align === (ov.align || 'left')));
     }
 }
@@ -1335,17 +1418,36 @@ DOM.inputZoom.addEventListener('input', e => {
     saveState(); renderPreview();
 });
 
-// Testo copertina
+// ── Layout Titolo + Sottotitolo (ex-copertina, ora per-slide) ──
+
+DOM.coverToggleTrack.addEventListener('click', () => DOM.toggleCoverLayout.click());
+DOM.toggleCoverLayout.addEventListener('change', e => {
+    state.slides[state.activeIndex].coverEnabled = e.target.checked;
+    DOM.coverToggleTrack.className   = 'toggle-track' + (e.target.checked ? ' on' : '');
+    DOM.coverToggleLabel.textContent = e.target.checked ? 'On' : 'Off';
+    DOM.coverFields.style.display    = e.target.checked ? 'flex' : 'none';
+    saveState(); renderPreview();
+});
+
+DOM.coverStyleToggleTrack.addEventListener('click', () => DOM.toggleCoverStyle.click());
+DOM.toggleCoverStyle.addEventListener('change', e => {
+    state.slides[state.activeIndex].coverStyle = e.target.checked;
+    DOM.coverStyleToggleTrack.className   = 'toggle-track' + (e.target.checked ? ' on' : '');
+    DOM.coverStyleToggleLabel.textContent = e.target.checked ? 'On' : 'Off';
+    saveState(); renderPreview();
+});
+
+// Campi: scrivono sempre sulla slide ATTIVA (non più solo slide 0)
 DOM.inputTitleFontSize.addEventListener('input', e => {
     const v = parseInt(e.target.value, 10);
-    state.slides[0].titleFontSize = v;
+    state.slides[state.activeIndex].titleFontSize = v;
     DOM.titleFontSizeValue.textContent = v + 'px';
     saveState(); renderPreview();
 });
 const debouncedPreview = debounce(() => { saveState(); renderPreview(); }, 150);
-DOM.inputTitle.addEventListener('input',  e => { state.slides[0].title  = e.target.value; debouncedPreview(); });
-DOM.inputBody.addEventListener('input',   e => { state.slides[0].body   = e.target.value; debouncedPreview(); });
-DOM.inputSource.addEventListener('input', e => { state.slides[0].source = e.target.value; debouncedPreview(); });
+DOM.inputTitle.addEventListener('input',  e => { state.slides[state.activeIndex].title  = e.target.value; debouncedPreview(); });
+DOM.inputBody.addEventListener('input',   e => { state.slides[state.activeIndex].body   = e.target.value; debouncedPreview(); });
+DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source = e.target.value; debouncedPreview(); });
 
 // ── Overlay ────────────────────────────────────────────────
 
