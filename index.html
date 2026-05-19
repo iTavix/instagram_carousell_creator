@@ -44,6 +44,104 @@
         #preview-cover-text-drag { transition:outline 0.15s; }
         #preview-cover-text-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
         #preview-cover-text-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:8px; border-radius:4px; }
+
+        /* ═════════════════════════════════════════ */
+        /* RESPONSIVE — Ottimizzazioni mobile        */
+        /* ═════════════════════════════════════════ */
+
+        /* Accordion: <details>/<summary> styling */
+        details.accordion { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+        details.accordion > summary {
+            list-style: none; cursor: pointer; user-select: none;
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+            font-weight: 600; font-size: 16px; color: #111827;
+            transition: background 0.15s;
+        }
+        details.accordion > summary::-webkit-details-marker { display: none; }
+        details.accordion > summary:hover { background: #F9FAFB; }
+        details.accordion > summary::after {
+            content: ''; width: 10px; height: 10px;
+            border-right: 2px solid #6B7280; border-bottom: 2px solid #6B7280;
+            transform: rotate(45deg); transition: transform 0.2s; flex-shrink: 0; margin-left: 12px;
+        }
+        details.accordion[open] > summary::after { transform: rotate(-135deg); }
+        details.accordion > .accordion-body { padding: 0 20px 20px 20px; }
+        /* La summary annulla il padding del pannello, quindi compensiamo dentro */
+        details.accordion .summary-meta { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-left: 8px; }
+
+        /* Strip thumbnail mobile (nascosta di default su desktop) */
+        .mobile-thumb-strip { display: none; }
+
+        /* MOBILE ONLY (< 768px) */
+        @media (max-width: 767px) {
+            body {
+                flex-direction: column-reverse !important;
+                padding: 0 !important;
+                gap: 0 !important;
+            }
+            /* Pannello sinistro (controlli) */
+            .left-panel {
+                width: 100% !important;
+                padding: 16px;
+                gap: 12px !important;
+            }
+            /* Pannello destro (anteprima) — sticky in alto */
+            .right-panel {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: #F5F5F7;
+                padding: 12px 16px 8px 16px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+                gap: 8px !important;
+                /* Limite altezza per non occupare tutto */
+                max-height: 60vh;
+            }
+            /* Anteprima ridimensionata */
+            #preview-wrapper {
+                max-width: 280px !important;
+                max-height: 40vh;
+            }
+            /* Mockup ridotto */
+            #mockup-wrapper {
+                max-width: 240px !important;
+            }
+            /* Header anteprima compatto */
+            .preview-header { padding: 8px 12px !important; }
+            .preview-header h2 { font-size: 14px !important; }
+            .preview-header button { padding: 6px 12px !important; font-size: 13px; }
+            /* Thumbnail strip compatta */
+            .mobile-thumb-strip { display: flex !important; gap: 6px; overflow-x: auto; padding: 4px 0; }
+            .mobile-thumb-strip > * { flex-shrink: 0; }
+            /* L'intestazione dell'app più compatta */
+            .app-header h1 { font-size: 18px !important; }
+            .app-header p { font-size: 11px !important; }
+            /* Accordion: tutti CHIUSI di default su mobile */
+            details.accordion:not([data-keep-open]) { /* (regola applicata via JS) */ }
+        }
+
+        /* DESKTOP ONLY: il bottone fullscreen e la strip thumb mobile sono nascosti */
+        @media (min-width: 768px) {
+            .mobile-thumb-strip { display: none !important; }
+            .btn-fullscreen-preview { display: none !important; }
+            /* Su desktop, gli accordion sono SEMPRE aperti per non perdere usabilità */
+            details.accordion { /* gestito via JS per forzare open */ }
+        }
+
+        /* FULLSCREEN MODE — l'anteprima copre tutto */
+        body.fullscreen-preview .left-panel { display: none !important; }
+        body.fullscreen-preview .right-panel {
+            max-height: 100vh !important;
+            min-height: 100vh;
+            position: fixed !important;
+            top: 0; left: 0; right: 0; bottom: 0;
+            padding: 24px !important;
+            justify-content: center;
+        }
+        body.fullscreen-preview #preview-wrapper {
+            max-width: min(95vw, 70vh) !important;
+            max-height: 85vh !important;
+        }
         /* Bottoni allineamento testo */
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
         .align-btn.active { background:#0071E3; border-color:#0071E3; color:white; }
@@ -59,10 +157,10 @@
 <!-- ═══════════════════════════════════════════════════ -->
 <!-- PANNELLO SINISTRO                                   -->
 <!-- ═══════════════════════════════════════════════════ -->
-<div class="w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
+<div class="left-panel w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
 
     <!-- Intestazione app -->
-    <div class="flex items-center gap-3 px-1">
+    <div class="app-header flex items-center gap-3 px-1">
         <img src="logo.png" alt="Logo" class="h-9 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">
         <div>
             <h1 class="text-xl font-bold text-gray-900 leading-tight tracking-tight">IG Carousel Creator</h1>
@@ -71,18 +169,18 @@
     </div>
 
     <!-- Impostazioni Brand -->
-    <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-lg text-gray-900">Impostazioni Brand</h2>
-            <div class="flex items-center gap-2">
+    <details class="accordion" open>
+        <summary>
+            <span>Impostazioni Brand</span>
+            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
                 <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app"
                         class="text-gray-500 hover:text-black hover:bg-gray-100 p-1.5 rounded-full transition-all">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                 </button>
-                <button id="btn-help" class="text-sm font-medium text-[#0071E3] hover:underline bg-gray-100 px-3 py-1 rounded-full">Guida</button>
+                <button id="btn-help" class="text-xs font-medium text-[#0071E3] hover:underline bg-gray-100 px-3 py-1 rounded-full">Guida</button>
             </div>
-        </div>
-        <div class="flex flex-col gap-4">
+        </summary>
+        <div class="accordion-body flex flex-col gap-4">
             <div>
                 <div class="flex justify-between mb-2">
                     <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
@@ -105,14 +203,13 @@
                 <input type="file" id="news-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
             </div>
         </div>
-    </div>
+    </details>
 
     <!-- Testo sulla Slide -->
-    <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
-        <div>
-            <h2 class="font-semibold text-lg text-gray-900">Testo sulla Slide</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Tre layout indipendenti, attivabili insieme o singolarmente</p>
-        </div>
+    <details class="accordion">
+        <summary><span>Testo sulla Slide</span></summary>
+        <div class="accordion-body flex flex-col gap-4">
+            <p class="text-xs text-gray-500 -mt-2">Tre layout indipendenti, attivabili insieme o singolarmente</p>
 
         <!-- ─────────────────────────────────────────── -->
         <!-- Sotto-sezione 1: Layout Titolo + Sottotitolo -->
@@ -230,33 +327,36 @@
                 <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
             </div>
         </div>
-    </div>
+        </div>
+    </details>
 
     <!-- Gestione Slides -->
-    <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-        <div class="flex justify-between items-center mb-4">
-            <h2 id="slide-count-title" class="font-semibold text-lg text-gray-900">Slides (1/20)</h2>
-            <div class="flex gap-2">
-                <button id="btn-prev" aria-label="Slide precedente" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&larr;</button>
-                <button id="btn-next" aria-label="Slide successiva"  class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all">&rarr;</button>
+    <details class="accordion" open data-keep-open>
+        <summary>
+            <span id="slide-count-title">Slides (1/20)</span>
+            <div class="flex gap-2" onclick="event.stopPropagation();">
+                <button id="btn-prev" aria-label="Slide precedente" class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&larr;</button>
+                <button id="btn-next" aria-label="Slide successiva"  class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&rarr;</button>
             </div>
+        </summary>
+        <div class="accordion-body">
+            <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
         </div>
-        <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
-    </div>
+    </details>
 
     <!-- Editor Slide -->
-    <div class="bg-white border border-black/[0.08] rounded-[12px] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-4">
-        <div class="flex justify-between items-center mb-2">
-            <h2 id="editor-title" class="font-semibold text-lg text-gray-900">Modifica Copertina</h2>
-            <div class="flex gap-3 items-center">
-                <button id="btn-move-left"      class="text-gray-500 text-sm hover:text-black hidden">&larr; Sposta</button>
-                <button id="btn-move-right"     class="text-gray-500 text-sm hover:text-black hidden">Sposta &rarr;</button>
-                <button id="btn-duplicate-slide" class="text-[#0071E3] text-sm font-medium hover:underline" title="Duplica questa slide">⧉ Duplica</button>
-                <button id="btn-delete-slide"   class="text-[#E3000F] text-sm font-medium hover:underline hidden">Elimina</button>
+    <details class="accordion" open data-keep-open>
+        <summary>
+            <span id="editor-title">Modifica Slide 1</span>
+            <div class="flex gap-3 items-center" onclick="event.stopPropagation();">
+                <button id="btn-move-left"      class="text-gray-500 text-xs hover:text-black hidden">&larr;</button>
+                <button id="btn-move-right"     class="text-gray-500 text-xs hover:text-black hidden">&rarr;</button>
+                <button id="btn-duplicate-slide" class="text-[#0071E3] text-xs font-medium hover:underline" title="Duplica">⧉</button>
+                <button id="btn-delete-slide"   class="text-[#E3000F] text-xs font-medium hover:underline hidden">Elimina</button>
             </div>
-        </div>
-
-        <!-- Upload sfondo -->
+        </summary>
+        <div class="accordion-body flex flex-col gap-4">
+            <!-- Upload sfondo -->
         <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
             <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
             <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
@@ -324,17 +424,18 @@
             <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
         </div>
 
-    </div>
+        </div>
+    </details>
 
 </div><!-- fine pannello sinistro -->
 
 <!-- ═══════════════════════════════════════════════════ -->
 <!-- PANNELLO DESTRO — ANTEPRIMA                        -->
 <!-- ═══════════════════════════════════════════════════ -->
-<div class="flex-grow flex flex-col items-center gap-6">
+<div class="right-panel flex-grow flex flex-col items-center gap-6">
 
     <!-- Barra superiore anteprima -->
-    <div class="w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+    <div class="preview-header w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
         <div class="flex items-center gap-3">
             <h2 class="font-semibold text-lg text-gray-900">Anteprima</h2>
             <!-- Toggle mockup Instagram -->
@@ -344,19 +445,24 @@
                 <input type="checkbox" id="toggle-mockup" class="sr-only"/>
             </label>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
+            <!-- Bottone fullscreen (solo mobile) -->
+            <button id="btn-fullscreen-preview" class="btn-fullscreen-preview p-2 text-gray-500 hover:text-black hover:bg-gray-100 rounded-full transition-all" aria-label="Anteprima a tutto schermo" title="Anteprima fullscreen">
+                <svg id="icon-fullscreen-enter" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                <svg id="icon-fullscreen-exit" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>
+            </button>
             <!-- Esporta slide singola -->
-            <button id="btn-export-single"
-                    class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                    title="Esporta solo questa slide">
-                ↓ Singola
-            </button>
+            <button id="btn-export-single" class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed" title="Esporta solo questa slide">↓ Singola</button>
             <!-- Esporta tutto -->
-            <button id="btn-export"
-                    class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                Esporta Carousel
-            </button>
+            <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">Esporta Carousel</button>
         </div>
+    </div>
+
+    <!-- Strip thumbnail mobile + bottoni navigazione (visibile solo su mobile) -->
+    <div class="mobile-thumb-strip w-full bg-white border border-black/[0.08] rounded-[10px] p-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] items-center">
+        <button id="btn-prev-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0" aria-label="Slide precedente">&larr;</button>
+        <div id="thumbnails-container-mobile" class="flex gap-2 overflow-x-auto px-1 custom-scrollbar" style="flex:1;"></div>
+        <button id="btn-next-mobile" class="p-2 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all flex-shrink-0" aria-label="Slide successiva">&rarr;</button>
     </div>
 
     <!-- Progress bar export (nascosta di default) -->
@@ -605,6 +711,12 @@ const DOM = {
     slideCountTitle:       document.getElementById('slide-count-title'),
     btnPrev:               document.getElementById('btn-prev'),
     btnNext:               document.getElementById('btn-next'),
+    btnPrevMobile:         document.getElementById('btn-prev-mobile'),
+    btnNextMobile:         document.getElementById('btn-next-mobile'),
+    thumbnailsContainerMobile: document.getElementById('thumbnails-container-mobile'),
+    btnFullscreenPreview:  document.getElementById('btn-fullscreen-preview'),
+    iconFullscreenEnter:   document.getElementById('icon-fullscreen-enter'),
+    iconFullscreenExit:    document.getElementById('icon-fullscreen-exit'),
     btnExport:             document.getElementById('btn-export'),
     btnExportSingle:       document.getElementById('btn-export-single'),
     exportProgressContainer: document.getElementById('export-progress-container'),
@@ -1035,53 +1147,80 @@ function bindCoverTextDrag() {
     }
 }
 
+/** Crea un singolo elemento thumbnail per una slide. Usato sia desktop che mobile. */
+function createThumbElement(slide, i, sizePx) {
+    const thumb = document.createElement('div');
+    const size = sizePx || 72;
+    thumb.className = [
+        `w-[${size}px] h-[${size}px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all`,
+        i === state.activeIndex ? 'border-[#0071E3] scale-105 shadow-md' : 'border-gray-300 opacity-80',
+    ].join(' ');
+    thumb.style.width  = size + 'px';
+    thumb.style.height = size + 'px';
+
+    // Sfondo thumbnail: gradiente o colore piatto
+    if (slide.bgMode === 'gradient') {
+        thumb.style.background = slideBg(slide);
+    } else {
+        thumb.style.backgroundColor = slide.bgColor || '#333333';
+    }
+
+    thumb.setAttribute('role', 'listitem');
+    thumb.setAttribute('aria-label', `Slide ${i+1}${i === state.activeIndex ? ' (attiva)' : ''}`);
+    thumb.setAttribute('tabindex', '0');
+    if (slide.image) {
+        thumb.style.backgroundImage    = `url(${slide.image})`;
+        thumb.style.backgroundSize     = 'cover';
+        thumb.style.backgroundPosition = 'center';
+    }
+    const go = () => { state.activeIndex = i; render(); };
+    thumb.addEventListener('click', go);
+    thumb.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); go(); } });
+    return thumb;
+}
+
+/** Crea il bottone "+" per aggiungere una slide. */
+function createAddSlideButton(sizePx) {
+    const size = sizePx || 72;
+    const btn = document.createElement('button');
+    btn.className   = 'flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
+    btn.style.width  = size + 'px';
+    btn.style.height = size + 'px';
+    btn.textContent = '+';
+    btn.setAttribute('aria-label', 'Aggiungi slide');
+    btn.addEventListener('click', () => {
+        state.slides.push({
+            id:`slide-${Date.now()}`, image:null,
+            coverEnabled:false, coverStyle:false,
+            title:'', body:'', source:'', titleFontSize:110,
+            coverTextX:5.5, coverTextY:60,
+            zoom:1, bgColor:'#333333', bgMode:'solid',
+            gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom',
+            textOverlay:null,
+            fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40,
+        });
+        state.activeIndex = state.slides.length - 1;
+        saveState(); render();
+    });
+    return btn;
+}
+
 function renderThumbnails() {
-    DOM.thumbnailsContainer.innerHTML = '';
-    state.slides.forEach((slide, i) => {
-        const thumb = document.createElement('div');
-        thumb.className = [
-            'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all',
-            i === state.activeIndex ? 'border-[#0071E3] scale-105 shadow-md' : 'border-gray-300 opacity-80',
-        ].join(' ');
+    // Popola entrambe le strip (desktop + mobile). Su desktop la mobile è display:none via CSS.
+    const containers = [DOM.thumbnailsContainer, DOM.thumbnailsContainerMobile].filter(Boolean);
+    containers.forEach(container => {
+        container.innerHTML = '';
+        // Su mobile usiamo thumb più piccole
+        const isMobileStrip = container.id === 'thumbnails-container-mobile';
+        const size = isMobileStrip ? 52 : 72;
 
-        // Sfondo thumbnail: gradiente o colore piatto
-        if (slide.bgMode === 'gradient') {
-            thumb.style.background = slideBg(slide);
-        } else {
-            thumb.style.backgroundColor = slide.bgColor || '#333333';
-        }
-
-        thumb.setAttribute('role', 'listitem');
-        thumb.setAttribute('aria-label', `Slide ${i+1}${i === state.activeIndex ? ' (attiva)' : ''}`);
-        thumb.setAttribute('tabindex', '0');
-        if (slide.image) { thumb.style.backgroundImage = `url(${slide.image})`; thumb.style.backgroundSize = 'cover'; thumb.style.backgroundPosition = 'center'; }
-        const go = () => { state.activeIndex = i; render(); };
-        thumb.addEventListener('click', go);
-        thumb.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); go(); } });
-        DOM.thumbnailsContainer.appendChild(thumb);
+        state.slides.forEach((slide, i) => container.appendChild(createThumbElement(slide, i, size)));
+        if (state.slides.length < MAX_SLIDES) container.appendChild(createAddSlideButton(size));
     });
 
-    if (state.slides.length < MAX_SLIDES) {
-        const btn = document.createElement('button');
-        btn.className   = 'w-[72px] h-[72px] flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
-        btn.textContent = '+';
-        btn.setAttribute('aria-label', 'Aggiungi slide');
-        btn.addEventListener('click', () => {
-            state.slides.push({
-                id:`slide-${Date.now()}`, image:null,
-                coverEnabled:false, coverStyle:false,  // Nuove slide: layout copertina disattivo
-                title:'', body:'', source:'', titleFontSize:110,
-                coverTextX:5.5, coverTextY:60,
-                zoom:1, bgColor:'#333333', bgMode:'solid',
-                gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom',
-                textOverlay:null,
-                fgImage:null, fgImageX:50, fgImageY:50, fgImageSize:40,
-            });
-            state.activeIndex = state.slides.length - 1;
-            saveState(); render();
-        });
-        DOM.thumbnailsContainer.appendChild(btn);
-    }
+    // Aggiorna stato disabled dei bottoni mobile prev/next
+    if (DOM.btnPrevMobile) DOM.btnPrevMobile.disabled = state.activeIndex === 0;
+    if (DOM.btnNextMobile) DOM.btnNextMobile.disabled = state.activeIndex === state.slides.length - 1;
 }
 
 function renderEditor() {
@@ -1509,6 +1648,21 @@ DOM.toggleMockup.addEventListener('change', e => {
 
 DOM.btnPrev.addEventListener('click',  () => { if (state.activeIndex > 0) { state.activeIndex--; render(); } });
 DOM.btnNext.addEventListener('click',  () => { if (state.activeIndex < state.slides.length-1) { state.activeIndex++; render(); } });
+// Versioni mobile (gemelle)
+if (DOM.btnPrevMobile) DOM.btnPrevMobile.addEventListener('click', () => { if (state.activeIndex > 0) { state.activeIndex--; render(); } });
+if (DOM.btnNextMobile) DOM.btnNextMobile.addEventListener('click', () => { if (state.activeIndex < state.slides.length-1) { state.activeIndex++; render(); } });
+
+// Bottone fullscreen anteprima (solo mobile, ma il listener c'è sempre)
+if (DOM.btnFullscreenPreview) {
+    DOM.btnFullscreenPreview.addEventListener('click', () => {
+        const on = !document.body.classList.contains('fullscreen-preview');
+        document.body.classList.toggle('fullscreen-preview', on);
+        DOM.iconFullscreenEnter.style.display = on ? 'none'  : 'block';
+        DOM.iconFullscreenExit.style.display  = on ? 'block' : 'none';
+        // Ricalcola la scala perché il wrapper è cambiato di dimensione
+        setTimeout(updateScale, 50);
+    });
+}
 DOM.btnMoveLeft.addEventListener('click',  () => { const i = state.activeIndex; if (i>0) { [state.slides[i],state.slides[i-1]]=[state.slides[i-1],state.slides[i]]; state.activeIndex--; saveState(); render(); } });
 DOM.btnMoveRight.addEventListener('click', () => { const i = state.activeIndex; if (i<state.slides.length-1) { [state.slides[i],state.slides[i+1]]=[state.slides[i+1],state.slides[i]]; state.activeIndex++; saveState(); render(); } });
 DOM.btnDeleteSlide.addEventListener('click', () => {
@@ -1572,6 +1726,15 @@ window.addEventListener('load', async () => {
     loadState();
     await loadImagesFromIDB();
     render();
+
+    // Su mobile: chiudi gli accordion non essenziali al primo avvio per ridurre lo scroll.
+    // Restano aperti solo quelli con `data-keep-open` (Slides + Editor Slide).
+    // L'utente può comunque riaprirli toccando l'header.
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        document.querySelectorAll('details.accordion').forEach(d => {
+            if (!d.hasAttribute('data-keep-open')) d.removeAttribute('open');
+        });
+    }
 });
 </script>
 </body>
