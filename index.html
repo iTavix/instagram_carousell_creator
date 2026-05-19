@@ -75,18 +75,25 @@
         /* MOBILE ONLY (< 768px) */
         @media (max-width: 767px) {
             body {
-                flex-direction: column-reverse !important;
+                flex-direction: column !important; /* Mantiene l'ordine naturale per il reorder con flex */
                 padding: 0 !important;
                 gap: 0 !important;
             }
-            /* Pannello sinistro (controlli) */
-            .left-panel {
-                width: 100% !important;
-                padding: 16px;
-                gap: 12px !important;
+            /* Wrapper per mantenere layout desktop ma consentire reorder dei figli su mobile */
+            .left-col {
+                display: contents; 
             }
-            /* Pannello destro (anteprima) — sticky in alto */
+            /* Header (Titolo e bottoni) su mobile in cima */
+            .header-group {
+                order: 1;
+                width: 100%;
+                padding: 16px 16px 0 16px;
+                background: #F5F5F7;
+                z-index: 101;
+            }
+            /* Pannello destro (anteprima) — sticky in alto, sotto l'header */
             .right-panel {
+                order: 2;
                 position: sticky;
                 top: 0;
                 z-index: 100;
@@ -96,6 +103,13 @@
                 gap: 8px !important;
                 /* Limite altezza per non occupare tutto */
                 max-height: 60vh;
+            }
+            /* Pannello sinistro (controlli) in basso */
+            .left-panel {
+                order: 3;
+                width: 100% !important;
+                padding: 16px;
+                gap: 12px !important;
             }
             /* Anteprima ridimensionata */
             #preview-wrapper {
@@ -129,7 +143,7 @@
         }
 
         /* FULLSCREEN MODE — l'anteprima copre tutto */
-        body.fullscreen-preview .left-panel { display: none !important; }
+        body.fullscreen-preview .left-col { display: none !important; }
         body.fullscreen-preview .right-panel {
             max-height: 100vh !important;
             min-height: 100vh;
@@ -155,279 +169,287 @@
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
 
 <!-- ═══════════════════════════════════════════════════ -->
-<!-- PANNELLO SINISTRO                                   -->
+<!-- PANNELLO SINISTRO (Controlli e Header Integrati)    -->
 <!-- ═══════════════════════════════════════════════════ -->
-<div class="left-panel w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
+<div class="left-col w-full md:w-[420px] flex-shrink-0 flex flex-col gap-6">
 
-    <!-- Intestazione app -->
-    <div class="app-header flex items-center gap-3 px-1">
-        <img src="logo.png" alt="Logo" class="h-9 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">
-        <div>
-            <h1 class="text-xl font-bold text-gray-900 leading-tight tracking-tight">IG Carousel Creator</h1>
-            <p class="text-xs text-gray-400 font-medium">Crea i tuoi caroselli Instagram</p>
+    <!-- Title and Core Settings (Spostati all'inizio) -->
+    <div class="header-group flex justify-between items-center w-full px-1">
+        <!-- Intestazione app -->
+        <div class="app-header flex items-center gap-3">
+            <img src="logo.png" alt="Logo" class="h-9 w-auto object-contain flex-shrink-0" onerror="this.style.display='none'">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900 leading-tight tracking-tight">IG Carousel Creator</h1>
+                <p class="text-xs text-gray-400 font-medium">Crea i tuoi caroselli Instagram</p>
+            </div>
+        </div>
+
+        <!-- Bottoni Extra (Refresh, Guida) -->
+        <div class="flex items-center gap-2">
+            <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app"
+                    class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            </button>
+            <button id="btn-help" class="text-xs font-medium text-[#0071E3] hover:underline bg-gray-200 px-3 py-1 rounded-full">Guida</button>
         </div>
     </div>
 
-    <!-- Impostazioni Brand -->
-    <details class="accordion" open>
-        <summary>
-            <span>Impostazioni Brand</span>
-            <div class="flex items-center gap-2" onclick="event.stopPropagation();">
-                <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app"
-                        class="text-gray-500 hover:text-black hover:bg-gray-100 p-1.5 rounded-full transition-all">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                </button>
-                <button id="btn-help" class="text-xs font-medium text-[#0071E3] hover:underline bg-gray-100 px-3 py-1 rounded-full">Guida</button>
-            </div>
-        </summary>
-        <div class="accordion-body flex flex-col gap-4">
-            <div>
-                <div class="flex justify-between mb-2">
-                    <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
-                    <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
-                </div>
-                <input type="file" id="logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
-            </div>
-            <div>
-                <div class="flex justify-between mb-2">
-                    <label for="theme-logo-upload" class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
-                    <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
-                </div>
-                <input type="file" id="theme-logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
-            </div>
-            <div>
-                <div class="flex justify-between mb-2">
-                    <label for="news-upload" class="text-sm font-medium text-gray-900">Badge News (Sopra Titolo Copertina)</label>
-                    <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
-                </div>
-                <input type="file" id="news-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
-            </div>
-        </div>
-    </details>
+    <!-- Resto dei controlli (.left-panel) -->
+    <div class="left-panel w-full flex flex-col gap-6">
 
-    <!-- Testo sulla Slide -->
-    <details class="accordion">
-        <summary><span>Testo sulla Slide</span></summary>
-        <div class="accordion-body flex flex-col gap-4">
-            <p class="text-xs text-gray-500 -mt-2">Tre layout indipendenti, attivabili insieme o singolarmente</p>
-
-        <!-- ─────────────────────────────────────────── -->
-        <!-- Sotto-sezione 1: Layout Titolo + Sottotitolo -->
-        <!-- ─────────────────────────────────────────── -->
-        <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between">
+        <!-- Impostazioni Brand -->
+        <details class="accordion" open>
+            <summary>
+                <span>Impostazioni Brand</span>
+            </summary>
+            <div class="accordion-body flex flex-col gap-4">
                 <div>
-                    <h3 class="font-semibold text-sm text-gray-900">Layout Titolo + Sottotitolo</h3>
-                    <p class="text-xs text-gray-500">Per copertine con titolo grande, sottotitolo e fonte</p>
-                </div>
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <span id="cover-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
-                    <div class="toggle-track" id="cover-toggle-track"><div class="toggle-thumb"></div></div>
-                    <input type="checkbox" id="toggle-cover-layout" class="sr-only"/>
-                </label>
-            </div>
-            <div id="cover-fields" style="display:none;" class="flex flex-col gap-3">
-                <!-- Titolo -->
-                <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                        <label for="input-title-font-size">Dimensione Titolo</label>
-                        <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
+                    <div class="flex justify-between mb-2">
+                        <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
+                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
-                    <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
+                    <input type="file" id="logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
                 </div>
-                <!-- Sottotitolo -->
-                <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-                <!-- Fonte -->
-                <input type="text" id="input-source" placeholder="Fonte (es. theverge.com) — opzionale" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-                <!-- Stile Copertina (sotto-toggle) -->
-                <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label for="theme-logo-upload" class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
+                        <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                    </div>
+                    <input type="file" id="theme-logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label for="news-upload" class="text-sm font-medium text-gray-900">Badge News (Sopra Titolo Copertina)</label>
+                        <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                    </div>
+                    <input type="file" id="news-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
+                </div>
+            </div>
+        </details>
+
+        <!-- Testo sulla Slide -->
+        <details class="accordion">
+            <summary><span>Testo sulla Slide</span></summary>
+            <div class="accordion-body flex flex-col gap-4">
+                <p class="text-xs text-gray-500 -mt-2">Tre layout indipendenti, attivabili insieme o singolarmente</p>
+
+            <!-- ─────────────────────────────────────────── -->
+            <!-- Sotto-sezione 1: Layout Titolo + Sottotitolo -->
+            <!-- ─────────────────────────────────────────── -->
+            <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
                     <div>
-                        <span class="text-sm font-semibold text-blue-900">Stile Copertina</span>
-                        <p class="text-xs text-blue-700 mt-0.5">Maiuscolo automatico, gradiente scuro, badge News</p>
+                        <h3 class="font-semibold text-sm text-gray-900">Layout Titolo + Sottotitolo</h3>
+                        <p class="text-xs text-gray-500">Per copertine con titolo grande, sottotitolo e fonte</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span id="cover-style-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
-                        <div class="toggle-track" id="cover-style-toggle-track"><div class="toggle-thumb"></div></div>
-                        <input type="checkbox" id="toggle-cover-style" class="sr-only"/>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <span id="cover-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                        <div class="toggle-track" id="cover-toggle-track"><div class="toggle-thumb"></div></div>
+                        <input type="checkbox" id="toggle-cover-layout" class="sr-only"/>
+                    </label>
+                </div>
+                <div id="cover-fields" style="display:none;" class="flex flex-col gap-3">
+                    <!-- Titolo -->
+                    <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                            <label for="input-title-font-size">Dimensione Titolo</label>
+                            <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
+                        </div>
+                        <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
                     </div>
-                </label>
-                <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
+                    <!-- Sottotitolo -->
+                    <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                    <!-- Fonte -->
+                    <input type="text" id="input-source" placeholder="Fonte (es. theverge.com) — opzionale" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    <!-- Stile Copertina (sotto-toggle) -->
+                    <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div>
+                            <span class="text-sm font-semibold text-blue-900">Stile Copertina</span>
+                            <p class="text-xs text-blue-700 mt-0.5">Maiuscolo automatico, gradiente scuro, badge News</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="cover-style-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                            <div class="toggle-track" id="cover-style-toggle-track"><div class="toggle-thumb"></div></div>
+                            <input type="checkbox" id="toggle-cover-style" class="sr-only"/>
+                        </div>
+                    </label>
+                    <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
+                </div>
             </div>
-        </div>
 
-        <!-- ─────────────────────────────────────────── -->
-        <!-- Sotto-sezione 2: Testo Libero (overlay)      -->
-        <!-- ─────────────────────────────────────────── -->
-        <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h3 class="font-semibold text-sm text-gray-900">Testo Libero</h3>
-                    <p class="text-xs text-gray-500">Titolo + corpo con font, colore e allineamento personalizzabili</p>
-                </div>
-                <label class="flex items-center gap-2 cursor-pointer select-none">
-                    <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
-                    <div class="toggle-track" id="overlay-toggle-track"><div class="toggle-thumb"></div></div>
-                    <input type="checkbox" id="toggle-text-overlay" class="sr-only"/>
-                </label>
-            </div>
-            <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
-                <!-- Font -->
-                <div class="flex flex-col gap-1">
-                    <label for="overlay-font" class="text-xs font-bold text-gray-500 uppercase">Font</label>
-                    <select id="overlay-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
-                        <option value="Bebas Neue">Bebas Neue</option>
-                        <option value="Oswald">Oswald</option>
-                        <option value="Montserrat">Montserrat</option>
-                        <option value="Playfair Display">Playfair Display</option>
-                        <option value="DM Sans">DM Sans</option>
-                    </select>
-                </div>
-                <!-- Titolo -->
-                <div class="flex flex-col gap-1">
-                    <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
-                    <input type="text" id="overlay-title-input" placeholder="Testo grande" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-                </div>
-                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                        <label for="overlay-title-size">Dimensione Titolo</label>
-                        <span id="overlay-title-size-val" class="text-[#0071E3]">80px</span>
-                    </div>
-                    <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2"/>
-                </div>
-                <!-- Corpo -->
-                <div class="flex flex-col gap-1">
-                    <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
-                    <textarea id="overlay-body-input" placeholder="Testo corpo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
-                </div>
-                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                        <label for="overlay-body-size">Dimensione Corpo</label>
-                        <span id="overlay-body-size-val" class="text-[#0071E3]">40px</span>
-                    </div>
-                    <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2"/>
-                </div>
-                <!-- Colore -->
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
-                    <div class="flex items-center gap-3">
-                        <span id="overlay-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
-                        <input type="color" id="overlay-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
-                    </div>
-                </div>
-                <!-- Allineamento -->
-                <div class="flex flex-col gap-2">
-                    <span class="text-xs font-bold text-gray-500 uppercase">Allineamento</span>
-                    <div class="flex gap-2">
-                        <button class="align-btn active" data-align="left">&#9664; Sin</button>
-                        <button class="align-btn"        data-align="center">&#9632; Centro</button>
-                        <button class="align-btn"        data-align="right">Des &#9654;</button>
-                    </div>
-                </div>
-                <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
-            </div>
-        </div>
-        </div>
-    </details>
-
-    <!-- Gestione Slides -->
-    <details class="accordion" open data-keep-open>
-        <summary>
-            <span id="slide-count-title">Slides (1/20)</span>
-            <div class="flex gap-2" onclick="event.stopPropagation();">
-                <button id="btn-prev" aria-label="Slide precedente" class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&larr;</button>
-                <button id="btn-next" aria-label="Slide successiva"  class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&rarr;</button>
-            </div>
-        </summary>
-        <div class="accordion-body">
-            <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
-        </div>
-    </details>
-
-    <!-- Editor Slide -->
-    <details class="accordion" open data-keep-open>
-        <summary>
-            <span id="editor-title">Modifica Slide 1</span>
-            <div class="flex gap-3 items-center" onclick="event.stopPropagation();">
-                <button id="btn-move-left"      class="text-gray-500 text-xs hover:text-black hidden">&larr;</button>
-                <button id="btn-move-right"     class="text-gray-500 text-xs hover:text-black hidden">&rarr;</button>
-                <button id="btn-duplicate-slide" class="text-[#0071E3] text-xs font-medium hover:underline" title="Duplica">⧉</button>
-                <button id="btn-delete-slide"   class="text-[#E3000F] text-xs font-medium hover:underline hidden">Elimina</button>
-            </div>
-        </summary>
-        <div class="accordion-body flex flex-col gap-4">
-            <!-- Upload sfondo -->
-        <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
-            <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
-            <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
-        </div>
-
-        <!-- Sfondo: colore piatto o gradiente -->
-        <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="flex gap-2 text-xs font-bold">
-                <button id="bg-mode-solid"    class="flex-1 py-1.5 rounded bg-[#0071E3] text-white transition-all" aria-pressed="true">Colore Piatto</button>
-                <button id="bg-mode-gradient" class="flex-1 py-1.5 rounded bg-white text-gray-600 border border-gray-200 transition-all" aria-pressed="false">Gradiente</button>
-            </div>
-            <!-- Colore piatto -->
-            <div id="bg-solid-row" class="flex items-center justify-between">
-                <label for="input-bg-color" class="text-xs font-bold text-gray-500 uppercase">Colore</label>
-                <input type="color" id="input-bg-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
-            </div>
-            <!-- Gradiente -->
-            <div id="bg-gradient-rows" style="display:none;" class="flex flex-col gap-3">
+            <!-- ─────────────────────────────────────────── -->
+            <!-- Sotto-sezione 2: Testo Libero (overlay)      -->
+            <!-- ─────────────────────────────────────────── -->
+            <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <label for="input-grad-color1" class="text-xs font-bold text-gray-500 uppercase">Colore 1</label>
-                    <input type="color" id="input-grad-color1" value="#1a1a2e" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    <div>
+                        <h3 class="font-semibold text-sm text-gray-900">Testo Libero</h3>
+                        <p class="text-xs text-gray-500">Titolo + corpo con font, colore e allineamento personalizzabili</p>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <span id="overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                        <div class="toggle-track" id="overlay-toggle-track"><div class="toggle-thumb"></div></div>
+                        <input type="checkbox" id="toggle-text-overlay" class="sr-only"/>
+                    </label>
                 </div>
-                <div class="flex items-center justify-between">
-                    <label for="input-grad-color2" class="text-xs font-bold text-gray-500 uppercase">Colore 2</label>
-                    <input type="color" id="input-grad-color2" value="#e94560" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                <div id="overlay-fields" style="display:none;" class="flex flex-col gap-4">
+                    <!-- Font -->
+                    <div class="flex flex-col gap-1">
+                        <label for="overlay-font" class="text-xs font-bold text-gray-500 uppercase">Font</label>
+                        <select id="overlay-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
+                            <option value="Bebas Neue">Bebas Neue</option>
+                            <option value="Oswald">Oswald</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Playfair Display">Playfair Display</option>
+                            <option value="DM Sans">DM Sans</option>
+                        </select>
+                    </div>
+                    <!-- Titolo -->
+                    <div class="flex flex-col gap-1">
+                        <label for="overlay-title-input" class="text-xs font-bold text-gray-500 uppercase">Titolo</label>
+                        <input type="text" id="overlay-title-input" placeholder="Testo grande" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    </div>
+                    <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                            <label for="overlay-title-size">Dimensione Titolo</label>
+                            <span id="overlay-title-size-val" class="text-[#0071E3]">80px</span>
+                        </div>
+                        <input type="range" id="overlay-title-size" min="30" max="200" step="2" value="80" class="w-full mt-2"/>
+                    </div>
+                    <!-- Corpo -->
+                    <div class="flex flex-col gap-1">
+                        <label for="overlay-body-input" class="text-xs font-bold text-gray-500 uppercase">Corpo</label>
+                        <textarea id="overlay-body-input" placeholder="Testo corpo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                    </div>
+                    <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                            <label for="overlay-body-size">Dimensione Corpo</label>
+                            <span id="overlay-body-size-val" class="text-[#0071E3]">40px</span>
+                        </div>
+                        <input type="range" id="overlay-body-size" min="20" max="120" step="2" value="40" class="w-full mt-2"/>
+                    </div>
+                    <!-- Colore -->
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <label for="overlay-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
+                        <div class="flex items-center gap-3">
+                            <span id="overlay-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
+                            <input type="color" id="overlay-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
+                    </div>
+                    <!-- Allineamento -->
+                    <div class="flex flex-col gap-2">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Allineamento</span>
+                        <div class="flex gap-2">
+                            <button class="align-btn active" data-align="left">&#9664; Sin</button>
+                            <button class="align-btn"        data-align="center">&#9632; Centro</button>
+                            <button class="align-btn"        data-align="right">Des &#9654;</button>
+                        </div>
+                    </div>
+                    <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <span class="text-xs font-bold text-gray-500 uppercase">Direzione</span>
-                    <div class="flex gap-2 text-xs">
-                        <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100 active-dir" data-dir="to bottom">↓ Vert</button>
-                        <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100" data-dir="to right">→ Oriz</button>
-                        <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100" data-dir="135deg">↘ Diag</button>
+            </div>
+            </div>
+        </details>
+
+        <!-- Gestione Slides -->
+        <details class="accordion" open data-keep-open>
+            <summary>
+                <span id="slide-count-title">Slides (1/20)</span>
+                <div class="flex gap-2" onclick="event.stopPropagation();">
+                    <button id="btn-prev" aria-label="Slide precedente" class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&larr;</button>
+                    <button id="btn-next" aria-label="Slide successiva"  class="p-1.5 bg-[#F5F5F7] rounded hover:bg-gray-200 disabled:opacity-50 transition-all text-sm">&rarr;</button>
+                </div>
+            </summary>
+            <div class="accordion-body">
+                <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
+            </div>
+        </details>
+
+        <!-- Editor Slide -->
+        <details class="accordion" open data-keep-open>
+            <summary>
+                <span id="editor-title">Modifica Slide 1</span>
+                <div class="flex gap-3 items-center" onclick="event.stopPropagation();">
+                    <button id="btn-move-left"      class="text-gray-500 text-xs hover:text-black hidden">&larr;</button>
+                    <button id="btn-move-right"     class="text-gray-500 text-xs hover:text-black hidden">&rarr;</button>
+                    <button id="btn-duplicate-slide" class="text-[#0071E3] text-xs font-medium hover:underline" title="Duplica">⧉</button>
+                    <button id="btn-delete-slide"   class="text-[#E3000F] text-xs font-medium hover:underline hidden">Elimina</button>
+                </div>
+            </summary>
+            <div class="accordion-body flex flex-col gap-4">
+                <!-- Upload sfondo -->
+            <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
+                <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
+            </div>
+
+            <!-- Sfondo: colore piatto o gradiente -->
+            <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex gap-2 text-xs font-bold">
+                    <button id="bg-mode-solid"    class="flex-1 py-1.5 rounded bg-[#0071E3] text-white transition-all" aria-pressed="true">Colore Piatto</button>
+                    <button id="bg-mode-gradient" class="flex-1 py-1.5 rounded bg-white text-gray-600 border border-gray-200 transition-all" aria-pressed="false">Gradiente</button>
+                </div>
+                <!-- Colore piatto -->
+                <div id="bg-solid-row" class="flex items-center justify-between">
+                    <label for="input-bg-color" class="text-xs font-bold text-gray-500 uppercase">Colore</label>
+                    <input type="color" id="input-bg-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                </div>
+                <!-- Gradiente -->
+                <div id="bg-gradient-rows" style="display:none;" class="flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <label for="input-grad-color1" class="text-xs font-bold text-gray-500 uppercase">Colore 1</label>
+                        <input type="color" id="input-grad-color1" value="#1a1a2e" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label for="input-grad-color2" class="text-xs font-bold text-gray-500 uppercase">Colore 2</label>
+                        <input type="color" id="input-grad-color2" value="#e94560" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Direzione</span>
+                        <div class="flex gap-2 text-xs">
+                            <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100 active-dir" data-dir="to bottom">↓ Vert</button>
+                            <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100" data-dir="to right">→ Oriz</button>
+                            <button class="grad-dir-btn flex-1 py-1 rounded border border-gray-200 bg-white hover:bg-gray-100" data-dir="135deg">↘ Diag</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Zoom -->
-        <div id="zoom-container" style="display:none; flex-direction:column; gap:8px;" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                <label for="input-zoom">Livello Ingrandimento</label>
-                <span id="zoom-value" class="text-[#0071E3]">1.00x</span>
-            </div>
-            <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2"/>
-        </div>
-
-        <!-- Immagine in Primo Piano (overlay) -->
-        <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-gray-500 uppercase">Immagine in Primo Piano</span>
-                <button id="btn-clear-fg-image" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
-            </div>
-            <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
-                <input type="file" id="fg-image-upload" accept="image/*" aria-label="Carica immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
-                <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
-            </div>
-            <!-- Dimensione FG (visibile solo se caricata) -->
-            <div id="fg-image-size-container" style="display:none;" class="flex flex-col gap-1 mt-1">
+            <!-- Zoom -->
+            <div id="zoom-container" style="display:none; flex-direction:column; gap:8px;" class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                    <label for="fg-image-size">Dimensione</label>
-                    <span id="fg-image-size-val" class="text-[#0071E3]">40%</span>
+                    <label for="input-zoom">Livello Ingrandimento</label>
+                    <span id="zoom-value" class="text-[#0071E3]">1.00x</span>
                 </div>
-                <input type="range" id="fg-image-size" min="10" max="90" step="1" value="40" class="w-full mt-1"/>
+                <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2"/>
             </div>
-            <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
-        </div>
 
-        </div>
-    </details>
+            <!-- Immagine in Primo Piano (overlay) -->
+            <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-gray-500 uppercase">Immagine in Primo Piano</span>
+                    <button id="btn-clear-fg-image" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                </div>
+                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+                    <input type="file" id="fg-image-upload" accept="image/*" aria-label="Carica immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
+                </div>
+                <!-- Dimensione FG (visibile solo se caricata) -->
+                <div id="fg-image-size-container" style="display:none;" class="flex flex-col gap-1 mt-1">
+                    <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                        <label for="fg-image-size">Dimensione</label>
+                        <span id="fg-image-size-val" class="text-[#0071E3]">40%</span>
+                    </div>
+                    <input type="range" id="fg-image-size" min="10" max="90" step="1" value="40" class="w-full mt-1"/>
+                </div>
+                <p id="fg-image-hint" style="display:none;" class="text-xs text-blue-700 font-medium mt-1">Trascina l'immagine nell'anteprima per riposizionarla</p>
+            </div>
 
-</div><!-- fine pannello sinistro -->
+            </div>
+        </details>
+    </div>
+</div><!-- fine pannello sinistro combinato -->
 
 <!-- ═══════════════════════════════════════════════════ -->
 <!-- PANNELLO DESTRO — ANTEPRIMA                        -->
@@ -523,7 +545,7 @@
 <div id="export-nodes" aria-hidden="true"></div>
 
 <!-- MODALE: GUIDA -->
-<div id="help-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+<div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col"
      role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
         <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
@@ -549,7 +571,7 @@
 </div>
 
 <!-- MODALE: EXPORT -->
-<div id="share-modal" class="modal fixed inset-0 z-50 bg-black/80 items-center justify-center p-4 flex-col"
+<div id="share-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col"
      role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh]">
         <h3 id="share-modal-title" class="text-xl font-bold mb-2">Slide Pronte! 🎉</h3>
