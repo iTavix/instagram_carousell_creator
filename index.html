@@ -40,6 +40,10 @@
         #preview-fg-drag { transition:outline 0.15s; }
         #preview-fg-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:4px; border-radius:4px; }
         #preview-fg-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:4px; border-radius:4px; }
+        /* Cover text drag */
+        #preview-cover-text-drag { transition:outline 0.15s; }
+        #preview-cover-text-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
+        #preview-cover-text-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:8px; border-radius:4px; }
         /* Bottoni allineamento testo */
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
         .align-btn.active { background:#0071E3; border-color:#0071E3; color:white; }
@@ -384,7 +388,7 @@
         <h3 id="help-modal-title" class="text-2xl font-bold mb-4">Guida all'uso</h3>
         <div class="space-y-4 text-sm text-gray-700">
             <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
-            <p><strong>2. Testo sulla Slide:</strong> Attiva il toggle su qualsiasi slide. Scegli font, scrivi titolo e corpo, regola le dimensioni, scegli colore e allineamento, trascina il blocco nell'anteprima per posizionarlo.</p>
+            <p><strong>2. Testo sulla Slide:</strong> Attiva il toggle su qualsiasi slide. Scegli font, scrivi titolo e corpo, regola le dimensioni, scegli colore e allineamento, trascina il blocco nell'anteprima per posizionarlo. <strong>Anche il testo della copertina è ora trascinabile</strong> (utile per evitare la sovrapposizione con icone di Instagram).</p>
             <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione). Lo sfondo è indipendente per ogni slide.</p>
             <p><strong>4. Immagine in Primo Piano:</strong> Carica una seconda immagine sopra lo sfondo. Trascinala nell'anteprima per spostarla, regola la dimensione con lo slider.</p>
             <p><strong>5. Zoom:</strong> Slider per ingrandire/ridurre l'immagine. Sotto 1.00x compaiono bordi arrotondati.</p>
@@ -648,6 +652,8 @@ function saveState() {
             titleFontSize: s.titleFontSize, textOverlay: s.textOverlay,
             // Posizione e dimensione FG (l'immagine vera è in IndexedDB)
             fgImageX: s.fgImageX, fgImageY: s.fgImageY, fgImageSize: s.fgImageSize,
+            // Posizione testo copertina (solo slide 0 lo usa, ma salviamo sempre)
+            coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         })),
     };
     try { localStorage.setItem(LS.state, JSON.stringify(toSave)); }
@@ -786,8 +792,13 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const newsHTML = state.newsBase64
         ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
 
+    // Posizione del blocco testo copertina (in % del canvas 1080×1350).
+    // Default: angolo basso-sinistra (≈ left 5.5%, top 60% del canvas).
+    const coverTextX = slide.coverTextX ?? 5.5;
+    const coverTextY = slide.coverTextY ?? 60;
+
     const textHTML = isCover
-        ? `<div style="position:absolute;bottom:80px;left:60px;right:60px;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;">
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${coverTextX}%;top:${coverTextY}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">
                ${newsHTML}
                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFontSize}px;line-height:1;margin:0 0 16px 0;text-transform:uppercase;">${escapeHtml(slide.title)}</h2>
                <p  style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p>
@@ -903,9 +914,60 @@ function bindFgImageDrag() {
     }
 }
 
-// ═══════════════════════════════════════════════════════════
-// RENDERING
-// ═══════════════════════════════════════════════════════════
+/**
+ * Drag del blocco testo della copertina (slide 0).
+ * A differenza degli altri drag, qui l'elemento è ancorato al suo angolo top-left
+ * (nessun translate), quindi la conversione click→percentuale è diretta.
+ */
+function bindCoverTextDrag() {
+    if (state.activeIndex !== 0) return; // Solo sulla copertina
+    const slide = state.slides[0];
+    const el = document.getElementById('preview-cover-text-drag');
+    if (!el) return;
+
+    el.addEventListener('mousedown',  onStart);
+    el.addEventListener('touchstart', onStart, { passive:false });
+
+    function onStart(e) {
+        // Non interferire se l'utente sta cliccando dentro un input/textarea
+        if (['INPUT','TEXTAREA','SELECT','BUTTON'].includes(e.target.tagName)) return;
+        e.preventDefault(); e.stopPropagation();
+        el.classList.add('dragging');
+        const rect  = DOM.previewWrapper.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        // Posizione attuale dell'angolo top-left in pixel
+        const cx = ((slide.coverTextX ?? 5.5) / 100) * rect.width;
+        const cy = ((slide.coverTextY ?? 60)  / 100) * rect.height;
+        // Offset tra il click e l'angolo top-left del blocco
+        const ox = touch.clientX - rect.left - cx;
+        const oy = touch.clientY - rect.top  - cy;
+
+        function onMove(e) {
+            const t  = e.touches ? e.touches[0] : e;
+            // Clamp generoso: 0–90 perché il blocco è largo 89%, evita di farlo uscire a destra
+            const nx = Math.max(0, Math.min(90,  (t.clientX - rect.left - ox) / rect.width  * 100));
+            const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
+            el.style.left = nx + '%';
+            el.style.top  = ny + '%';
+            slide.coverTextX = nx;
+            slide.coverTextY = ny;
+        }
+
+        function onEnd() {
+            el.classList.remove('dragging');
+            document.removeEventListener('mousemove',  onMove);
+            document.removeEventListener('touchmove',  onMove);
+            document.removeEventListener('mouseup',    onEnd);
+            document.removeEventListener('touchend',   onEnd);
+            saveState();
+        }
+
+        document.addEventListener('mousemove',  onMove);
+        document.addEventListener('touchmove',  onMove, { passive:false });
+        document.addEventListener('mouseup',    onEnd);
+        document.addEventListener('touchend',   onEnd);
+    }
+}
 
 function renderThumbnails() {
     DOM.thumbnailsContainer.innerHTML = '';
@@ -1036,6 +1098,7 @@ function renderPreview() {
     updateScale();
     bindOverlayDrag();
     bindFgImageDrag();
+    bindCoverTextDrag();
     // Aggiorna anche il mockup se visibile
     if (DOM.toggleMockup.checked) renderMockup();
 }
