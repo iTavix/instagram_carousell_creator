@@ -237,6 +237,11 @@
                         <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
+                    <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
+                        <label for="logo-size-slider">Dimensione</label>
+                        <span id="logo-size-value" class="text-[#0071E3]">100%</span>
+                    </div>
+                    <input type="range" id="logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
                 </div>
                 <div>
                     <div class="flex justify-between mb-2">
@@ -244,6 +249,11 @@
                         <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="theme-logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
+                    <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
+                        <label for="theme-logo-size-slider">Dimensione</label>
+                        <span id="theme-logo-size-value" class="text-[#0071E3]">100%</span>
+                    </div>
+                    <input type="range" id="theme-logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
                 </div>
                 <div>
                     <div class="flex justify-between mb-2">
@@ -251,6 +261,11 @@
                         <button id="btn-clear-news" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
                     </div>
                     <input type="file" id="news-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
+                    <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
+                        <label for="news-size-slider">Dimensione</label>
+                        <span id="news-size-value" class="text-[#0071E3]">100%</span>
+                    </div>
+                    <input type="range" id="news-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
                 </div>
             </div>
         </details>
@@ -688,9 +703,11 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_IMG_DIMENSION = 1920;          // Lato lungo dopo resize
 const COMPRESSION_QUALITY = 0.85;
 const HISTORY_MAX = 30;
+const LOGO_MARGIN_PX = 40;               // Margine laterale dei loghi (anche del testo cover di default)
+const LOGO_MARGIN_PCT = LOGO_MARGIN_PX / 1080 * 100; // ≈ 3.70%
 const SNAP_TOLERANCE = 2;                // % di tolleranza per snap-to-guide
-const SNAP_TARGETS = [10, 25, 33.33, 50, 66.66, 75, 90];
-const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme' };
+const SNAP_TARGETS = [3.7, 10, 25, 33.33, 50, 66.66, 75, 90, 96.3];
+const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size' };
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
 
 const FONTS = {
@@ -858,6 +875,10 @@ const state = {
     logoBase64:      lsGet(LS.logo)      || null,
     themeLogoBase64: lsGet(LS.themeLogo) || null,
     newsBase64:      lsGet(LS.news)      || null,
+    // Scala dei brand asset (1.0 = 100%)
+    logoSize:        parseFloat(lsGet(LS.logoSize))      || 1.0,
+    themeLogoSize:   parseFloat(lsGet(LS.themeLogoSize)) || 1.0,
+    newsSize:        parseFloat(lsGet(LS.newsSize))      || 1.0,
     slides: [makeDefaultSlide('slide-0', {
         coverEnabled: true, coverUppercase: true, coverDarkOverlay: true, coverShowNews: true,
         title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
@@ -871,7 +892,9 @@ function makeDefaultSlide(id, overrides = {}) {
         // Tre flag scorporati (UX#5)
         coverUppercase: false, coverDarkOverlay: false, coverShowNews: false,
         title: '', body: '', source: '',
-        titleFontSize: 110, coverTextX: 5.5, coverTextY: 60,
+        titleFontSize: 110,
+        coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
+        coverTextY: 60,
         zoom: 1, bgColor: '#333333', bgMode: 'solid',
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
         bgFilters: { ...DEFAULT_FILTERS }, // Feature#8: filtri sfondo
@@ -953,6 +976,12 @@ const DOM = {
     btnClearLogo:          document.getElementById('btn-clear-logo'),
     btnClearThemeLogo:     document.getElementById('btn-clear-theme-logo'),
     btnClearNews:          document.getElementById('btn-clear-news'),
+    logoSizeSlider:        document.getElementById('logo-size-slider'),
+    logoSizeValue:         document.getElementById('logo-size-value'),
+    themeLogoSizeSlider:   document.getElementById('theme-logo-size-slider'),
+    themeLogoSizeValue:    document.getElementById('theme-logo-size-value'),
+    newsSizeSlider:        document.getElementById('news-size-slider'),
+    newsSizeValue:         document.getElementById('news-size-value'),
     
     shareModal:            document.getElementById('share-modal'),
     renderedPreviews:      document.getElementById('rendered-previews'),
@@ -1122,15 +1151,21 @@ async function loadImagesFromIDB() {
 
 // ════════ UNDO/REDO (UX #1) ════════
 const history = { stack: [], future: [], suppress: false };
-function snapshot() {
-    if (history.suppress) return;
-    history.stack.push(deepClone({
+function _captureState() {
+    return deepClone({
         slides: state.slides,
         activeIndex: state.activeIndex,
         logoBase64: state.logoBase64,
         themeLogoBase64: state.themeLogoBase64,
         newsBase64: state.newsBase64,
-    }));
+        logoSize: state.logoSize,
+        themeLogoSize: state.themeLogoSize,
+        newsSize: state.newsSize,
+    });
+}
+function snapshot() {
+    if (history.suppress) return;
+    history.stack.push(_captureState());
     if (history.stack.length > HISTORY_MAX) history.stack.shift();
     history.future.length = 0; // ogni nuova azione cancella la coda redo
     updateHistoryButtons();
@@ -1143,8 +1178,13 @@ function restoreFrom(snap) {
     state.logoBase64 = snap.logoBase64;
     state.themeLogoBase64 = snap.themeLogoBase64;
     state.newsBase64 = snap.newsBase64;
-    // Ricarica le immagini base64 (perse nel clone — TODO: separare image dallo snapshot per quello)
-    // In realtà nel deepClone le incluse: torniamo a leggere da IDB solo se mancano
+    if (snap.logoSize      !== undefined) state.logoSize      = snap.logoSize;
+    if (snap.themeLogoSize !== undefined) state.themeLogoSize = snap.themeLogoSize;
+    if (snap.newsSize      !== undefined) state.newsSize      = snap.newsSize;
+    // Persisti immediatamente anche le size
+    lsSet(LS.logoSize,      String(state.logoSize));
+    lsSet(LS.themeLogoSize, String(state.themeLogoSize));
+    lsSet(LS.newsSize,      String(state.newsSize));
     saveStateImmediate();
     render();
     history.suppress = false;
@@ -1152,7 +1192,7 @@ function restoreFrom(snap) {
 }
 function undo() {
     if (!history.stack.length) return;
-    const current = deepClone({ slides: state.slides, activeIndex: state.activeIndex, logoBase64: state.logoBase64, themeLogoBase64: state.themeLogoBase64, newsBase64: state.newsBase64 });
+    const current = _captureState();
     const prev = history.stack.pop();
     history.future.push(current);
     restoreFrom(prev);
@@ -1160,7 +1200,7 @@ function undo() {
 }
 function redo() {
     if (!history.future.length) return;
-    const current = deepClone({ slides: state.slides, activeIndex: state.activeIndex, logoBase64: state.logoBase64, themeLogoBase64: state.themeLogoBase64, newsBase64: state.newsBase64 });
+    const current = _captureState();
     const next = history.future.pop();
     history.stack.push(current);
     restoreFrom(next);
@@ -1231,16 +1271,22 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const safeThemeLogo = safeImageUrl(state.themeLogoBase64);
     const safeLogo = safeImageUrl(state.logoBase64);
     const safeNews = safeImageUrl(state.newsBase64);
-    const topLogosHTML = `<div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
+    // Dimensioni base dei loghi top, scalate dai size globali
+    const themeLogoH = Math.round(100 * state.themeLogoSize), themeLogoW = Math.round(300 * state.themeLogoSize);
+    const logoH      = Math.round(100 * state.logoSize),      logoW      = Math.round(300 * state.logoSize);
+    const newsH      = Math.round(60  * state.newsSize),      newsW      = Math.round(200 * state.newsSize);
+    // Altezza container loghi top = max delle due altezze (così entrambi i loghi possono crescere senza overflow visibile sopra)
+    const topRowH = Math.max(themeLogoH, logoH);
+    const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
 
     // Cover scorporato (UX#5)
     const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
-    const newsHTML = (cE && cNews && safeNews) ? `<img src="${safeNews}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
+    const newsHTML = (cE && cNews && safeNews) ? `<img src="${safeNews}" alt="" style="max-height:${newsH}px;max-width:${newsW}px;object-fit:contain;margin-bottom:16px;">` : '';
     const titleUppercase = cUpper ? 'text-transform:uppercase;' : '';
     const handleCover = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
     const textHTML = cE
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
 
     return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
@@ -1490,6 +1536,11 @@ function renderEditor() {
     syncToggle(DOM.toggleCoverShowNews,    DOM.coverNewsToggleTrack,      DOM.coverNewsToggleLabel,      !!slide.coverShowNews);
 
     DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
+    // Sync slider dimensione loghi
+    const syncSize = (slider, valLabel, size) => { slider.value = size; valLabel.textContent = Math.round(size * 100) + '%'; };
+    syncSize(DOM.logoSizeSlider,      DOM.logoSizeValue,      state.logoSize);
+    syncSize(DOM.themeLogoSizeSlider, DOM.themeLogoSizeValue, state.themeLogoSize);
+    syncSize(DOM.newsSizeSlider,      DOM.newsSizeValue,      state.newsSize);
 
     // Sezione filtri sfondo (Feature#8) — visibile solo se c'è un'immagine di sfondo
     DOM.bgFiltersSection.style.display = slide.image ? 'block' : 'none';
@@ -1854,6 +1905,23 @@ DOM.newsUpload.addEventListener('change',      e => { if (e.target.files[0]) han
 DOM.btnClearLogo.addEventListener('click',      () => { state.logoBase64=null;      lsRemove(LS.logo);      trackChange(true); render(); });
 DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; lsRemove(LS.themeLogo); trackChange(true); render(); });
 DOM.btnClearNews.addEventListener('click',      () => { state.newsBase64=null;      lsRemove(LS.news);      trackChange(true); render(); });
+
+// ════════ Ingrandimento loghi (size globali, persistiti in localStorage) ════════
+function bindLogoSizeSlider(slider, valEl, stateKey, lsKey) {
+    slider.addEventListener('input', e => {
+        const v = parseFloat(e.target.value);
+        state[stateKey] = v;
+        valEl.textContent = Math.round(v * 100) + '%';
+        renderPreview();
+        // Persistenza debounced (lsSet è sincrono, ma scriverlo a ogni input crea solo I/O inutile)
+        lsSizePersist(lsKey, v);
+    });
+    slider.addEventListener('change', () => snapshot());
+}
+const lsSizePersist = debounce((key, v) => lsSet(key, String(v)), 200);
+bindLogoSizeSlider(DOM.logoSizeSlider,      DOM.logoSizeValue,      'logoSize',      LS.logoSize);
+bindLogoSizeSlider(DOM.themeLogoSizeSlider, DOM.themeLogoSizeValue, 'themeLogoSize', LS.themeLogoSize);
+bindLogoSizeSlider(DOM.newsSizeSlider,      DOM.newsSizeValue,      'newsSize',      LS.newsSize);
 
 // ─── FIX BUG 1+2: aggiorna thumbnail attive su entrambi i container (desktop + mobile)
 function updateActiveThumb() {
