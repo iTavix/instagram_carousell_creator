@@ -10,7 +10,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Carousel App">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- html2canvas è lazy-loaded al primo export per ridurre il bundle iniziale -->
+    <!-- Cropper.js per editor crop/rotazione/flip dell'immagine sfondo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <!-- Font: Bebas Neue, DM Sans, Oswald, Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,6 +140,60 @@
         /* Popup editor dark mode fixes */
         body.dark-mode #popup-editor-modal { background-color: #000000 !important; }
         body.dark-mode #popup-controls { background-color: #1C1C1E !important; border-top-color: #38383A !important; }
+
+        /* ════════════════ NEW v2 STYLES ════════════════ */
+
+        /* Toast notifications */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 100000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; max-width: 90vw; }
+        .toast { background: #1c1c1e; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: toastIn 0.25s ease; pointer-events: auto; max-width: 380px; line-height: 1.4; display: flex; align-items: center; gap: 8px; }
+        .toast.success { background: #34a853; }
+        .toast.warning { background: #f59e0b; }
+        .toast.error   { background: #dc2626; }
+        .toast.fade-out { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { transform: translateY(-30px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+        @keyframes toastOut { to   { transform: translateY(-30px); opacity: 0 } }
+
+        /* Drag handles (icona grab persistente) */
+        .drag-handle-icon { position: absolute; top: -12px; left: -12px; width: 24px; height: 24px; background: rgba(0,113,227,0.95); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; z-index: 100; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4); opacity: 0.8; transition: opacity 0.15s; }
+        #preview-overlay-drag:hover .drag-handle-icon, #preview-cover-text-drag:hover .drag-handle-icon, .preview-fg-drag:hover .drag-handle-icon { opacity: 1; }
+
+        /* Snap guides */
+        .snap-guide { position: absolute; background: #ff3b30; z-index: 9999; pointer-events: none; box-shadow: 0 0 4px rgba(255,59,48,0.5); }
+        .snap-guide.horizontal { left: 0; right: 0; height: 1px; }
+        .snap-guide.vertical   { top: 0; bottom: 0; width: 1px; }
+
+        /* Dropzone highlight (drag&drop file) */
+        .dropzone-active { outline: 3px dashed #0071E3 !important; outline-offset: 4px; background: rgba(0,113,227,0.08) !important; }
+
+        /* Undo/Redo + Reset buttons */
+        .header-action-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #6E6E73; background: transparent; transition: all 0.15s; }
+        .header-action-btn:hover:not(:disabled) { background: #E5E5EA; color: #000; }
+        .header-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        body.dark-mode .header-action-btn:hover:not(:disabled) { background: #3A3A3C; color: #fff; }
+
+        /* Filter sliders inline */
+        .filter-row { display: grid; grid-template-columns: 80px 1fr 44px; align-items: center; gap: 8px; font-size: 11px; }
+        .filter-row label { color: #6B7280; font-weight: 700; text-transform: uppercase; }
+        .filter-row .val { color: #0071E3; font-weight: 700; text-align: right; }
+        .preset-btn { padding: 6px 10px; font-size: 11px; font-weight: 600; border-radius: 6px; border: 1px solid #D1D1D6; background: white; cursor: pointer; transition: all 0.15s; }
+        .preset-btn:hover { background: #F5F5F7; }
+        .preset-btn.active { background: #0071E3; color: white; border-color: #0071E3; }
+        body.dark-mode .preset-btn { background: #1C1C1E; color: #fff; border-color: #38383A; }
+        body.dark-mode .preset-btn:hover { background: #2C2C2E; }
+
+        /* Crop modal */
+        #crop-modal .crop-wrap { width: 100%; height: 60vh; background: #000; }
+        #crop-modal img { display: block; max-width: 100%; }
+
+        /* Confirm modal generic */
+        .confirm-modal-body { background: white; border-radius: 16px; padding: 24px; max-width: 420px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        body.dark-mode .confirm-modal-body { background: #1C1C1E; color: #fff; }
+
+        /* Eyedropper button */
+        .eyedropper-btn { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid #D1D1D6; background: white; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+        .eyedropper-btn:hover { background: #F5F5F7; }
+        .eyedropper-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        body.dark-mode .eyedropper-btn { background: #1C1C1E; color: #fff; border-color: #38383A; }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
@@ -152,6 +209,12 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <button id="btn-undo" class="header-action-btn" title="Annulla (Ctrl+Z)" aria-label="Annulla" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6.7 3L3 13"/></svg>
+            </button>
+            <button id="btn-redo" class="header-action-btn" title="Ripeti (Ctrl+Shift+Z)" aria-label="Ripeti" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6.7 3L21 13"/></svg>
+            </button>
             <button id="btn-theme-toggle" aria-label="Modalità scura" title="Modalità scura" class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
                 <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -221,15 +284,28 @@
                     <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
                     <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
                     
-                    <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-3 bg-blue-50 rounded-lg border border-blue-100">
-                        <div>
-                            <span class="text-sm font-semibold text-blue-900">Stile Copertina</span>
-                            <p class="text-xs text-blue-700 mt-0.5">Maiuscolo, gradiente scuro, badge News</p>
-                        </div>
+                    <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                        <span class="text-sm font-medium text-blue-900">Maiuscolo titolo</span>
                         <div class="flex items-center gap-2">
-                            <span id="cover-style-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
-                            <div class="toggle-track" id="cover-style-toggle-track"><div class="toggle-thumb"></div></div>
-                            <input type="checkbox" id="toggle-cover-style" class="sr-only"/>
+                            <span id="cover-uppercase-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                            <div class="toggle-track" id="cover-uppercase-toggle-track"><div class="toggle-thumb"></div></div>
+                            <input type="checkbox" id="toggle-cover-uppercase" class="sr-only"/>
+                        </div>
+                    </label>
+                    <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                        <span class="text-sm font-medium text-blue-900">Overlay scuro inferiore</span>
+                        <div class="flex items-center gap-2">
+                            <span id="cover-overlay-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                            <div class="toggle-track" id="cover-overlay-toggle-track"><div class="toggle-thumb"></div></div>
+                            <input type="checkbox" id="toggle-cover-overlay" class="sr-only"/>
+                        </div>
+                    </label>
+                    <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
+                        <span class="text-sm font-medium text-blue-900">Badge News visibile</span>
+                        <div class="flex items-center gap-2">
+                            <span id="cover-news-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                            <div class="toggle-track" id="cover-news-toggle-track"><div class="toggle-thumb"></div></div>
+                            <input type="checkbox" id="toggle-cover-news" class="sr-only"/>
                         </div>
                     </label>
                     <p class="text-xs text-blue-700 font-medium">Trascina il blocco nell'anteprima per riposizionarlo</p>
@@ -344,13 +420,19 @@
                     <input type="color" id="input-bg-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
                 </div>
                 <div id="bg-gradient-rows" style="display:none;" class="flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between gap-2">
                         <label for="input-grad-color1" class="text-xs font-bold text-gray-500 uppercase">Colore 1</label>
-                        <input type="color" id="input-grad-color1" value="#1a1a2e" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-eyedrop-1" class="eyedropper-btn" title="Pipetta colore dallo schermo" aria-label="Pipetta colore 1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg></button>
+                            <input type="color" id="input-grad-color1" value="#1a1a2e" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between gap-2">
                         <label for="input-grad-color2" class="text-xs font-bold text-gray-500 uppercase">Colore 2</label>
-                        <input type="color" id="input-grad-color2" value="#e94560" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        <div class="flex items-center gap-2">
+                            <button id="btn-eyedrop-2" class="eyedropper-btn" title="Pipetta colore dallo schermo" aria-label="Pipetta colore 2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg></button>
+                            <input type="color" id="input-grad-color2" value="#e94560" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
                     </div>
                     <div class="flex flex-col gap-1">
                         <span class="text-xs font-bold text-gray-500 uppercase">Direzione</span>
@@ -370,7 +452,30 @@
                     <span id="zoom-value" class="text-[#0071E3]">1.00x</span>
                 </div>
                 <input type="range" id="input-zoom" min="0.1" max="3" step="0.05" value="1" class="w-full mt-2"/>
+                <button id="btn-open-crop" class="mt-2 w-full text-sm font-medium bg-[#0071E3] text-white py-2 rounded-lg hover:bg-[#005bb5] transition-all">✂ Modifica immagine (Crop / Ruota / Flip)</button>
             </div>
+
+            <!-- Filtri Sfondo -->
+            <details id="bg-filters-section" class="bg-gray-50 rounded-lg border border-gray-200" style="display:none;">
+                <summary class="px-4 py-3 cursor-pointer text-xs font-bold text-gray-500 uppercase select-none flex justify-between items-center">
+                    <span>Filtri immagine sfondo</span>
+                    <button type="button" id="btn-reset-bg-filters" class="text-[10px] text-[#E3000F] hover:underline normal-case font-medium">Reset</button>
+                </summary>
+                <div class="px-4 pb-4 flex flex-col gap-3">
+                    <div class="flex flex-wrap gap-1 mt-1" id="bg-preset-row">
+                        <button class="preset-btn" data-preset="none" data-target="bg">Nessuno</button>
+                        <button class="preset-btn" data-preset="bw" data-target="bg">B&amp;N</button>
+                        <button class="preset-btn" data-preset="vintage" data-target="bg">Vintage</button>
+                        <button class="preset-btn" data-preset="vivid" data-target="bg">Vivid</button>
+                        <button class="preset-btn" data-preset="cool" data-target="bg">Cool</button>
+                        <button class="preset-btn" data-preset="warm" data-target="bg">Warm</button>
+                    </div>
+                    <div id="bg-filter-controls" class="flex flex-col gap-2 mt-1"></div>
+                </div>
+            </details>
+
+            <!-- Reset slide -->
+            <button id="btn-reset-slide" class="text-xs text-[#E3000F] hover:underline font-medium self-start">↺ Reset slide attiva</button>
 
             <!-- Immagini in Primo Piano (Multiple) -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -505,8 +610,12 @@
             <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
             <p><strong>8. Duplica:</strong> Il tasto "⧉" copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
             <p><strong>9. Persistenza:</strong> Tutte le immagini vengono salvate nel browser (IndexedDB) e ripristinate automaticamente.</p>
+            <p><strong>10. Annulla / Ripeti:</strong> Usa <code>Ctrl+Z</code> e <code>Ctrl+Shift+Z</code> (o ⌘ su Mac) per tornare indietro.</p>
         </div>
-        <button id="btn-close-help" class="mt-6 w-full bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+            <button id="btn-reset-app" class="flex-1 bg-red-50 text-red-700 border border-red-200 font-medium py-3 rounded-xl hover:bg-red-100 transition-all">⚠ Reset completo app</button>
+            <button id="btn-close-help" class="flex-[2] bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
+        </div>
     </div>
 </div>
 
@@ -523,11 +632,65 @@
     </div>
 </div>
 
+<!-- TOAST CONTAINER -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- MODALE: CROP / ROTATE / FLIP -->
+<div id="crop-modal" class="modal fixed inset-0 z-[10001] bg-black/85 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[95vh] overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+            <h3 class="font-bold text-lg">Modifica immagine sfondo</h3>
+            <button id="btn-close-crop" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi">×</button>
+        </div>
+        <div class="p-4 flex-1 overflow-auto">
+            <div class="crop-wrap" id="crop-wrap">
+                <img id="crop-img" alt="Immagine da modificare"/>
+            </div>
+            <div class="mt-4 flex flex-col gap-4">
+                <div class="flex flex-wrap gap-2">
+                    <button id="crop-rotate-left"  class="preset-btn">↺ -90°</button>
+                    <button id="crop-rotate-right" class="preset-btn">↻ +90°</button>
+                    <button id="crop-flip-h"       class="preset-btn">⇄ Flip H</button>
+                    <button id="crop-flip-v"       class="preset-btn">⇅ Flip V</button>
+                    <button id="crop-reset"        class="preset-btn">Reset</button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Rotazione fine</label>
+                    <input type="range" id="crop-rotation-slider" min="-180" max="180" step="1" value="0" class="flex-1">
+                    <span id="crop-rotation-val" class="text-[#0071E3] text-sm font-bold w-12 text-right">0°</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-3 p-4 border-t border-gray-100">
+            <button id="btn-crop-cancel" class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
+            <button id="btn-crop-apply"  class="flex-[2] bg-[#0071E3] text-white py-3 rounded-xl font-medium hover:bg-[#005bb5] transition-all">Applica</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODALE: CONFERMA GENERICA -->
+<div id="confirm-modal" class="modal fixed inset-0 z-[10002] bg-black/70 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
+    <div class="confirm-modal-body">
+        <h3 id="confirm-title" class="text-lg font-bold mb-2">Conferma</h3>
+        <p id="confirm-message" class="text-sm text-gray-600 mb-5">Sei sicuro?</p>
+        <div class="flex gap-3">
+            <button id="confirm-cancel" class="flex-1 bg-gray-200 py-2.5 rounded-lg font-medium hover:bg-gray-300 transition-all">Annulla</button>
+            <button id="confirm-ok" class="flex-1 bg-[#E3000F] text-white py-2.5 rounded-lg font-medium hover:bg-red-700 transition-all">Conferma</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // COSTANTI
 const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const MAX_SLIDES = 20;
-const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state' };
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_IMG_DIMENSION = 1920;          // Lato lungo dopo resize
+const COMPRESSION_QUALITY = 0.85;
+const HISTORY_MAX = 30;
+const SNAP_TOLERANCE = 2;                // % di tolleranza per snap-to-guide
+const SNAP_TARGETS = [10, 25, 33.33, 50, 66.66, 75, 90];
+const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme' };
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
 
 const FONTS = {
@@ -537,6 +700,118 @@ const FONTS = {
     'Playfair Display':"'Playfair Display',serif",
     'DM Sans':         "'DM Sans',sans-serif",
 };
+
+const DEFAULT_FILTERS = { brightness:100, contrast:100, saturation:100, blur:0, vignette:0 };
+const FILTER_PRESETS = {
+    none:    { brightness:100, contrast:100, saturation:100, blur:0, vignette:0 },
+    bw:      { brightness:100, contrast:110, saturation:0,   blur:0, vignette:20 },
+    vintage: { brightness:95,  contrast:90,  saturation:70,  blur:0, vignette:40 },
+    vivid:   { brightness:105, contrast:120, saturation:140, blur:0, vignette:0  },
+    cool:    { brightness:100, contrast:105, saturation:90,  blur:0, vignette:10 },
+    warm:    { brightness:103, contrast:105, saturation:115, blur:0, vignette:10 },
+};
+
+// ════════ UTILITY GENERICHE ════════
+function escapeHtml(str) { const el = document.createElement('div'); el.appendChild(document.createTextNode(str || '')); return el.innerHTML; }
+function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
+function throttle(fn, ms = 100) { let last = 0, pending = null; return (...args) => { const now = Date.now(); if (now - last >= ms) { last = now; fn(...args); } else { clearTimeout(pending); pending = setTimeout(() => { last = Date.now(); fn(...args); }, ms - (now - last)); } }; }
+function generateId() { return Math.random().toString(36).substr(2, 9); }
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+// ════════ LOCALSTORAGE GUARDS (FIX SICUREZZA #5) ════════
+function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { console.warn('[lsGet]', key, e); return null; } }
+function lsSet(key, value) { try { localStorage.setItem(key, value); return true; } catch (e) { console.warn('[lsSet]', key, e); toast('Spazio di salvataggio esaurito', 'warning'); return false; } }
+function lsRemove(key) { try { localStorage.removeItem(key); } catch (e) {} }
+
+// ════════ TOAST (FIX SICUREZZA #3) ════════
+function toast(message, type = 'info', duration = 4000) {
+    const c = document.getElementById('toast-container');
+    if (!c) { console.log('[toast]', type, message); return; }
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    t.textContent = message;
+    c.appendChild(t);
+    setTimeout(() => { t.classList.add('fade-out'); setTimeout(() => t.remove(), 300); }, duration);
+}
+
+// ════════ VALIDAZIONE URL IMMAGINI (FIX SICUREZZA #1) ════════
+const SAFE_DATA_URL_RX = /^data:image\/(png|jpe?g|gif|webp|svg\+xml|bmp);base64,[a-zA-Z0-9+/=]+$/;
+function safeImageUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('data:image/')) return SAFE_DATA_URL_RX.test(url) ? url : '';
+    // URL relativi/assoluti normali (logo.png ecc.): se non contiene < > ' " javascript: vbscript: data: è ok
+    if (/^(https?:)?\/\//i.test(url) || /^[a-zA-Z0-9._-]+\.(png|jpe?g|gif|webp|svg)$/i.test(url)) return url;
+    return '';
+}
+
+// ════════ FILE READING + COMPRESSIONE (FIX SICUREZZA #2 + UX #2) ════════
+function readImageAsBase64(file, cb) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Il file selezionato non è un\'immagine', 'error'); return; }
+    if (file.size > MAX_FILE_SIZE) { toast(`File troppo grande (${(file.size/1048576).toFixed(1)}MB, max ${MAX_FILE_SIZE/1048576}MB)`, 'error'); return; }
+    const r = new FileReader();
+    r.onload = e => cb(e.target.result);
+    r.onerror = () => toast('Errore lettura file', 'error');
+    r.readAsDataURL(file);
+}
+
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) return reject(new Error('Nessun file'));
+        if (!file.type.startsWith('image/')) { toast('Il file selezionato non è un\'immagine', 'error'); return reject(new Error('Tipo non valido')); }
+        if (file.size > MAX_FILE_SIZE) { toast(`File troppo grande (${(file.size/1048576).toFixed(1)}MB, max ${MAX_FILE_SIZE/1048576}MB)`, 'error'); return reject(new Error('File troppo grande')); }
+        // I formati che NON comprimiamo (alpha critico o vettoriali)
+        const skipCompression = file.type === 'image/gif' || file.type === 'image/svg+xml';
+        const r = new FileReader();
+        r.onerror = () => { toast('Errore lettura file', 'error'); reject(r.error); };
+        r.onload = ev => {
+            if (skipCompression) { resolve(ev.target.result); return; }
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                const longest = Math.max(width, height);
+                const scale = longest > MAX_IMG_DIMENSION ? MAX_IMG_DIMENSION / longest : 1;
+                if (scale < 1) { width = Math.round(width * scale); height = Math.round(height * scale); }
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                // Per PNG mantenuti come PNG se hanno alpha probabile (icone/loghi piccoli)
+                const usePng = file.type === 'image/png' && file.size < 500_000;
+                if (!usePng) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height); }
+                ctx.drawImage(img, 0, 0, width, height);
+                const mime = usePng ? 'image/png' : 'image/jpeg';
+                const out = canvas.toDataURL(mime, COMPRESSION_QUALITY);
+                const beforeKB = Math.round(file.size / 1024);
+                const afterKB = Math.round((out.length * 0.75) / 1024); // base64 ≈ 4/3 dei bytes
+                if (beforeKB - afterKB > 50) toast(`Immagine ottimizzata: ${beforeKB}KB → ${afterKB}KB`, 'success', 2500);
+                resolve(out);
+            };
+            img.onerror = () => { toast('Immagine non valida o corrotta', 'error'); reject(new Error('img.onerror')); };
+            img.src = ev.target.result;
+        };
+        r.readAsDataURL(file);
+    });
+}
+
+function preloadImage(src) { if(!src)return Promise.resolve(); return new Promise(resolve => { const img = new Image(); img.onload=img.onerror=resolve; img.src=src; }); }
+
+// ════════ FILTRI CSS (FEATURE #8) ════════
+function buildFilterCss(filters) {
+    if (!filters) return '';
+    const f = { ...DEFAULT_FILTERS, ...filters };
+    const parts = [];
+    if (f.brightness !== 100) parts.push(`brightness(${f.brightness}%)`);
+    if (f.contrast   !== 100) parts.push(`contrast(${f.contrast}%)`);
+    if (f.saturation !== 100) parts.push(`saturate(${f.saturation}%)`);
+    if (f.blur       > 0)     parts.push(`blur(${f.blur}px)`);
+    return parts.join(' ');
+}
+function buildVignetteOverlay(strength) {
+    if (!strength || strength <= 0) return '';
+    const opacity = Math.min(0.9, strength / 100);
+    return `<div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,${opacity}) 100%);z-index:2;"></div>`;
+}
 
 // INDEXEDDB
 let idb = null;
@@ -580,20 +855,31 @@ const state = {
     activeIndex:   0,
     isExporting:   false,
     renderedBlobs: [],
-    logoBase64:      localStorage.getItem(LS.logo)      || null,
-    themeLogoBase64: localStorage.getItem(LS.themeLogo) || null,
-    newsBase64:      localStorage.getItem(LS.news)      || null,
-    slides: [{
-        id: 'slide-0', image: null,
-        coverEnabled: true, coverStyle: true,
+    logoBase64:      lsGet(LS.logo)      || null,
+    themeLogoBase64: lsGet(LS.themeLogo) || null,
+    newsBase64:      lsGet(LS.news)      || null,
+    slides: [makeDefaultSlide('slide-0', {
+        coverEnabled: true, coverUppercase: true, coverDarkOverlay: true, coverShowNews: true,
         title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
+    })],
+};
+
+function makeDefaultSlide(id, overrides = {}) {
+    return {
+        id, image: null,
+        coverEnabled: false,
+        // Tre flag scorporati (UX#5)
+        coverUppercase: false, coverDarkOverlay: false, coverShowNews: false,
+        title: '', body: '', source: '',
         titleFontSize: 110, coverTextX: 5.5, coverTextY: 60,
         zoom: 1, bgColor: '#333333', bgMode: 'solid',
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
+        bgFilters: { ...DEFAULT_FILTERS }, // Feature#8: filtri sfondo
         textOverlay: null,
-        fgImages: [], // Multi-immagini: [{id, url, x, y, size}]
-    }],
-};
+        fgImages: [], // Multi-immagini: [{id, url, x, y, size, filters}]
+        ...overrides,
+    };
+}
 
 // RIFERIMENTI DOM
 const DOM = {
@@ -630,9 +916,6 @@ const DOM = {
     coverToggleTrack:      document.getElementById('cover-toggle-track'),
     coverToggleLabel:      document.getElementById('cover-toggle-label'),
     coverFields:           document.getElementById('cover-fields'),
-    toggleCoverStyle:      document.getElementById('toggle-cover-style'),
-    coverStyleToggleTrack: document.getElementById('cover-style-toggle-track'),
-    coverStyleToggleLabel: document.getElementById('cover-style-toggle-label'),
     
     previewContainer:      document.getElementById('preview-container'),
     previewWrapper:        document.getElementById('preview-wrapper'),
@@ -698,101 +981,218 @@ const DOM = {
     overlayColorHex:       document.getElementById('overlay-color-hex'),
     alignBtns:             document.querySelectorAll('.align-btn'),
     gradDirBtns:           document.querySelectorAll('.grad-dir-btn'),
+
+    // --- v2: nuovi riferimenti ---
+    btnUndo:               document.getElementById('btn-undo'),
+    btnRedo:               document.getElementById('btn-redo'),
+    btnEyedrop1:           document.getElementById('btn-eyedrop-1'),
+    btnEyedrop2:           document.getElementById('btn-eyedrop-2'),
+    btnOpenCrop:           document.getElementById('btn-open-crop'),
+    btnResetSlide:         document.getElementById('btn-reset-slide'),
+    btnResetApp:           document.getElementById('btn-reset-app'),
+    bgFiltersSection:      document.getElementById('bg-filters-section'),
+    bgFilterControls:      document.getElementById('bg-filter-controls'),
+    btnResetBgFilters:     document.getElementById('btn-reset-bg-filters'),
+    bgPresetRow:           document.getElementById('bg-preset-row'),
+    // Tre toggle scorporati
+    toggleCoverUppercase:        document.getElementById('toggle-cover-uppercase'),
+    coverUppercaseToggleTrack:   document.getElementById('cover-uppercase-toggle-track'),
+    coverUppercaseToggleLabel:   document.getElementById('cover-uppercase-toggle-label'),
+    toggleCoverDarkOverlay:      document.getElementById('toggle-cover-overlay'),
+    coverOverlayToggleTrack:     document.getElementById('cover-overlay-toggle-track'),
+    coverOverlayToggleLabel:     document.getElementById('cover-overlay-toggle-label'),
+    toggleCoverShowNews:         document.getElementById('toggle-cover-news'),
+    coverNewsToggleTrack:        document.getElementById('cover-news-toggle-track'),
+    coverNewsToggleLabel:        document.getElementById('cover-news-toggle-label'),
+    // Crop modal
+    cropModal:             document.getElementById('crop-modal'),
+    cropImg:               document.getElementById('crop-img'),
+    btnCloseCrop:          document.getElementById('btn-close-crop'),
+    btnCropApply:          document.getElementById('btn-crop-apply'),
+    btnCropCancel:         document.getElementById('btn-crop-cancel'),
+    cropRotateLeft:        document.getElementById('crop-rotate-left'),
+    cropRotateRight:       document.getElementById('crop-rotate-right'),
+    cropFlipH:             document.getElementById('crop-flip-h'),
+    cropFlipV:             document.getElementById('crop-flip-v'),
+    cropReset:             document.getElementById('crop-reset'),
+    cropRotationSlider:    document.getElementById('crop-rotation-slider'),
+    cropRotationVal:       document.getElementById('crop-rotation-val'),
+    // Confirm modal
+    confirmModal:          document.getElementById('confirm-modal'),
+    confirmTitle:          document.getElementById('confirm-title'),
+    confirmMessage:        document.getElementById('confirm-message'),
+    confirmOk:             document.getElementById('confirm-ok'),
+    confirmCancel:         document.getElementById('confirm-cancel'),
+    // Toast container
+    toastContainer:        document.getElementById('toast-container'),
 };
 
-// UTILITY
-function escapeHtml(str) { const el = document.createElement('div'); el.appendChild(document.createTextNode(str || '')); return el.innerHTML; }
-function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
-function readImageAsBase64(file, cb) { if(!file)return; const r = new FileReader(); r.onload = e => cb(e.target.result); r.readAsDataURL(file); }
-function preloadImage(src) { if(!src)return Promise.resolve(); return new Promise(resolve => { const img = new Image(); img.onload=img.onerror=resolve; img.src=src; }); }
+// UTILITY (specifiche del dominio)
 function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOverlay)s.textOverlay={enabled:true,font:'Bebas Neue',title:'',body:'',titleSize:80,bodySize:40,color:'#ffffff',align:'left',x:50,y:50}; return s.textOverlay; }
 function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
-function generateId() { return Math.random().toString(36).substr(2, 9); }
 
-// PERSISTENZA
-function saveState() {
+// ════════ PERSISTENZA (FIX PERFORMANCE #4: debounce + lsSet) ════════
+function _saveStateNow() {
     const toSave = {
         slides: state.slides.map(s => ({
-            id: s.id, coverEnabled: s.coverEnabled, coverStyle: s.coverStyle,
+            id: s.id, coverEnabled: s.coverEnabled,
+            coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
             title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
             coverTextX: s.coverTextX, coverTextY: s.coverTextY,
             zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
             gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
-            textOverlay: s.textOverlay,
+            bgFilters: s.bgFilters, textOverlay: s.textOverlay,
             // Rimuovi grandi base64 URL dal localStorage per non bloccarlo
-            fgImages: (s.fgImages || []).map(f => ({ id: f.id, url: null, x: f.x, y: f.y, size: f.size })),
+            fgImages: (s.fgImages || []).map(f => ({ id: f.id, url: null, x: f.x, y: f.y, size: f.size, filters: f.filters })),
             hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
         })),
     };
-    try { localStorage.setItem(LS.state, JSON.stringify(toSave)); } catch (e) { console.warn('localStorage quota:', e); }
+    lsSet(LS.state, JSON.stringify(toSave));
 }
+const saveStateDebounced = debounce(_saveStateNow, 250);
+function saveState() { saveStateDebounced(); }
+function saveStateImmediate() { _saveStateNow(); }
 
 function loadState() {
     try {
-        const raw = localStorage.getItem(LS.state);
+        const raw = lsGet(LS.state);
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (Array.isArray(saved.slides) && saved.slides.length > 0) {
             state.slides = saved.slides.map((s, idx) => {
+                // MIGRAZIONE coverStyle (singolo toggle legacy) → 3 toggle separati (UX#5)
+                const legacyStyle = s.coverStyle === true;
+                const migrated = {
+                    coverUppercase:   s.coverUppercase   ?? legacyStyle,
+                    coverDarkOverlay: s.coverDarkOverlay ?? legacyStyle,
+                    coverShowNews:    s.coverShowNews    ?? legacyStyle,
+                };
                 const pSlide = {
-                    ...s, image: null, fgImages: s.fgImages || [],
+                    ...makeDefaultSlide(s.id || `slide-${idx}`),
+                    ...s,
+                    ...migrated,
+                    image: null, fgImages: s.fgImages || [],
                     coverEnabled: s.coverEnabled ?? (idx === 0),
-                    coverStyle:   s.coverStyle   ?? (idx === 0),
                     bgMode:       s.bgMode || 'solid',
                     gradColor1:   s.gradColor1 || '#1a1a2e',
                     gradColor2:   s.gradColor2 || '#e94560',
                     gradDir:      s.gradDir    || 'to bottom',
+                    bgFilters:    s.bgFilters || { ...DEFAULT_FILTERS },
                 };
+                // Aggiungi filters di default per FG che ne sono privi
+                pSlide.fgImages = pSlide.fgImages.map(f => ({ ...f, filters: f.filters || { ...DEFAULT_FILTERS } }));
                 // Retro-compatibilità vecchia immagine singola in localStorage
                 if (s.fgImageX !== undefined && pSlide.fgImages.length === 0 && (s.hasLegacyFg || s.fgImageSize)) {
-                    pSlide.fgImages.push({ id: 'fg-legacy', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40 });
+                    pSlide.fgImages.push({ id: 'fg-legacy', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40, filters: { ...DEFAULT_FILTERS } });
                 }
+                // Pulisci coverStyle legacy
+                delete pSlide.coverStyle;
                 return pSlide;
             });
         }
-    } catch (e) { console.warn('Caricamento stato fallito:', e); }
+    } catch (e) { console.warn('Caricamento stato fallito:', e); toast('Stato precedente non recuperabile', 'warning'); }
 }
 
+// ════════ FIX SICUREZZA #4: caricamento IDB parallelo ════════
 async function loadImagesFromIDB() {
-    for (const slide of state.slides) {
+    await Promise.all(state.slides.map(async slide => {
         try {
-            const bg = await idbGet(slide.id);
+            const [bg, fgs, legacyFg] = await Promise.all([
+                idbGet(slide.id),
+                idbGet(slide.id + '_fgs'),
+                idbGet(slide.id + '_fg'),
+            ]);
             if (bg) slide.image = bg;
-            
-            // Multiple FG images (nuova struttura)
-            const fgs = await idbGet(slide.id + '_fgs');
             if (fgs && Array.isArray(fgs)) {
                 fgs.forEach(savedFg => {
                     const target = slide.fgImages.find(f => f.id === savedFg.id);
                     if (target) target.url = savedFg.url;
-                    else if (savedFg.url) slide.fgImages.push({ id: savedFg.id, url: savedFg.url, x: 50, y: 50, size: 40 });
+                    else if (savedFg.url) slide.fgImages.push({ id: savedFg.id, url: savedFg.url, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
                 });
             }
-            
-            // Legacy single FG image (vecchia struttura)
-            const legacyFg = await idbGet(slide.id + '_fg');
             if (legacyFg) {
                 let target = slide.fgImages.find(f => f.id === 'fg-legacy');
-                if (!target) slide.fgImages.push({ id: 'fg-legacy', url: legacyFg, x: 50, y: 50, size: 40 });
+                if (!target) slide.fgImages.push({ id: 'fg-legacy', url: legacyFg, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
                 else target.url = legacyFg;
             }
-            
-            // Filtra quelle caricate male
             slide.fgImages = slide.fgImages.filter(f => f.url);
-        } catch (e) { console.warn('idbGet error:', e); }
-    }
+        } catch (e) { console.warn('idbGet error:', e); toast(`Errore caricamento immagine slide`, 'warning'); }
+    }));
+}
+
+// ════════ UNDO/REDO (UX #1) ════════
+const history = { stack: [], future: [], suppress: false };
+function snapshot() {
+    if (history.suppress) return;
+    history.stack.push(deepClone({
+        slides: state.slides,
+        activeIndex: state.activeIndex,
+        logoBase64: state.logoBase64,
+        themeLogoBase64: state.themeLogoBase64,
+        newsBase64: state.newsBase64,
+    }));
+    if (history.stack.length > HISTORY_MAX) history.stack.shift();
+    history.future.length = 0; // ogni nuova azione cancella la coda redo
+    updateHistoryButtons();
+}
+const snapshotDebounced = debounce(snapshot, 350);
+function restoreFrom(snap) {
+    history.suppress = true;
+    state.slides = snap.slides;
+    state.activeIndex = Math.min(snap.activeIndex, state.slides.length - 1);
+    state.logoBase64 = snap.logoBase64;
+    state.themeLogoBase64 = snap.themeLogoBase64;
+    state.newsBase64 = snap.newsBase64;
+    // Ricarica le immagini base64 (perse nel clone — TODO: separare image dallo snapshot per quello)
+    // In realtà nel deepClone le incluse: torniamo a leggere da IDB solo se mancano
+    saveStateImmediate();
+    render();
+    history.suppress = false;
+    updateHistoryButtons();
+}
+function undo() {
+    if (!history.stack.length) return;
+    const current = deepClone({ slides: state.slides, activeIndex: state.activeIndex, logoBase64: state.logoBase64, themeLogoBase64: state.themeLogoBase64, newsBase64: state.newsBase64 });
+    const prev = history.stack.pop();
+    history.future.push(current);
+    restoreFrom(prev);
+    toast('Azione annullata', 'info', 1500);
+}
+function redo() {
+    if (!history.future.length) return;
+    const current = deepClone({ slides: state.slides, activeIndex: state.activeIndex, logoBase64: state.logoBase64, themeLogoBase64: state.themeLogoBase64, newsBase64: state.newsBase64 });
+    const next = history.future.pop();
+    history.stack.push(current);
+    restoreFrom(next);
+    toast('Azione ripetuta', 'info', 1500);
+}
+function updateHistoryButtons() {
+    const u = document.getElementById('btn-undo'), r = document.getElementById('btn-redo');
+    if (u) u.disabled = history.stack.length === 0;
+    if (r) r.disabled = history.future.length === 0;
+}
+
+// Tracciatore unificato: salva stato + snapshot
+function trackChange(immediate = false) {
+    if (immediate) { snapshot(); saveStateImmediate(); }
+    else { snapshotDebounced(); saveState(); }
 }
 
 // GENERAZIONE HTML SLIDE
 function generateFgImagesHTML(slide, forPreview) {
     if (!slide.fgImages || !slide.fgImages.length) return '';
     return slide.fgImages.map(fg => {
-        if (!fg.url) return '';
+        const safeUrl = safeImageUrl(fg.url);
+        if (!safeUrl) return '';
         const baseStyle = `position:absolute;left:${fg.x??50}%;top:${fg.y??50}%;transform:translate(-50%,-50%);width:${fg.size??40}%;z-index:30;pointer-events:auto;`;
-        const attrs = forPreview 
+        const filterCss = buildFilterCss(fg.filters);
+        const vignetteHtml = buildVignetteOverlay(fg.filters?.vignette);
+        const filterStyle = filterCss ? `filter:${filterCss};` : '';
+        const attrs = forPreview
             ? `class="preview-fg-drag" data-fg-id="${fg.id}" style="${baseStyle}cursor:grab;user-select:none;"`
             : `style="${baseStyle}"`;
-        return `<div ${attrs}><img src="${fg.url}" alt="" style="width:100%;height:auto;display:block;" draggable="false"></div>`;
+        const handle = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
+        return `<div ${attrs}>${handle}<div style="position:relative;width:100%;overflow:hidden;"><img src="${safeUrl}" alt="" style="width:100%;height:auto;display:block;${filterStyle}" draggable="false">${vignetteHtml}</div></div>`;
     }).join('');
 }
 
@@ -806,33 +1206,74 @@ function generateOverlayHTML(overlay, forPreview) {
     const txMap = { left:'0%', center:'-50%', right:'-100%' };
     const baseStyle = `position:absolute;left:${overlay.x??50}%;top:${overlay.y??50}%;transform:translate(${txMap[align]||'-50%'},-50%);z-index:50;color:${overlay.color||'#ffffff'};text-align:${align};padding:24px;min-width:120px;`;
     const attrs = forPreview ? `id="preview-overlay-drag" style="${baseStyle}cursor:grab;user-select:none;"` : `style="${baseStyle}"`;
-    return `<div ${attrs}>${titleHTML}${bodyHTML}</div>`;
+    const handle = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
+    return `<div ${attrs}>${handle}${titleHTML}${bodyHTML}</div>`;
 }
 
 function generateSlideHTML(slide, index, forPreview = false) {
-    const cE = !!slide.coverEnabled, cS = !!slide.coverStyle, zoom = slide.zoom || 1, bg = slideBg(slide);
+    const cE = !!slide.coverEnabled;
+    const cUpper = !!slide.coverUppercase, cDark = !!slide.coverDarkOverlay, cNews = !!slide.coverShowNews;
+    const zoom = slide.zoom || 1, bg = slideBg(slide);
     const bgFlat = (slide.bgMode === 'gradient') ? slide.gradColor1 || '#333' : (slide.bgColor || '#333333');
     const borderRadiusStyle = zoom < 1 ? 'border-radius:40px;' : '';
     const sizeStyle = zoom < 1 ? 'max-width:100%;max-height:100%;object-fit:contain;' : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
     const bgWrapStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgFlat};`;
-    
-    const bgHTML = slide.image
-        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}"><img src="${slide.image}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}"></div>`
+
+    // BG IMAGE + FILTERS (Feature#8)
+    const bgFilterCss = buildFilterCss(slide.bgFilters);
+    const bgFilterStyle = bgFilterCss ? `filter:${bgFilterCss};` : '';
+    const bgVignetteHtml = buildVignetteOverlay(slide.bgFilters?.vignette);
+    const safeBgUrl = safeImageUrl(slide.image);
+    const bgHTML = safeBgUrl
+        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}"><img src="${safeBgUrl}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}${bgFilterStyle}">${bgVignetteHtml}</div>`
         : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;${bgWrapStyle}"></div>`;
-    
-    const topLogosHTML = `<div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${state.themeLogoBase64 ? `<img src="${state.themeLogoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${state.logoBase64 ? `<img src="${state.logoBase64}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
-    const gradientHTML = (cE && cS) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
-    const newsHTML = (cE && cS && state.newsBase64) ? `<img src="${state.newsBase64}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
-    
-    const titleUppercase = cS ? 'text-transform:uppercase;' : '';
+
+    const safeThemeLogo = safeImageUrl(state.themeLogoBase64);
+    const safeLogo = safeImageUrl(state.logoBase64);
+    const safeNews = safeImageUrl(state.newsBase64);
+    const topLogosHTML = `<div style="position:absolute;top:40px;left:40px;right:40px;height:100px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:100px;max-width:300px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
+
+    // Cover scorporato (UX#5)
+    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
+    const newsHTML = (cE && cNews && safeNews) ? `<img src="${safeNews}" alt="" style="max-height:60px;max-width:200px;object-fit:contain;margin-bottom:16px;">` : '';
+    const titleUppercase = cUpper ? 'text-transform:uppercase;' : '';
+    const handleCover = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
     const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:40px;right:40px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
-    
-    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${gradientHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
+
+    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
 
-// DRAG & DROP MULTIPLO
+// DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
+function trySnap(val) {
+    for (const t of SNAP_TARGETS) {
+        if (Math.abs(val - t) <= SNAP_TOLERANCE) return { snapped: t, hit: true };
+    }
+    return { snapped: val, hit: false };
+}
+function ensureSnapGuideContainer() {
+    let c = DOM.previewWrapper.querySelector('.snap-guides-layer');
+    if (!c) {
+        c = document.createElement('div');
+        c.className = 'snap-guides-layer';
+        c.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:9998;';
+        DOM.previewWrapper.appendChild(c);
+    }
+    return c;
+}
+function showSnapGuides(xHit, yHit, xVal, yVal) {
+    const layer = ensureSnapGuideContainer();
+    layer.innerHTML = '';
+    if (xHit) {
+        const g = document.createElement('div'); g.className = 'snap-guide vertical'; g.style.left = xVal + '%'; layer.appendChild(g);
+    }
+    if (yHit) {
+        const g = document.createElement('div'); g.className = 'snap-guide horizontal'; g.style.top = yVal + '%'; layer.appendChild(g);
+    }
+}
+function clearSnapGuides() { const layer = DOM.previewWrapper.querySelector('.snap-guides-layer'); if (layer) layer.innerHTML = ''; }
+
 function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
     if(!el) return;
     el.addEventListener('mousedown', onStart);
@@ -842,7 +1283,7 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
         if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
         e.preventDefault(); e.stopPropagation();
         el.classList.add('dragging');
-        
+
         const rect = DOM.previewWrapper.getBoundingClientRect();
         const touch = e.touches ? e.touches[0] : e;
         const targetObj = dataFinder();
@@ -855,18 +1296,28 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
 
         function onMove(e) {
             const t = e.touches ? e.touches[0] : e;
-            const nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
-            const ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
+            let nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
+            let ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
+            // SHIFT bypassa snap se l'utente lo desidera
+            const noSnap = e.shiftKey;
+            if (!noSnap) {
+                const sx = trySnap(nx), sy = trySnap(ny);
+                nx = sx.snapped; ny = sy.snapped;
+                showSnapGuides(sx.hit, sy.hit, nx, ny);
+            } else {
+                clearSnapGuides();
+            }
             el.style.left = nx + '%'; el.style.top = ny + '%';
             targetObj[ox_key] = nx; targetObj[oy_key] = ny;
         }
 
         function onEnd() {
             el.classList.remove('dragging');
+            clearSnapGuides();
             document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
             document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd);
             if(afterDrag) afterDrag();
-            saveState();
+            trackChange(true); // snapshot al rilascio
         }
         document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive:false });
         document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd);
@@ -890,7 +1341,8 @@ function createThumbElement(slide, i, sizePx) {
     thumb.style.width = sizePx+'px'; thumb.style.height = sizePx+'px';
     thumb.style.background = slide.bgMode==='gradient'?slideBg(slide):(slide.bgColor||'#333333');
     thumb.setAttribute('role', 'listitem'); thumb.setAttribute('tabindex', '0');
-    if (slide.image) { thumb.style.backgroundImage=`url(${slide.image})`; thumb.style.backgroundSize='cover'; thumb.style.backgroundPosition='center'; }
+    const safeUrl = safeImageUrl(slide.image);
+    if (safeUrl) { thumb.style.backgroundImage=`url("${safeUrl}")`; thumb.style.backgroundSize='cover'; thumb.style.backgroundPosition='center'; }
     thumb.addEventListener('click', () => { state.activeIndex=i; render(); });
     return thumb;
 }
@@ -905,9 +1357,9 @@ function renderThumbnails() {
             btn.className = 'flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
             btn.style.width = size+'px'; btn.style.height = size+'px'; btn.textContent = '+';
             btn.onclick = () => {
-                state.slides.push({
-                    id:`slide-${Date.now()}`, image:null, coverEnabled:false, coverStyle:false, title:'', body:'', source:'', titleFontSize:110, coverTextX:5.5, coverTextY:60, zoom:1, bgColor:'#333333', bgMode:'solid', gradColor1:'#1a1a2e', gradColor2:'#e94560', gradDir:'to bottom', textOverlay:null, fgImages:[],
-                }); state.activeIndex = state.slides.length-1; saveState(); render();
+                state.slides.push(makeDefaultSlide(`slide-${Date.now()}`));
+                state.activeIndex = state.slides.length-1;
+                trackChange(true); render();
             };
             c.appendChild(btn);
         }
@@ -948,62 +1400,164 @@ function renderEditor() {
     DOM.fgImageUploadLabel.textContent = slide.fgImages?.length ? 'Aggiungi un\'altra immagine' : "Aggiungi un'immagine sopra lo sfondo";
     if (slide.fgImages && slide.fgImages.length > 0) {
         slide.fgImages.forEach((fg, idx) => {
-            const row = document.createElement('div');
-            row.className = 'flex items-center gap-3 p-2 bg-white border border-gray-200 rounded-lg shadow-sm mt-1';
-            row.innerHTML = `
-                <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center" style="background-image: url(${fg.url})"></div>
-                <div class="flex-grow flex flex-col gap-1">
-                    <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Img ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
-                    <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
+            const safeUrl = safeImageUrl(fg.url);
+            const wrap = document.createElement('div');
+            wrap.className = 'flex flex-col gap-2 p-2 bg-white border border-gray-200 rounded-lg shadow-sm mt-1';
+            wrap.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center"></div>
+                    <div class="flex-grow flex flex-col gap-1">
+                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Img ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
+                        <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
+                    </div>
+                    <button class="text-gray-500 hover:text-black p-2 fg-filter-toggle bg-gray-50 rounded-lg transition-all" data-id="${fg.id}" title="Filtri" aria-label="Filtri immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+                    <button class="text-red-500 hover:text-red-700 p-2 fg-delete-btn bg-red-50 rounded-lg transition-all" data-id="${fg.id}" title="Rimuovi" aria-label="Rimuovi immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 </div>
-                <button class="text-red-500 hover:text-red-700 p-2 fg-delete-btn bg-red-50 rounded-lg transition-all" data-id="${fg.id}" title="Rimuovi"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                <div class="fg-filter-panel hidden flex flex-col gap-2 pt-2 border-t border-gray-100">
+                    <div class="flex flex-wrap gap-1">
+                        <button class="preset-btn" data-preset="none" data-target="fg-${fg.id}">Nessuno</button>
+                        <button class="preset-btn" data-preset="bw" data-target="fg-${fg.id}">B&amp;N</button>
+                        <button class="preset-btn" data-preset="vintage" data-target="fg-${fg.id}">Vintage</button>
+                        <button class="preset-btn" data-preset="vivid" data-target="fg-${fg.id}">Vivid</button>
+                        <button class="preset-btn" data-preset="cool" data-target="fg-${fg.id}">Cool</button>
+                        <button class="preset-btn" data-preset="warm" data-target="fg-${fg.id}">Warm</button>
+                    </div>
+                    <div class="fg-filter-controls flex flex-col gap-2"></div>
+                </div>
             `;
-            DOM.fgImagesList.appendChild(row);
+            // Imposta la preview con setAttribute (no template literal injection)
+            const thumbEl = wrap.querySelector('.w-12');
+            if (safeUrl) thumbEl.style.backgroundImage = `url("${safeUrl}")`;
+            DOM.fgImagesList.appendChild(wrap);
+
+            // Render filter controls (lazily quando si apre)
+            const panel = wrap.querySelector('.fg-filter-panel');
+            const filtCtrl = wrap.querySelector('.fg-filter-controls');
+            wrap.querySelector('.fg-filter-toggle').addEventListener('click', () => {
+                const wasHidden = panel.classList.contains('hidden');
+                panel.classList.toggle('hidden');
+                if (wasHidden && !filtCtrl.dataset.bound) {
+                    if (!fg.filters) fg.filters = { ...DEFAULT_FILTERS };
+                    renderFilterControls(filtCtrl, fg.filters, () => { renderPreview(); trackChange(); }, `fg-${fg.id}`);
+                    // Preset buttons inside this panel
+                    panel.querySelectorAll(`.preset-btn[data-target="fg-${fg.id}"]`).forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const p = btn.dataset.preset;
+                            if (FILTER_PRESETS[p]) {
+                                fg.filters = { ...FILTER_PRESETS[p] };
+                                renderFilterControls(filtCtrl, fg.filters, () => { renderPreview(); trackChange(); }, `fg-${fg.id}`);
+                                renderPreview(); trackChange(true);
+                            }
+                        });
+                    });
+                    filtCtrl.dataset.bound = '1';
+                }
+            });
         });
-        // Binds
+        // Binds: size slider
         DOM.fgImagesList.querySelectorAll('.fg-size-slider').forEach(slider => {
             slider.addEventListener('input', e => {
                 const f = slide.fgImages.find(x => x.id === e.target.dataset.id);
                 if (f) {
                     f.size = parseInt(e.target.value, 10);
-                    e.target.previousElementSibling.querySelector('span:last-child').textContent = f.size + '%';
+                    e.target.parentElement.querySelector('span:last-child').textContent = f.size + '%';
                     const el = document.querySelector(`.preview-fg-drag[data-fg-id="${f.id}"]`);
                     if (el) el.style.width = f.size + '%';
                     saveState();
                 }
             });
+            slider.addEventListener('change', () => snapshot());
         });
         DOM.fgImagesList.querySelectorAll('.fg-delete-btn').forEach(btn => {
             btn.addEventListener('click', async e => {
                 const id = e.currentTarget.dataset.id;
                 slide.fgImages = slide.fgImages.filter(x => x.id !== id);
-                await idbSet(slide.id + '_fgs', slide.fgImages.map(x => ({ id: x.id, url: x.url })));
-                saveState(); render();
+                try { await idbSet(slide.id + '_fgs', slide.fgImages.map(x => ({ id: x.id, url: x.url }))); } catch (err) { toast('Errore salvataggio immagine', 'warning'); }
+                trackChange(true); render();
             });
         });
     }
 
     // Altri controlli (Toggle, Testi)
-    const cOn = !!slide.coverEnabled, sOn = !!slide.coverStyle;
+    const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
     if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; }
-    DOM.toggleCoverStyle.checked=sOn; DOM.coverStyleToggleTrack.className='toggle-track'+(sOn?' on':''); DOM.coverStyleToggleLabel.textContent=sOn?'On':'Off';
+
+    // Tre toggle scorporati (UX#5)
+    const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
+    syncToggle(DOM.toggleCoverUppercase,   DOM.coverUppercaseToggleTrack, DOM.coverUppercaseToggleLabel, !!slide.coverUppercase);
+    syncToggle(DOM.toggleCoverDarkOverlay, DOM.coverOverlayToggleTrack,   DOM.coverOverlayToggleLabel,   !!slide.coverDarkOverlay);
+    syncToggle(DOM.toggleCoverShowNews,    DOM.coverNewsToggleTrack,      DOM.coverNewsToggleLabel,      !!slide.coverShowNews);
 
     DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
+
+    // Sezione filtri sfondo (Feature#8) — visibile solo se c'è un'immagine di sfondo
+    DOM.bgFiltersSection.style.display = slide.image ? 'block' : 'none';
+    if (slide.image) renderFilterControls(DOM.bgFilterControls, slide.bgFilters, (key, val) => {
+        slide.bgFilters[key] = val; renderPreview(); trackChange();
+    }, 'bg');
 
     const ov = slide.textOverlay, oOn = !!(ov && ov.enabled);
     DOM.toggleTextOverlay.checked=oOn; DOM.overlayToggleTrack.className='toggle-track'+(oOn?' on':''); DOM.overlayToggleLabel.textContent=oOn?'On':'Off'; DOM.overlayFields.style.display=oOn?'flex':'none';
     if(oOn&&ov){ DOM.overlayFont.value=ov.font||'Bebas Neue'; DOM.overlayTitleInput.value=ov.title||''; DOM.overlayBodyInput.value=ov.body||''; DOM.overlayTitleSize.value=ov.titleSize||80; DOM.overlayTitleSizeVal.textContent=(ov.titleSize||80)+'px'; DOM.overlayBodySize.value=ov.bodySize||40; DOM.overlayBodySizeVal.textContent=(ov.bodySize||40)+'px'; DOM.overlayColor.value=ov.color||'#ffffff'; DOM.overlayColorHex.textContent=(ov.color||'#ffffff').toUpperCase(); DOM.alignBtns.forEach(b=>b.classList.toggle('active',b.dataset.align===(ov.align||'left'))); }
 }
 
+// ════════ FILTRI UI: rende slider + presets (Feature#8) ════════
+const FILTER_RANGES = {
+    brightness: { min:50, max:200, step:1, suffix:'%' },
+    contrast:   { min:50, max:200, step:1, suffix:'%' },
+    saturation: { min:0,  max:200, step:1, suffix:'%' },
+    blur:       { min:0,  max:20,  step:0.5, suffix:'px' },
+    vignette:   { min:0,  max:100, step:1, suffix:'%' },
+};
+const FILTER_LABELS = { brightness:'Luminosità', contrast:'Contrasto', saturation:'Saturazione', blur:'Sfocatura', vignette:'Vignetta' };
+
+function renderFilterControls(container, filters, onChange, presetTarget) {
+    container.innerHTML = '';
+    Object.keys(FILTER_RANGES).forEach(key => {
+        const cfg = FILTER_RANGES[key];
+        const row = document.createElement('div');
+        row.className = 'filter-row';
+        const val = filters[key] ?? DEFAULT_FILTERS[key];
+        row.innerHTML = `<label>${FILTER_LABELS[key]}</label><input type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${val}" data-key="${key}"/><span class="val">${val}${cfg.suffix}</span>`;
+        const input = row.querySelector('input'), valEl = row.querySelector('.val');
+        input.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            filters[key] = v;
+            valEl.textContent = v + cfg.suffix;
+            // Aggiorna i bottoni preset (selezione potrebbe non corrispondere più a nessuno)
+            if (presetTarget) syncPresetButtons(presetTarget, filters);
+            onChange(key, v);
+        });
+        container.appendChild(row);
+    });
+    if (presetTarget) syncPresetButtons(presetTarget, filters);
+}
+
+function syncPresetButtons(target, filters) {
+    document.querySelectorAll(`.preset-btn[data-target="${target}"]`).forEach(btn => {
+        const p = btn.dataset.preset;
+        const preset = FILTER_PRESETS[p];
+        const isActive = preset && Object.keys(preset).every(k => filters[k] === preset[k]);
+        btn.classList.toggle('active', !!isActive);
+    });
+}
+
 function updateScale() {
     DOM.previewContainer.style.transform = `scale(${DOM.previewWrapper.offsetWidth / 1080})`;
 }
 
+// ════════ FIX PERFORMANCE #1: renderPreview con coalescing rAF ════════
+let _previewPending = false;
 function renderPreview() {
-    DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex, true);
-    updateScale(); bindAllDrags();
-    if (DOM.toggleMockup.checked) renderMockup();
+    if (_previewPending) return;
+    _previewPending = true;
+    requestAnimationFrame(() => {
+        _previewPending = false;
+        DOM.previewContainer.innerHTML = generateSlideHTML(state.slides[state.activeIndex], state.activeIndex, true);
+        updateScale(); bindAllDrags();
+        if (DOM.toggleMockup.checked) renderMockup();
+    });
 }
 
 function renderMockup() {
@@ -1014,13 +1568,38 @@ function renderMockup() {
 
 function render() { renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); }
 
+// ════════ FIX PERFORMANCE #3: html2canvas lazy-load ════════
+let _html2canvasLoaded = null;
+function loadHtml2canvas() {
+    if (_html2canvasLoaded) return _html2canvasLoaded;
+    _html2canvasLoaded = new Promise((resolve, reject) => {
+        if (window.html2canvas) return resolve(window.html2canvas);
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload  = () => resolve(window.html2canvas);
+        s.onerror = () => { _html2canvasLoaded = null; reject(new Error('html2canvas non disponibile')); };
+        document.head.appendChild(s);
+    });
+    return _html2canvasLoaded;
+}
+
 // EXPORT
 async function renderSlideToFile(slide, index, fileName) {
-    await preloadImage(slide.image);
+    const h2c = await loadHtml2canvas();
+    // FIX PERFORMANCE #2: assicura font + immagine pronti prima di catturare
+    await Promise.all([document.fonts.ready, preloadImage(safeImageUrl(slide.image))]);
+    // Preload anche FG e brand asset
+    await Promise.all([
+        ...(slide.fgImages || []).map(f => preloadImage(safeImageUrl(f.url))),
+        preloadImage(safeImageUrl(state.logoBase64)),
+        preloadImage(safeImageUrl(state.themeLogoBase64)),
+        preloadImage(safeImageUrl(state.newsBase64)),
+    ]);
     const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(slide, index, false);
-    DOM.exportNodesContainer.appendChild(wrap); await new Promise(r => setTimeout(r, 400));
+    DOM.exportNodesContainer.appendChild(wrap);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // 2 frame per stabilizzare layout
     try {
-        const canvas = await html2canvas(wrap.firstChild, { scale:1, useCORS:true });
+        const canvas = await h2c(wrap.firstChild, { scale:1, useCORS:true, backgroundColor: null });
         const dataUrl = canvas.toDataURL('image/png');
         const blob = await (await fetch(dataUrl)).blob();
         return { dataUrl, blob, file: new File([blob], fileName, { type:'image/png' }) };
@@ -1067,45 +1646,88 @@ async function share() {
     DOM.shareModal.classList.remove('active');
 }
 
-// POPUP EDITOR MOBILE
+// POPUP EDITOR MOBILE (UX#6: aggiunti controlli mancanti)
 function renderPopupControls() {
     const slide = state.slides[state.activeIndex];
+    const ov = slide.textOverlay;
+    const isGrad = slide.bgMode === 'gradient';
+
     let html = `
         <div class="flex flex-col gap-1">
             <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Zoom Sfondo</span><span id="pop-zoom-val" class="text-[#0071E3]">${(slide.zoom || 1).toFixed(2)}x</span></div>
             <input type="range" id="pop-zoom" min="0.1" max="3" step="0.05" value="${slide.zoom || 1}" class="w-full">
+        </div>
+
+        <div class="border-t pt-3 mt-1">
+            <div class="text-xs font-bold text-gray-500 uppercase mb-2">Sfondo</div>
+            <div class="flex gap-2 mb-2">
+                <button id="pop-bg-solid"    class="flex-1 py-1.5 rounded text-xs font-bold ${isGrad?'bg-white text-gray-600 border border-gray-200':'bg-[#0071E3] text-white'}">Colore</button>
+                <button id="pop-bg-gradient" class="flex-1 py-1.5 rounded text-xs font-bold ${isGrad?'bg-[#0071E3] text-white':'bg-white text-gray-600 border border-gray-200'}">Gradiente</button>
+            </div>
+            <div id="pop-bg-solid-row" class="${isGrad?'hidden':''} flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore</span><input type="color" id="pop-bg-color" value="${slide.bgColor || '#333333'}" class="w-9 h-9"></div>
+            <div id="pop-bg-grad-rows" class="${isGrad?'':'hidden'} flex flex-col gap-2">
+                <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore 1</span><input type="color" id="pop-grad-1" value="${slide.gradColor1 || '#1a1a2e'}" class="w-9 h-9"></div>
+                <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore 2</span><input type="color" id="pop-grad-2" value="${slide.gradColor2 || '#e94560'}" class="w-9 h-9"></div>
+                <div class="flex gap-1 text-xs">
+                    <button data-dir="to bottom" class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='to bottom'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">↓ Vert</button>
+                    <button data-dir="to right"  class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='to right'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">→ Oriz</button>
+                    <button data-dir="135deg"    class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='135deg'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">↘ Diag</button>
+                </div>
+            </div>
         </div>`;
+
     if (slide.coverEnabled) {
-        html += `<div class="flex flex-col gap-1">
+        html += `<div class="border-t pt-3 mt-1 flex flex-col gap-1">
             <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo Copertina</span><span id="pop-title-size-val" class="text-[#0071E3]">${slide.titleFontSize || 110}px</span></div>
             <input type="range" id="pop-title-size" min="40" max="200" step="2" value="${slide.titleFontSize || 110}" class="w-full">
         </div>`;
     }
-    if (slide.textOverlay && slide.textOverlay.enabled) {
-        html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo Libero</span><span id="pop-ov-title-size-val" class="text-[#0071E3]">${slide.textOverlay.titleSize || 80}px</span></div><input type="range" id="pop-ov-title-size" min="30" max="200" step="2" value="${slide.textOverlay.titleSize || 80}" class="w-full"></div>`;
-        html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Corpo Libero</span><span id="pop-ov-body-size-val" class="text-[#0071E3]">${slide.textOverlay.bodySize || 40}px</span></div><input type="range" id="pop-ov-body-size" min="20" max="120" step="2" value="${slide.textOverlay.bodySize || 40}" class="w-full"></div>`;
+
+    if (ov && ov.enabled) {
+        html += `<div class="border-t pt-3 mt-1">
+            <div class="text-xs font-bold text-gray-500 uppercase mb-2">Testo libero</div>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-500 uppercase">Font</span>
+                    <select id="pop-ov-font" class="bg-[#F5F5F7] rounded p-1.5 text-xs">${Object.keys(FONTS).map(f=>`<option value="${f}" ${ov.font===f?'selected':''}>${f}</option>`).join('')}</select>
+                </div>
+                <div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo</span><span id="pop-ov-title-size-val" class="text-[#0071E3]">${ov.titleSize || 80}px</span></div><input type="range" id="pop-ov-title-size" min="30" max="200" step="2" value="${ov.titleSize || 80}" class="w-full"></div>
+                <div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Corpo</span><span id="pop-ov-body-size-val" class="text-[#0071E3]">${ov.bodySize || 40}px</span></div><input type="range" id="pop-ov-body-size" min="20" max="120" step="2" value="${ov.bodySize || 40}" class="w-full"></div>
+                <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-500 uppercase">Colore</span><input type="color" id="pop-ov-color" value="${ov.color || '#ffffff'}" class="w-9 h-9"></div>
+                <div class="flex gap-1 text-xs">
+                    <button data-align="left"   class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='left'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">◀ Sin</button>
+                    <button data-align="center" class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='center'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">■ Cen</button>
+                    <button data-align="right"  class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='right'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">Des ▶</button>
+                </div>
+            </div>
+        </div>`;
     }
+
     if (slide.fgImages && slide.fgImages.length > 0) {
+        html += `<div class="border-t pt-3 mt-1 flex flex-col gap-2">`;
         slide.fgImages.forEach((fg, i) => {
             html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Img Primo Piano ${i+1}</span><span id="pop-fg-size-val-${fg.id}" class="text-[#0071E3]">${fg.size}%</span></div><input type="range" data-pop-fg-id="${fg.id}" min="10" max="100" step="1" value="${fg.size}" class="w-full pop-fg-size"></div>`;
         });
+        html += `</div>`;
     }
+
     DOM.popupControls.innerHTML = html;
 
+    // ── BIND ──
     const bindRange = (id, keyFn, valId, suffix, domSync = null) => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('input', e => {
             const val = parseFloat(e.target.value); keyFn(val);
-            document.getElementById(valId).textContent = val + suffix;
+            const vEl = document.getElementById(valId); if (vEl) vEl.textContent = val + suffix;
             if (domSync) domSync(val);
             saveState(); renderPreview();
         });
+        if (el) el.addEventListener('change', () => snapshot());
     };
     bindRange('pop-zoom', v=>slide.zoom=v, 'pop-zoom-val', 'x', v=>{DOM.inputZoom.value=v; DOM.zoomValue.textContent=v.toFixed(2)+'x';});
     bindRange('pop-title-size', v=>slide.titleFontSize=v, 'pop-title-size-val', 'px', v=>{DOM.inputTitleFontSize.value=v; DOM.titleFontSizeValue.textContent=v+'px';});
-    if (slide.textOverlay) {
-        bindRange('pop-ov-title-size', v=>slide.textOverlay.titleSize=v, 'pop-ov-title-size-val', 'px', v=>{DOM.overlayTitleSize.value=v; DOM.overlayTitleSizeVal.textContent=v+'px';});
-        bindRange('pop-ov-body-size', v=>slide.textOverlay.bodySize=v, 'pop-ov-body-size-val', 'px', v=>{DOM.overlayBodySize.value=v; DOM.overlayBodySizeVal.textContent=v+'px';});
+    if (ov) {
+        bindRange('pop-ov-title-size', v=>ov.titleSize=v, 'pop-ov-title-size-val', 'px', v=>{DOM.overlayTitleSize.value=v; DOM.overlayTitleSizeVal.textContent=v+'px';});
+        bindRange('pop-ov-body-size',  v=>ov.bodySize=v,  'pop-ov-body-size-val',  'px', v=>{DOM.overlayBodySize.value=v;  DOM.overlayBodySizeVal.textContent=v+'px';});
     }
     document.querySelectorAll('.pop-fg-size').forEach(slider => {
         slider.addEventListener('input', e => {
@@ -1114,13 +1736,45 @@ function renderPopupControls() {
                 fg.size = parseInt(e.target.value, 10);
                 document.getElementById(`pop-fg-size-val-${fg.id}`).textContent = fg.size + '%';
                 const sMain = DOM.fgImagesList.querySelector(`.fg-size-slider[data-id="${fg.id}"]`);
-                if (sMain) { sMain.value = fg.size; sMain.previousElementSibling.querySelector('span:last-child').textContent = fg.size + '%'; }
+                if (sMain) { sMain.value = fg.size; sMain.parentElement.querySelector('span:last-child').textContent = fg.size + '%'; }
                 const el = document.querySelector(`.preview-fg-drag[data-fg-id="${fg.id}"]`);
                 if (el) el.style.width = fg.size + '%';
                 saveState();
             }
         });
+        slider.addEventListener('change', () => snapshot());
     });
+
+    // Background mode toggles
+    const popSolid = document.getElementById('pop-bg-solid'), popGrad = document.getElementById('pop-bg-gradient');
+    if (popSolid) popSolid.addEventListener('click', () => { slide.bgMode='solid'; trackChange(true); render(); });
+    if (popGrad)  popGrad.addEventListener('click',  () => { slide.bgMode='gradient'; trackChange(true); render(); });
+    const popBgColor = document.getElementById('pop-bg-color');
+    if (popBgColor) popBgColor.addEventListener('input', e => { slide.bgColor = e.target.value; renderPreview(); saveState(); DOM.inputBgColor.value = e.target.value; });
+    const popG1 = document.getElementById('pop-grad-1');
+    if (popG1) popG1.addEventListener('input', e => { slide.gradColor1 = e.target.value; renderPreview(); saveState(); DOM.inputGradColor1.value = e.target.value; });
+    const popG2 = document.getElementById('pop-grad-2');
+    if (popG2) popG2.addEventListener('input', e => { slide.gradColor2 = e.target.value; renderPreview(); saveState(); DOM.inputGradColor2.value = e.target.value; });
+    document.querySelectorAll('.pop-grad-dir').forEach(b => b.addEventListener('click', () => {
+        slide.gradDir = b.dataset.dir;
+        document.querySelectorAll('.pop-grad-dir').forEach(x => { x.classList.remove('bg-[#0071E3]','text-white','border-[#0071E3]'); x.classList.add('bg-white','border-gray-200'); });
+        b.classList.remove('bg-white','border-gray-200'); b.classList.add('bg-[#0071E3]','text-white','border-[#0071E3]');
+        trackChange(true); renderPreview();
+    }));
+
+    // Overlay controls
+    const popOvFont = document.getElementById('pop-ov-font');
+    if (popOvFont && ov) popOvFont.addEventListener('change', e => { ov.font = e.target.value; trackChange(true); renderPreview(); DOM.overlayFont.value = e.target.value; });
+    const popOvColor = document.getElementById('pop-ov-color');
+    if (popOvColor && ov) popOvColor.addEventListener('input', e => { ov.color = e.target.value; saveState(); renderPreview(); DOM.overlayColor.value = e.target.value; DOM.overlayColorHex.textContent = e.target.value.toUpperCase(); });
+    document.querySelectorAll('.pop-ov-align').forEach(b => b.addEventListener('click', () => {
+        if (!ov) return;
+        ov.align = b.dataset.align;
+        document.querySelectorAll('.pop-ov-align').forEach(x => { x.classList.remove('bg-[#0071E3]','text-white','border-[#0071E3]'); x.classList.add('bg-white','border-gray-200'); });
+        b.classList.remove('bg-white','border-gray-200'); b.classList.add('bg-[#0071E3]','text-white','border-[#0071E3]');
+        DOM.alignBtns.forEach(x => x.classList.toggle('active', x.dataset.align === b.dataset.align));
+        trackChange(true); renderPreview();
+    }));
 }
 
 DOM.btnPopupEditor.addEventListener('click', () => {
@@ -1137,21 +1791,69 @@ DOM.btnClosePopup.addEventListener('click', () => {
 });
 
 // EVENT LISTENERS COMPONENTI MAIN
-DOM.bgUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], async b => { state.slides[state.activeIndex].image=b; DOM.bgUpload.value=''; await idbSet(state.slides[state.activeIndex].id, b).catch(()=>{}); saveState(); render(); }); });
-DOM.fgImageUpload.addEventListener('change', e => {
-    readImageAsBase64(e.target.files[0], async b => {
-        const s = state.slides[state.activeIndex];
-        if(!s.fgImages) s.fgImages = [];
-        s.fgImages.push({ id: generateId(), url: b, x: 50, y: 50, size: 40 });
-        DOM.fgImageUpload.value=''; await idbSet(s.id + '_fgs', s.fgImages.map(f => ({ id: f.id, url: f.url }))).catch(()=>{}); saveState(); render();
+
+// ════════ UX#8: Drag & Drop helper su zone upload e su preview-wrapper ════════
+function setupDropzone(el, onFile) {
+    if (!el) return;
+    const stop = e => { e.preventDefault(); e.stopPropagation(); };
+    el.addEventListener('dragenter', e => { stop(e); el.classList.add('dropzone-active'); });
+    el.addEventListener('dragover',  e => { stop(e); el.classList.add('dropzone-active'); });
+    el.addEventListener('dragleave', e => { stop(e); el.classList.remove('dropzone-active'); });
+    el.addEventListener('drop', e => {
+        stop(e); el.classList.remove('dropzone-active');
+        const f = e.dataTransfer?.files?.[0];
+        if (f && f.type.startsWith('image/')) onFile(f);
+        else if (f) toast('Trascina un file immagine', 'warning');
     });
-});
-DOM.logoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.logoBase64=b; localStorage.setItem(LS.logo, b); render(); }); });
-DOM.themeLogoUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.themeLogoBase64=b; localStorage.setItem(LS.themeLogo, b); render(); }); });
-DOM.newsUpload.addEventListener('change', e => { readImageAsBase64(e.target.files[0], b => { state.newsBase64=b; localStorage.setItem(LS.news, b); render(); }); });
-DOM.btnClearLogo.addEventListener('click', () => { state.logoBase64=null; localStorage.removeItem(LS.logo); render(); });
-DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; localStorage.removeItem(LS.themeLogo); render(); });
-DOM.btnClearNews.addEventListener('click', () => { state.newsBase64=null; localStorage.removeItem(LS.news); render(); });
+}
+
+// BG upload (sfondo) — con compressione
+async function handleBgUpload(file) {
+    try {
+        const b = await compressImage(file);
+        const s = state.slides[state.activeIndex];
+        s.image = b;
+        try { await idbSet(s.id, b); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
+        DOM.bgUpload.value = '';
+        trackChange(true); render();
+    } catch (e) { /* toast già mostrato in compressImage */ }
+}
+DOM.bgUpload.addEventListener('change', e => { if (e.target.files[0]) handleBgUpload(e.target.files[0]); });
+setupDropzone(DOM.bgUploadLabel, handleBgUpload);
+setupDropzone(DOM.previewWrapper, handleBgUpload);
+
+// FG upload (immagine in primo piano) — con compressione + filters di default
+async function handleFgUpload(file) {
+    try {
+        const b = await compressImage(file);
+        const s = state.slides[state.activeIndex];
+        if (!s.fgImages) s.fgImages = [];
+        s.fgImages.push({ id: generateId(), url: b, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+        try { await idbSet(s.id + '_fgs', s.fgImages.map(f => ({ id: f.id, url: f.url }))); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
+        DOM.fgImageUpload.value = '';
+        trackChange(true); render();
+    } catch (e) { /* toast già mostrato */ }
+}
+DOM.fgImageUpload.addEventListener('change', e => { if (e.target.files[0]) handleFgUpload(e.target.files[0]); });
+setupDropzone(DOM.fgImageUploadLabel, handleFgUpload);
+
+// Brand assets — compressione meno aggressiva ma comunque resize per evitare logos enormi
+async function handleBrandUpload(file, kind) {
+    try {
+        const b = await compressImage(file);
+        if (kind === 'logo')      { state.logoBase64 = b;      lsSet(LS.logo, b); }
+        if (kind === 'themeLogo') { state.themeLogoBase64 = b; lsSet(LS.themeLogo, b); }
+        if (kind === 'news')      { state.newsBase64 = b;      lsSet(LS.news, b); }
+        trackChange(true); render();
+    } catch (e) {}
+}
+DOM.logoUpload.addEventListener('change',      e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'logo'); });
+DOM.themeLogoUpload.addEventListener('change', e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'themeLogo'); });
+DOM.newsUpload.addEventListener('change',      e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'news'); });
+
+DOM.btnClearLogo.addEventListener('click',      () => { state.logoBase64=null;      lsRemove(LS.logo);      trackChange(true); render(); });
+DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; lsRemove(LS.themeLogo); trackChange(true); render(); });
+DOM.btnClearNews.addEventListener('click',      () => { state.newsBase64=null;      lsRemove(LS.news);      trackChange(true); render(); });
 
 // ─── FIX BUG 1+2: aggiorna thumbnail attive su entrambi i container (desktop + mobile)
 function updateActiveThumb() {
@@ -1159,77 +1861,76 @@ function updateActiveThumb() {
     [DOM.thumbnailsContainer, DOM.thumbnailsContainerMobile].filter(Boolean).forEach(c => {
         const t = c.querySelectorAll('[role="listitem"]')[state.activeIndex];
         if (!t) return;
-        // Reset eventuale immagine sopra se non c'è image
         if (!slide.image) {
             t.style.backgroundImage = '';
             t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
         } else {
-            // se c'è image, mantieni l'immagine ma aggiorna comunque il bg sottostante
             t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
-            t.style.backgroundImage = `url(${slide.image})`;
-            t.style.backgroundSize = 'cover';
-            t.style.backgroundPosition = 'center';
+            const safeUrl = safeImageUrl(slide.image);
+            if (safeUrl) { t.style.backgroundImage = `url("${safeUrl}")`; t.style.backgroundSize = 'cover'; t.style.backgroundPosition = 'center'; }
         }
     });
 }
 
-// ─── FIX BUG 6: saveState debounced per i color picker / range continui (riduce scritture localStorage)
-const debouncedSave = debounce(saveState, 200);
-
-DOM.bgModeSolid.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='solid'; saveState(); render(); });
-DOM.bgModeGradient.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='gradient'; saveState(); render(); });
+DOM.bgModeSolid.addEventListener('click',    () => { state.slides[state.activeIndex].bgMode='solid';    trackChange(true); render(); });
+DOM.bgModeGradient.addEventListener('click', () => { state.slides[state.activeIndex].bgMode='gradient'; trackChange(true); render(); });
 DOM.inputBgColor.addEventListener('input', e => {
     state.slides[state.activeIndex].bgColor = e.target.value;
-    updateActiveThumb();
-    renderPreview();
-    debouncedSave();
+    updateActiveThumb(); renderPreview(); trackChange();
 });
 DOM.inputGradColor1.addEventListener('input', e => {
     state.slides[state.activeIndex].gradColor1 = e.target.value;
-    updateActiveThumb();
-    renderPreview();
-    debouncedSave();
+    updateActiveThumb(); renderPreview(); trackChange();
 });
 DOM.inputGradColor2.addEventListener('input', e => {
     state.slides[state.activeIndex].gradColor2 = e.target.value;
-    updateActiveThumb();
-    renderPreview();
-    debouncedSave();
+    updateActiveThumb(); renderPreview(); trackChange();
 });
-// ─── FIX BUG 3: gestione corretta della classe active-dir (oltre agli inline styles)
 DOM.gradDirBtns.forEach(btn => btn.addEventListener('click', () => {
     state.slides[state.activeIndex].gradDir = btn.dataset.dir;
-    DOM.gradDirBtns.forEach(b => {
-        b.style.background = ''; b.style.color = ''; b.style.borderColor = '';
-        b.classList.remove('active-dir');
-    });
-    btn.style.background = '#0071E3'; btn.style.color = 'white'; btn.style.borderColor = '#0071E3';
-    btn.classList.add('active-dir');
-    updateActiveThumb();
-    saveState();
-    renderPreview();
+    DOM.gradDirBtns.forEach(b => { b.style.background=''; b.style.color=''; b.style.borderColor=''; b.classList.remove('active-dir'); });
+    btn.style.background='#0071E3'; btn.style.color='white'; btn.style.borderColor='#0071E3'; btn.classList.add('active-dir');
+    updateActiveThumb(); trackChange(true); renderPreview();
 }));
-DOM.inputZoom.addEventListener('input', e => { const v=parseFloat(e.target.value); state.slides[state.activeIndex].zoom=v; DOM.zoomValue.textContent=v.toFixed(2)+'x'; saveState(); renderPreview(); });
+DOM.inputZoom.addEventListener('input', e => { const v=parseFloat(e.target.value); state.slides[state.activeIndex].zoom=v; DOM.zoomValue.textContent=v.toFixed(2)+'x'; renderPreview(); trackChange(); });
 
+// ════════ Cover layout enabled + 3 toggle scorporati (UX#5) ════════
 DOM.coverToggleTrack.addEventListener('click', () => DOM.toggleCoverLayout.click());
-DOM.toggleCoverLayout.addEventListener('change', e => { state.slides[state.activeIndex].coverEnabled=e.target.checked; DOM.coverToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.coverToggleLabel.textContent=e.target.checked?'On':'Off'; DOM.coverFields.style.display=e.target.checked?'flex':'none'; saveState(); renderPreview(); });
-DOM.coverStyleToggleTrack.addEventListener('click', () => DOM.toggleCoverStyle.click());
-DOM.toggleCoverStyle.addEventListener('change', e => { state.slides[state.activeIndex].coverStyle=e.target.checked; DOM.coverStyleToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.coverStyleToggleLabel.textContent=e.target.checked?'On':'Off'; saveState(); renderPreview(); });
-DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; saveState(); renderPreview(); });
-const debouncedPreview = debounce(() => { saveState(); renderPreview(); }, 150);
-DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreview(); });
-DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreview(); });
-DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreview(); });
+DOM.toggleCoverLayout.addEventListener('change', e => {
+    state.slides[state.activeIndex].coverEnabled = e.target.checked;
+    DOM.coverToggleTrack.className='toggle-track'+(e.target.checked?' on':'');
+    DOM.coverToggleLabel.textContent = e.target.checked?'On':'Off';
+    DOM.coverFields.style.display = e.target.checked?'flex':'none';
+    trackChange(true); renderPreview();
+});
+function bindCoverFlagToggle(track, input, label, key) {
+    track.addEventListener('click', () => input.click());
+    input.addEventListener('change', e => {
+        state.slides[state.activeIndex][key] = e.target.checked;
+        track.className = 'toggle-track' + (e.target.checked ? ' on' : '');
+        label.textContent = e.target.checked ? 'On' : 'Off';
+        trackChange(true); renderPreview();
+    });
+}
+bindCoverFlagToggle(DOM.coverUppercaseToggleTrack, DOM.toggleCoverUppercase,   DOM.coverUppercaseToggleLabel, 'coverUppercase');
+bindCoverFlagToggle(DOM.coverOverlayToggleTrack,   DOM.toggleCoverDarkOverlay, DOM.coverOverlayToggleLabel,   'coverDarkOverlay');
+bindCoverFlagToggle(DOM.coverNewsToggleTrack,      DOM.toggleCoverShowNews,    DOM.coverNewsToggleLabel,      'coverShowNews');
+
+DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
+const debouncedPreviewSave = debounce(() => { renderPreview(); trackChange(); }, 150);
+DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
+DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
+DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreviewSave(); });
 
 DOM.overlayToggleTrack.addEventListener('click', () => DOM.toggleTextOverlay.click());
-DOM.toggleTextOverlay.addEventListener('change', e => { const ov=ensureOverlay(); ov.enabled=e.target.checked; DOM.overlayToggleTrack.className='toggle-track'+(ov.enabled?' on':''); DOM.overlayToggleLabel.textContent=ov.enabled?'On':'Off'; DOM.overlayFields.style.display=ov.enabled?'flex':'none'; saveState(); renderPreview(); });
-DOM.overlayFont.addEventListener('change', e => { ensureOverlay().font=e.target.value; saveState(); renderPreview(); });
-DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title=e.target.value; debouncedPreview(); });
-DOM.overlayBodyInput.addEventListener('input', e => { ensureOverlay().body=e.target.value; debouncedPreview(); });
-DOM.overlayTitleSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().titleSize=v; DOM.overlayTitleSizeVal.textContent=v+'px'; saveState(); renderPreview(); });
-DOM.overlayBodySize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().bodySize=v; DOM.overlayBodySizeVal.textContent=v+'px'; saveState(); renderPreview(); });
-DOM.overlayColor.addEventListener('input', e => { ensureOverlay().color=e.target.value; DOM.overlayColorHex.textContent=e.target.value.toUpperCase(); saveState(); renderPreview(); });
-DOM.alignBtns.forEach(btn => btn.addEventListener('click', () => { ensureOverlay().align=btn.dataset.align; DOM.alignBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); saveState(); renderPreview(); }));
+DOM.toggleTextOverlay.addEventListener('change', e => { const ov=ensureOverlay(); ov.enabled=e.target.checked; DOM.overlayToggleTrack.className='toggle-track'+(ov.enabled?' on':''); DOM.overlayToggleLabel.textContent=ov.enabled?'On':'Off'; DOM.overlayFields.style.display=ov.enabled?'flex':'none'; trackChange(true); renderPreview(); });
+DOM.overlayFont.addEventListener('change', e => { ensureOverlay().font=e.target.value; trackChange(true); renderPreview(); });
+DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title=e.target.value; debouncedPreviewSave(); });
+DOM.overlayBodyInput.addEventListener('input', e => { ensureOverlay().body=e.target.value; debouncedPreviewSave(); });
+DOM.overlayTitleSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().titleSize=v; DOM.overlayTitleSizeVal.textContent=v+'px'; renderPreview(); trackChange(); });
+DOM.overlayBodySize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().bodySize=v; DOM.overlayBodySizeVal.textContent=v+'px'; renderPreview(); trackChange(); });
+DOM.overlayColor.addEventListener('input', e => { ensureOverlay().color=e.target.value; DOM.overlayColorHex.textContent=e.target.value.toUpperCase(); renderPreview(); trackChange(); });
+DOM.alignBtns.forEach(btn => btn.addEventListener('click', () => { ensureOverlay().align=btn.dataset.align; DOM.alignBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); trackChange(true); renderPreview(); }));
 
 DOM.mockupToggleTrack.addEventListener('click', () => DOM.toggleMockup.click());
 DOM.toggleMockup.addEventListener('change', e => { DOM.mockupToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.mockupToggleLabel.textContent=e.target.checked?'Feed On':'Feed'; DOM.mockupWrapper.classList.toggle('active', e.target.checked); if(e.target.checked) renderMockup(); });
@@ -1238,38 +1939,199 @@ DOM.btnPrev.addEventListener('click',  () => { if (state.activeIndex>0) { state.
 DOM.btnNext.addEventListener('click',  () => { if (state.activeIndex<state.slides.length-1) { state.activeIndex++; render(); } });
 if(DOM.btnPrevMobile) DOM.btnPrevMobile.addEventListener('click', () => { if (state.activeIndex>0) { state.activeIndex--; render(); } });
 if(DOM.btnNextMobile) DOM.btnNextMobile.addEventListener('click', () => { if (state.activeIndex<state.slides.length-1) { state.activeIndex++; render(); } });
-DOM.btnMoveLeft.addEventListener('click',  () => { const i=state.activeIndex; if (i>0) { [state.slides[i],state.slides[i-1]]=[state.slides[i-1],state.slides[i]]; state.activeIndex--; saveState(); render(); } });
-DOM.btnMoveRight.addEventListener('click', () => { const i=state.activeIndex; if (i<state.slides.length-1) { [state.slides[i],state.slides[i+1]]=[state.slides[i+1],state.slides[i]]; state.activeIndex++; saveState(); render(); } });
+DOM.btnMoveLeft.addEventListener('click',  () => { const i=state.activeIndex; if (i>0) { [state.slides[i],state.slides[i-1]]=[state.slides[i-1],state.slides[i]]; state.activeIndex--; trackChange(true); render(); } });
+DOM.btnMoveRight.addEventListener('click', () => { const i=state.activeIndex; if (i<state.slides.length-1) { [state.slides[i],state.slides[i+1]]=[state.slides[i+1],state.slides[i]]; state.activeIndex++; trackChange(true); render(); } });
 
 DOM.btnDeleteSlide.addEventListener('click', () => {
-    if (state.slides.length <= 1) return; const id = state.slides[state.activeIndex].id;
-    idbDelete(id).catch(()=>{}); idbDelete(id+'_fgs').catch(()=>{});
-    state.slides.splice(state.activeIndex, 1); state.activeIndex = Math.max(0, state.activeIndex-1); saveState(); render();
+    if (state.slides.length <= 1) return;
+    openConfirm('Eliminare la slide?', 'L\'azione può essere annullata con Ctrl+Z.', async () => {
+        const id = state.slides[state.activeIndex].id;
+        idbDelete(id).catch(()=>{}); idbDelete(id+'_fgs').catch(()=>{});
+        state.slides.splice(state.activeIndex, 1); state.activeIndex = Math.max(0, state.activeIndex-1);
+        trackChange(true); render();
+    });
 });
 DOM.btnDuplicateSlide.addEventListener('click', async () => {
-    if (state.slides.length >= MAX_SLIDES) return; const src = state.slides[state.activeIndex]; const newId = `slide-${Date.now()}`;
-    const copy = { ...src, id: newId, textOverlay: src.textOverlay ? { ...src.textOverlay } : null, fgImages: (src.fgImages || []).map(f => ({ ...f, id: generateId() })) };
+    if (state.slides.length >= MAX_SLIDES) return;
+    const src = state.slides[state.activeIndex]; const newId = `slide-${Date.now()}`;
+    const copy = {
+        ...src, id: newId,
+        textOverlay: src.textOverlay ? { ...src.textOverlay } : null,
+        bgFilters: { ...(src.bgFilters || DEFAULT_FILTERS) },
+        fgImages: (src.fgImages || []).map(f => ({ ...f, id: generateId(), filters: { ...(f.filters || DEFAULT_FILTERS) } })),
+    };
     if (src.image) await idbSet(newId, src.image).catch(()=>{});
     if (copy.fgImages.length) await idbSet(newId + '_fgs', copy.fgImages.map(f => ({ id: f.id, url: f.url }))).catch(()=>{});
-    state.slides.splice(state.activeIndex+1, 0, copy); state.activeIndex++; saveState(); render();
+    state.slides.splice(state.activeIndex+1, 0, copy); state.activeIndex++; trackChange(true); render();
 });
 
 DOM.btnExport.addEventListener('click', exportAllSlides); DOM.btnExportSingle.addEventListener('click', exportSingleSlide);
 DOM.btnNativeShare.addEventListener('click', share); DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
 DOM.btnHelp.addEventListener('click', () => DOM.helpModal.classList.add('active')); DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
 DOM.btnRefresh.addEventListener('click', () => window.location.href=`${window.location.pathname}?v=${Date.now()}`);
-document.addEventListener('keydown', e => { if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return; if(e.key==='ArrowLeft'&&state.activeIndex>0) {state.activeIndex--;render();} if(e.key==='ArrowRight'&&state.activeIndex<state.slides.length-1) {state.activeIndex++;render();} });
+
+// Keyboard: arrow nav + undo/redo (UX#1)
+document.addEventListener('keydown', e => {
+    const inField = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+    // Undo/Redo: funziona anche dentro i campi (comportamento standard)
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        if (inField && document.activeElement.tagName !== 'SELECT') return; // lasciamo undo nativo nei text input
+        e.preventDefault();
+        if (e.shiftKey) redo(); else undo();
+        return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+    if (inField) return;
+    if (e.key==='ArrowLeft'  && state.activeIndex>0) { state.activeIndex--; render(); }
+    if (e.key==='ArrowRight' && state.activeIndex<state.slides.length-1) { state.activeIndex++; render(); }
+});
 window.addEventListener('resize', debounce(updateScale, 100));
 
-// Dark mode
-const savedTheme = localStorage.getItem('icc_theme');
+// ════════ Undo / Redo buttons ════════
+DOM.btnUndo.addEventListener('click', undo);
+DOM.btnRedo.addEventListener('click', redo);
+
+// ════════ Reset filtri sfondo + preset bg ════════
+DOM.btnResetBgFilters.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const s = state.slides[state.activeIndex];
+    s.bgFilters = { ...DEFAULT_FILTERS };
+    renderEditor(); renderPreview(); trackChange(true);
+});
+DOM.bgPresetRow.addEventListener('click', e => {
+    const btn = e.target.closest('.preset-btn[data-target="bg"]');
+    if (!btn) return;
+    const p = btn.dataset.preset;
+    if (!FILTER_PRESETS[p]) return;
+    const s = state.slides[state.activeIndex];
+    s.bgFilters = { ...FILTER_PRESETS[p] };
+    renderEditor(); renderPreview(); trackChange(true);
+});
+
+// ════════ Eyedropper (Feature#4) ════════
+async function pickColor(targetInput, key) {
+    if (!('EyeDropper' in window)) { toast('Pipetta non supportata in questo browser (usa Chrome/Edge)', 'warning'); return; }
+    try {
+        const result = await new window.EyeDropper().open();
+        const hex = result.sRGBHex;
+        targetInput.value = hex;
+        state.slides[state.activeIndex][key] = hex;
+        updateActiveThumb(); renderPreview(); trackChange(true);
+        toast(`Colore campionato: ${hex}`, 'success', 2000);
+    } catch (e) { /* utente ha annullato */ }
+}
+DOM.btnEyedrop1.addEventListener('click', e => { e.preventDefault(); pickColor(DOM.inputGradColor1, 'gradColor1'); });
+DOM.btnEyedrop2.addEventListener('click', e => { e.preventDefault(); pickColor(DOM.inputGradColor2, 'gradColor2'); });
+
+// ════════ Reset slide / Reset app ════════
+function openConfirm(title, message, onOk) {
+    DOM.confirmTitle.textContent = title;
+    DOM.confirmMessage.textContent = message;
+    DOM.confirmModal.classList.add('active');
+    const close = () => DOM.confirmModal.classList.remove('active');
+    const okHandler = () => { close(); cleanup(); onOk(); };
+    const cancelHandler = () => { close(); cleanup(); };
+    const cleanup = () => {
+        DOM.confirmOk.removeEventListener('click', okHandler);
+        DOM.confirmCancel.removeEventListener('click', cancelHandler);
+    };
+    DOM.confirmOk.addEventListener('click', okHandler);
+    DOM.confirmCancel.addEventListener('click', cancelHandler);
+}
+DOM.btnResetSlide.addEventListener('click', () => {
+    openConfirm('Reset slide attiva?', 'Tutti i dati di questa slide verranno azzerati (immagini, testi, filtri).', async () => {
+        const cur = state.slides[state.activeIndex];
+        // Pulisci IDB della slide
+        try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); } catch (e) {}
+        // Sostituisci con default mantenendo l'id
+        state.slides[state.activeIndex] = makeDefaultSlide(cur.id);
+        trackChange(true); render();
+        toast('Slide resettata', 'success');
+    });
+});
+DOM.btnResetApp.addEventListener('click', () => {
+    openConfirm('Reset completo app?', 'Verranno cancellati tutti i contenuti (slide, brand, immagini). Operazione irreversibile.', async () => {
+        try {
+            Object.values(LS).forEach(k => lsRemove(k));
+            lsRemove('icc_theme');
+            // Pulisci IDB
+            if (idb) {
+                try {
+                    const tx = idb.transaction(IDB_STORE, 'readwrite');
+                    tx.objectStore(IDB_STORE).clear();
+                } catch (e) {}
+            }
+        } catch (e) {}
+        toast('App resettata, ricarico…', 'info', 1500);
+        setTimeout(() => window.location.reload(), 800);
+    });
+});
+
+// ════════ Crop / Rotate / Flip (Feature#7) — usa Cropper.js ════════
+let _cropperInstance = null;
+DOM.btnOpenCrop.addEventListener('click', () => {
+    const s = state.slides[state.activeIndex];
+    const safeUrl = safeImageUrl(s.image);
+    if (!safeUrl) { toast('Carica prima un\'immagine di sfondo', 'warning'); return; }
+    if (typeof Cropper === 'undefined') { toast('Editor di crop non disponibile', 'error'); return; }
+    DOM.cropImg.src = safeUrl;
+    DOM.cropModal.classList.add('active');
+    // Inizializza Cropper dopo che l'immagine è renderizzata
+    DOM.cropImg.onload = () => {
+        if (_cropperInstance) _cropperInstance.destroy();
+        _cropperInstance = new Cropper(DOM.cropImg, {
+            viewMode: 1,
+            aspectRatio: NaN, // Crop libero
+            autoCropArea: 1,
+            background: false,
+            movable: true, rotatable: true, scalable: true, zoomable: true,
+            responsive: true,
+        });
+        DOM.cropRotationSlider.value = 0;
+        DOM.cropRotationVal.textContent = '0°';
+    };
+});
+function closeCropModal() {
+    DOM.cropModal.classList.remove('active');
+    if (_cropperInstance) { _cropperInstance.destroy(); _cropperInstance = null; }
+}
+DOM.btnCloseCrop.addEventListener('click', closeCropModal);
+DOM.btnCropCancel.addEventListener('click', closeCropModal);
+DOM.cropRotateLeft .addEventListener('click', () => { if (_cropperInstance) _cropperInstance.rotate(-90); });
+DOM.cropRotateRight.addEventListener('click', () => { if (_cropperInstance) _cropperInstance.rotate(90); });
+DOM.cropFlipH.addEventListener('click', () => { if (_cropperInstance) { const d = _cropperInstance.getData(); _cropperInstance.scaleX(-(d.scaleX || 1)); } });
+DOM.cropFlipV.addEventListener('click', () => { if (_cropperInstance) { const d = _cropperInstance.getData(); _cropperInstance.scaleY(-(d.scaleY || 1)); } });
+DOM.cropReset.addEventListener('click', () => { if (_cropperInstance) { _cropperInstance.reset(); DOM.cropRotationSlider.value = 0; DOM.cropRotationVal.textContent = '0°'; } });
+DOM.cropRotationSlider.addEventListener('input', e => {
+    if (!_cropperInstance) return;
+    const angle = parseFloat(e.target.value);
+    DOM.cropRotationVal.textContent = angle + '°';
+    _cropperInstance.rotateTo(angle);
+});
+DOM.btnCropApply.addEventListener('click', async () => {
+    if (!_cropperInstance) return;
+    try {
+        const canvas = _cropperInstance.getCroppedCanvas({ maxWidth: MAX_IMG_DIMENSION, maxHeight: MAX_IMG_DIMENSION, fillColor: '#fff' });
+        const dataUrl = canvas.toDataURL('image/jpeg', COMPRESSION_QUALITY);
+        const s = state.slides[state.activeIndex];
+        s.image = dataUrl;
+        try { await idbSet(s.id, dataUrl); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
+        closeCropModal();
+        trackChange(true); render();
+        toast('Immagine aggiornata', 'success');
+    } catch (e) { toast('Errore durante il crop', 'error'); }
+});
+
+// Dark mode (usa lsGet/lsSet)
+const savedTheme = lsGet(LS.theme);
 if (savedTheme==='dark'||(!savedTheme&&window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.body.classList.add('dark-mode'); if(DOM.iconMoon)DOM.iconMoon.style.display='none'; if(DOM.iconSun)DOM.iconSun.style.display='block'; }
-if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { const d=document.body.classList.toggle('dark-mode'); DOM.iconMoon.style.display=d?'none':'block'; DOM.iconSun.style.display=d?'block':'none'; localStorage.setItem('icc_theme', d?'dark':'light'); });
+if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { const d=document.body.classList.toggle('dark-mode'); DOM.iconMoon.style.display=d?'none':'block'; DOM.iconSun.style.display=d?'block':'none'; lsSet(LS.theme, d?'dark':'light'); });
 
 // AVVIO
 window.addEventListener('load', async () => {
     await openIDB().catch(e => console.warn('IDB non disponibile:', e));
     loadState(); await loadImagesFromIDB(); render();
+    updateHistoryButtons();
     if (window.matchMedia('(max-width: 767px)').matches) {
         document.querySelectorAll('details.accordion').forEach(d => { if (!d.hasAttribute('data-keep-open')) d.removeAttribute('open'); });
     }
