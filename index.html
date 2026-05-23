@@ -194,6 +194,17 @@
         .eyedropper-btn:hover { background: #F5F5F7; }
         .eyedropper-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         body.dark-mode .eyedropper-btn { background: #1C1C1E; color: #fff; border-color: #38383A; }
+
+        /* Mode switcher (Carosello / Storia) */
+        #mode-switcher { display:flex; gap:4px; background:#E5E5EA; padding:4px; border-radius:12px; }
+        #mode-switcher button { flex:1; padding:9px 12px; border-radius:9px; font-size:14px; font-weight:600; color:#6E6E73; background:transparent; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; }
+        #mode-switcher button:hover:not(.mode-active) { color:#1c1c1e; }
+        #mode-switcher button.mode-active { background:#ffffff; color:#0071E3; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+        body.dark-mode #mode-switcher { background:#2C2C2E; }
+        body.dark-mode #mode-switcher button { color:#EBEBF599; }
+        body.dark-mode #mode-switcher button.mode-active { background:#1C1C1E; color:#0A84FF; }
+        body.dark-mode #mode-switcher button:hover:not(.mode-active) { color:#fff; }
+        body.story-mode .mobile-thumb-strip { display:none !important; }
     </style>
 </head>
 <body class="bg-[#F5F5F7] min-h-screen p-4 md:p-8 flex flex-col md:flex-row gap-8">
@@ -228,6 +239,10 @@
 
     <!-- Controlli -->
     <div class="left-panel w-full flex flex-col gap-6">
+        <div id="mode-switcher" role="tablist" aria-label="Modalità di creazione">
+            <button id="mode-carousel" class="mode-active" role="tab" aria-selected="true">▦ Carosello</button>
+            <button id="mode-story" role="tab" aria-selected="false">▭ Storia</button>
+        </div>
         <details class="accordion" open>
             <summary><span>Impostazioni Brand</span></summary>
             <div class="accordion-body flex flex-col gap-4">
@@ -275,7 +290,7 @@
             <div class="accordion-body flex flex-col gap-4">
                 <p class="text-xs text-gray-500 -mt-2">Layout indipendenti, attivabili insieme o singolarmente</p>
 
-            <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
+            <div id="cover-layout-block" class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="font-semibold text-sm text-gray-900">Layout Titolo + Sottotitolo</h3>
@@ -393,7 +408,7 @@
             </div>
         </details>
 
-        <details class="accordion" open data-keep-open>
+        <details class="accordion" open data-keep-open id="slides-accordion">
             <summary>
                 <span id="slide-count-title">Slides (1/20)</span>
                 <div class="flex gap-2" onclick="event.stopPropagation();">
@@ -501,6 +516,10 @@
                     <input type="file" id="fg-image-upload" accept="image/*" aria-label="Aggiungi immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                     <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
                 </div>
+                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+                    <input type="file" id="fg-video-upload" accept="video/*" aria-label="Aggiungi video in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <span id="fg-video-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">🎬 Aggiungi un video sopra lo sfondo</span>
+                </div>
                 
                 <!-- Lista immagini in primo piano aggiunte -->
                 <div id="fg-images-list" class="flex flex-col gap-2 empty:hidden"></div>
@@ -519,7 +538,7 @@
     <div class="preview-header w-full flex justify-between items-center bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
         <div class="flex items-center gap-3">
             <h2 class="font-semibold text-lg text-gray-900">Anteprima</h2>
-            <label class="flex items-center gap-1.5 cursor-pointer select-none" title="Mostra mockup Instagram">
+            <label id="mockup-toggle-label-wrap" class="flex items-center gap-1.5 cursor-pointer select-none" title="Mostra mockup Instagram">
                 <div class="toggle-track" id="mockup-toggle-track"><div class="toggle-thumb"></div></div>
                 <span class="text-xs font-medium text-gray-500" id="mockup-toggle-label">Feed</span>
                 <input type="checkbox" id="toggle-mockup" class="sr-only"/>
@@ -626,6 +645,8 @@
             <p><strong>8. Duplica:</strong> Il tasto "⧉" copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
             <p><strong>9. Persistenza:</strong> Tutte le immagini vengono salvate nel browser (IndexedDB) e ripristinate automaticamente.</p>
             <p><strong>10. Annulla / Ripeti:</strong> Usa <code>Ctrl+Z</code> e <code>Ctrl+Shift+Z</code> (o ⌘ su Mac) per tornare indietro.</p>
+            <p><strong>11. Video:</strong> Nella sezione "Immagini in Primo Piano" puoi aggiungere anche un video. Le slide che contengono un video vengono esportate come file video vero e proprio (.mp4 o .webm a seconda del browser), con l'audio se presente.</p>
+            <p><strong>12. Storie:</strong> Usa il selettore in alto per passare alla modalità Storia: una singola slide in formato 1080×1920 (9:16), con gli stessi strumenti delle slide (esclusa la copertina).</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 mt-6">
             <button id="btn-reset-app" class="flex-1 bg-red-50 text-red-700 border border-red-200 font-medium py-3 rounded-xl hover:bg-red-100 transition-all">⚠ Reset completo app</button>
@@ -709,6 +730,8 @@ const SNAP_TOLERANCE = 2;                // % di tolleranza per snap-to-guide
 const SNAP_TARGETS = [3.7, 10, 25, 33.33, 50, 66.66, 75, 90, 96.3];
 const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size' };
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024;   // 50MB per i video in primo piano
+const videoBlobs = new Map();              // id media → Blob (tenuto fuori da `state` per non appesantire undo/clone)
 
 const FONTS = {
     'Bebas Neue':      "'Bebas Neue',sans-serif",
@@ -760,6 +783,14 @@ function safeImageUrl(url) {
     // URL relativi/assoluti normali (logo.png ecc.): se non contiene < > ' " javascript: vbscript: data: è ok
     if (/^(https?:)?\/\//i.test(url) || /^[a-zA-Z0-9._-]+\.(png|jpe?g|gif|webp|svg)$/i.test(url)) return url;
     return '';
+}
+
+// ════════ VALIDAZIONE URL MEDIA (immagini + video) ════════
+function safeMediaUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    if (url.startsWith('blob:')) return url;            // object URL (video caricati a runtime)
+    if (url.startsWith('data:video/')) return url;      // video come data URL
+    return safeImageUrl(url);                            // ricade sulla validazione immagini
 }
 
 // ════════ FILE READING + COMPRESSIONE (FIX SICUREZZA #2 + UX #2) ════════
@@ -869,6 +900,7 @@ function idbDelete(key) {
 
 // STATO
 const state = {
+    mode:          'carousel', // 'carousel' | 'story'
     activeIndex:   0,
     isExporting:   false,
     renderedBlobs: [],
@@ -879,15 +911,22 @@ const state = {
     logoSize:        parseFloat(lsGet(LS.logoSize))      || 1.0,
     themeLogoSize:   parseFloat(lsGet(LS.themeLogoSize)) || 1.0,
     newsSize:        parseFloat(lsGet(LS.newsSize))      || 1.0,
-    slides: [makeDefaultSlide('slide-0', {
+    // Set di slide per il carosello (1080x1350)
+    carouselSlides: [makeDefaultSlide('slide-0', {
         coverEnabled: true, coverUppercase: true, coverDarkOverlay: true, coverShowNews: true,
         title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
     })],
+    // Set per le Storie: una sola slide in formato 1080x1920 (9:16)
+    storySlides: [makeDefaultSlide('story-0', { isStory: true })],
+    // `slides` punta sempre al set della modalità attiva
+    slides: null,
 };
+state.slides = state.carouselSlides;
 
 function makeDefaultSlide(id, overrides = {}) {
     return {
         id, image: null,
+        isStory: false,
         coverEnabled: false,
         // Tre flag scorporati (UX#5)
         coverUppercase: false, coverDarkOverlay: false, coverShowNews: false,
@@ -929,6 +968,14 @@ const DOM = {
     fgImageUpload:         document.getElementById('fg-image-upload'),
     fgImageUploadLabel:    document.getElementById('fg-image-upload-label'),
     fgImagesList:          document.getElementById('fg-images-list'),
+    fgVideoUpload:         document.getElementById('fg-video-upload'),
+    fgVideoUploadLabel:    document.getElementById('fg-video-upload-label'),
+    // Mode switcher (Carosello / Storia)
+    modeCarousel:          document.getElementById('mode-carousel'),
+    modeStory:             document.getElementById('mode-story'),
+    coverLayoutBlock:      document.getElementById('cover-layout-block'),
+    slidesAccordion:       document.getElementById('slides-accordion'),
+    mockupLabelWrap:       document.getElementById('mockup-toggle-label-wrap'),
 
     inputTitle:            document.getElementById('input-title'),
     inputTitleFontSize:    document.getElementById('input-title-font-size'),
@@ -1061,20 +1108,25 @@ function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOv
 function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
 
 // ════════ PERSISTENZA (FIX PERFORMANCE #4: debounce + lsSet) ════════
+function _serializeSlide(s) {
+    return {
+        id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
+        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
+        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
+        coverTextX: s.coverTextX, coverTextY: s.coverTextY,
+        zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
+        gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
+        bgFilters: s.bgFilters, textOverlay: s.textOverlay,
+        // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
+        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters })),
+        hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
+    };
+}
 function _saveStateNow() {
     const toSave = {
-        slides: state.slides.map(s => ({
-            id: s.id, coverEnabled: s.coverEnabled,
-            coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
-            title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
-            coverTextX: s.coverTextX, coverTextY: s.coverTextY,
-            zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
-            gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
-            bgFilters: s.bgFilters, textOverlay: s.textOverlay,
-            // Rimuovi grandi base64 URL dal localStorage per non bloccarlo
-            fgImages: (s.fgImages || []).map(f => ({ id: f.id, url: null, x: f.x, y: f.y, size: f.size, filters: f.filters })),
-            hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
-        })),
+        mode: state.mode,
+        slides:      state.carouselSlides.map(_serializeSlide),
+        storySlides: state.storySlides.map(_serializeSlide),
     };
     lsSet(LS.state, JSON.stringify(toSave));
 }
@@ -1082,49 +1134,58 @@ const saveStateDebounced = debounce(_saveStateNow, 250);
 function saveState() { saveStateDebounced(); }
 function saveStateImmediate() { _saveStateNow(); }
 
+function _rebuildSlide(s, idx, forceStory) {
+    // MIGRAZIONE coverStyle (singolo toggle legacy) → 3 toggle separati (UX#5)
+    const legacyStyle = s.coverStyle === true;
+    const migrated = {
+        coverUppercase:   s.coverUppercase   ?? legacyStyle,
+        coverDarkOverlay: s.coverDarkOverlay ?? legacyStyle,
+        coverShowNews:    s.coverShowNews    ?? legacyStyle,
+    };
+    const pSlide = {
+        ...makeDefaultSlide(s.id || `slide-${idx}`),
+        ...s,
+        ...migrated,
+        image: null, fgImages: s.fgImages || [],
+        isStory:      forceStory ? true : !!s.isStory,
+        coverEnabled: forceStory ? false : (s.coverEnabled ?? (idx === 0)),
+        bgMode:       s.bgMode || 'solid',
+        gradColor1:   s.gradColor1 || '#1a1a2e',
+        gradColor2:   s.gradColor2 || '#e94560',
+        gradDir:      s.gradDir    || 'to bottom',
+        bgFilters:    s.bgFilters || { ...DEFAULT_FILTERS },
+    };
+    // Aggiungi type + filters di default per FG che ne sono privi
+    pSlide.fgImages = pSlide.fgImages.map(f => ({ ...f, type: f.type || 'image', filters: f.filters || { ...DEFAULT_FILTERS } }));
+    // Retro-compatibilità vecchia immagine singola in localStorage
+    if (s.fgImageX !== undefined && pSlide.fgImages.length === 0 && (s.hasLegacyFg || s.fgImageSize)) {
+        pSlide.fgImages.push({ id: 'fg-legacy', type: 'image', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40, filters: { ...DEFAULT_FILTERS } });
+    }
+    delete pSlide.coverStyle;
+    return pSlide;
+}
+
 function loadState() {
     try {
         const raw = lsGet(LS.state);
         if (!raw) return;
         const saved = JSON.parse(raw);
         if (Array.isArray(saved.slides) && saved.slides.length > 0) {
-            state.slides = saved.slides.map((s, idx) => {
-                // MIGRAZIONE coverStyle (singolo toggle legacy) → 3 toggle separati (UX#5)
-                const legacyStyle = s.coverStyle === true;
-                const migrated = {
-                    coverUppercase:   s.coverUppercase   ?? legacyStyle,
-                    coverDarkOverlay: s.coverDarkOverlay ?? legacyStyle,
-                    coverShowNews:    s.coverShowNews    ?? legacyStyle,
-                };
-                const pSlide = {
-                    ...makeDefaultSlide(s.id || `slide-${idx}`),
-                    ...s,
-                    ...migrated,
-                    image: null, fgImages: s.fgImages || [],
-                    coverEnabled: s.coverEnabled ?? (idx === 0),
-                    bgMode:       s.bgMode || 'solid',
-                    gradColor1:   s.gradColor1 || '#1a1a2e',
-                    gradColor2:   s.gradColor2 || '#e94560',
-                    gradDir:      s.gradDir    || 'to bottom',
-                    bgFilters:    s.bgFilters || { ...DEFAULT_FILTERS },
-                };
-                // Aggiungi filters di default per FG che ne sono privi
-                pSlide.fgImages = pSlide.fgImages.map(f => ({ ...f, filters: f.filters || { ...DEFAULT_FILTERS } }));
-                // Retro-compatibilità vecchia immagine singola in localStorage
-                if (s.fgImageX !== undefined && pSlide.fgImages.length === 0 && (s.hasLegacyFg || s.fgImageSize)) {
-                    pSlide.fgImages.push({ id: 'fg-legacy', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40, filters: { ...DEFAULT_FILTERS } });
-                }
-                // Pulisci coverStyle legacy
-                delete pSlide.coverStyle;
-                return pSlide;
-            });
+            state.carouselSlides = saved.slides.map((s, idx) => _rebuildSlide(s, idx, false));
         }
+        if (Array.isArray(saved.storySlides) && saved.storySlides.length > 0) {
+            state.storySlides = [ _rebuildSlide(saved.storySlides[0], 0, true) ];
+        }
+        state.mode = saved.mode === 'story' ? 'story' : 'carousel';
+        state.slides = state.mode === 'story' ? state.storySlides : state.carouselSlides;
+        state.activeIndex = 0;
     } catch (e) { console.warn('Caricamento stato fallito:', e); toast('Stato precedente non recuperabile', 'warning'); }
 }
 
 // ════════ FIX SICUREZZA #4: caricamento IDB parallelo ════════
 async function loadImagesFromIDB() {
-    await Promise.all(state.slides.map(async slide => {
+    const allSlides = [...state.carouselSlides, ...state.storySlides];
+    await Promise.all(allSlides.map(async slide => {
         try {
             const [bg, fgs, legacyFg] = await Promise.all([
                 idbGet(slide.id),
@@ -1134,14 +1195,23 @@ async function loadImagesFromIDB() {
             if (bg) slide.image = bg;
             if (fgs && Array.isArray(fgs)) {
                 fgs.forEach(savedFg => {
-                    const target = slide.fgImages.find(f => f.id === savedFg.id);
-                    if (target) target.url = savedFg.url;
-                    else if (savedFg.url) slide.fgImages.push({ id: savedFg.id, url: savedFg.url, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+                    if (savedFg.type === 'video' && savedFg.blob) {
+                        // Video: ricrea l'object URL dal Blob salvato in IndexedDB
+                        videoBlobs.set(savedFg.id, savedFg.blob);
+                        const objUrl = URL.createObjectURL(savedFg.blob);
+                        const target = slide.fgImages.find(f => f.id === savedFg.id);
+                        if (target) { target.url = objUrl; target.type = 'video'; }
+                        else slide.fgImages.push({ id: savedFg.id, type: 'video', url: objUrl, x: 50, y: 50, size: 60, filters: { ...DEFAULT_FILTERS } });
+                    } else if (savedFg.url) {
+                        const target = slide.fgImages.find(f => f.id === savedFg.id);
+                        if (target) { target.url = savedFg.url; target.type = target.type || 'image'; }
+                        else slide.fgImages.push({ id: savedFg.id, type: 'image', url: savedFg.url, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+                    }
                 });
             }
             if (legacyFg) {
                 let target = slide.fgImages.find(f => f.id === 'fg-legacy');
-                if (!target) slide.fgImages.push({ id: 'fg-legacy', url: legacyFg, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+                if (!target) slide.fgImages.push({ id: 'fg-legacy', type: 'image', url: legacyFg, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
                 else target.url = legacyFg;
             }
             slide.fgImages = slide.fgImages.filter(f => f.url);
@@ -1149,11 +1219,23 @@ async function loadImagesFromIDB() {
     }));
 }
 
+// ════════ Salvataggio media in primo piano (immagini + video) in IndexedDB ════════
+async function saveFgsToIDB(slide) {
+    try {
+        const payload = (slide.fgImages || []).map(f => f.type === 'video'
+            ? { id: f.id, type: 'video', blob: videoBlobs.get(f.id) || null }
+            : { id: f.id, type: 'image', url: f.url });
+        await idbSet(slide.id + '_fgs', payload);
+    } catch (e) { toast('Errore salvataggio media in IndexedDB', 'warning'); }
+}
+
 // ════════ UNDO/REDO (UX #1) ════════
 const history = { stack: [], future: [], suppress: false };
 function _captureState() {
     return deepClone({
-        slides: state.slides,
+        mode: state.mode,
+        carouselSlides: state.carouselSlides,
+        storySlides: state.storySlides,
         activeIndex: state.activeIndex,
         logoBase64: state.logoBase64,
         themeLogoBase64: state.themeLogoBase64,
@@ -1173,7 +1255,10 @@ function snapshot() {
 const snapshotDebounced = debounce(snapshot, 350);
 function restoreFrom(snap) {
     history.suppress = true;
-    state.slides = snap.slides;
+    state.carouselSlides = snap.carouselSlides || state.carouselSlides;
+    state.storySlides    = snap.storySlides    || state.storySlides;
+    state.mode           = snap.mode === 'story' ? 'story' : 'carousel';
+    state.slides         = state.mode === 'story' ? state.storySlides : state.carouselSlides;
     state.activeIndex = Math.min(snap.activeIndex, state.slides.length - 1);
     state.logoBase64 = snap.logoBase64;
     state.themeLogoBase64 = snap.themeLogoBase64;
@@ -1222,7 +1307,7 @@ function trackChange(immediate = false) {
 function generateFgImagesHTML(slide, forPreview) {
     if (!slide.fgImages || !slide.fgImages.length) return '';
     return slide.fgImages.map(fg => {
-        const safeUrl = safeImageUrl(fg.url);
+        const safeUrl = safeMediaUrl(fg.url);
         if (!safeUrl) return '';
         const baseStyle = `position:absolute;left:${fg.x??50}%;top:${fg.y??50}%;transform:translate(-50%,-50%);width:${fg.size??40}%;z-index:30;pointer-events:auto;`;
         const filterCss = buildFilterCss(fg.filters);
@@ -1232,7 +1317,10 @@ function generateFgImagesHTML(slide, forPreview) {
             ? `class="preview-fg-drag" data-fg-id="${fg.id}" style="${baseStyle}cursor:grab;user-select:none;"`
             : `style="${baseStyle}"`;
         const handle = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
-        return `<div ${attrs}>${handle}<div style="position:relative;width:100%;overflow:hidden;"><img src="${safeUrl}" alt="" style="width:100%;height:auto;display:block;${filterStyle}" draggable="false">${vignetteHtml}</div></div>`;
+        const mediaEl = (fg.type === 'video')
+            ? `<video src="${safeUrl}" ${forPreview ? 'autoplay loop muted playsinline' : 'muted playsinline preload="auto"'} style="width:100%;height:auto;display:block;${filterStyle}"></video>`
+            : `<img src="${safeUrl}" alt="" style="width:100%;height:auto;display:block;${filterStyle}" draggable="false">`;
+        return `<div ${attrs}>${handle}<div style="position:relative;width:100%;overflow:hidden;">${mediaEl}${vignetteHtml}</div></div>`;
     }).join('');
 }
 
@@ -1255,7 +1343,9 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const cUpper = !!slide.coverUppercase, cDark = !!slide.coverDarkOverlay, cNews = !!slide.coverShowNews;
     const zoom = slide.zoom || 1, bg = slideBg(slide);
     const bgFlat = (slide.bgMode === 'gradient') ? slide.gradColor1 || '#333' : (slide.bgColor || '#333333');
-    const borderRadiusStyle = zoom < 1 ? 'border-radius:40px;' : '';
+    const isStory = !!slide.isStory;
+    const SLIDE_H = isStory ? 1920 : 1350;   // Storia 9:16, Carosello 4:5
+    const borderRadiusStyle = '';            // immagini croppate con bordi squadrati (no border-radius)
     const sizeStyle = zoom < 1 ? 'max-width:100%;max-height:100%;object-fit:contain;' : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
     const bgWrapStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgFlat};`;
 
@@ -1288,7 +1378,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
     const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
 
-    return `<div style="width:1080px;height:1350px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
+    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
 
 // DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
@@ -1398,7 +1488,8 @@ function renderThumbnails() {
         c.innerHTML = '';
         const size = c.id==='thumbnails-container-mobile'?52:72;
         state.slides.forEach((s, i) => c.appendChild(createThumbElement(s, i, size)));
-        if (state.slides.length < MAX_SLIDES) {
+        const maxSlides = state.mode === 'story' ? 1 : MAX_SLIDES;
+        if (state.slides.length < maxSlides) {
             const btn = document.createElement('button');
             btn.className = 'flex-shrink-0 rounded-[8px] bg-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-300 transition-all font-bold text-xl';
             btn.style.width = size+'px'; btn.style.height = size+'px'; btn.textContent = '+';
@@ -1417,10 +1508,10 @@ function renderThumbnails() {
 function renderEditor() {
     const slide = state.slides[state.activeIndex];
     DOM.slideCountTitle.textContent = `Slides (${state.slides.length}/${MAX_SLIDES})`;
-    DOM.editorTitle.textContent     = `Modifica Slide ${state.activeIndex + 1}`;
+    DOM.editorTitle.textContent     = state.mode === 'story' ? 'Modifica Storia' : `Modifica Slide ${state.activeIndex + 1}`;
     DOM.zoomContainer.style.display       = 'flex';
     DOM.btnDeleteSlide.style.display      = state.slides.length > 1 ? 'block' : 'none';
-    DOM.btnDuplicateSlide.style.display   = state.slides.length < MAX_SLIDES ? 'block' : 'none';
+    DOM.btnDuplicateSlide.style.display   = (state.mode !== 'story' && state.slides.length < MAX_SLIDES) ? 'block' : 'none';
     DOM.btnMoveLeft.style.display         = state.activeIndex > 0 ? 'block' : 'none';
     DOM.btnMoveRight.style.display        = state.activeIndex < state.slides.length-1 ? 'block' : 'none';
     DOM.btnPrev.disabled = state.activeIndex === 0; DOM.btnNext.disabled = state.activeIndex === state.slides.length - 1;
@@ -1453,7 +1544,7 @@ function renderEditor() {
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center"></div>
                     <div class="flex-grow flex flex-col gap-1">
-                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Img ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
+                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'🎬 Video':'Img'} ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
                         <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
                     </div>
                     <button class="text-gray-500 hover:text-black p-2 fg-filter-toggle bg-gray-50 rounded-lg transition-all" data-id="${fg.id}" title="Filtri" aria-label="Filtri immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
@@ -1473,7 +1564,17 @@ function renderEditor() {
             `;
             // Imposta la preview con setAttribute (no template literal injection)
             const thumbEl = wrap.querySelector('.w-12');
-            if (safeUrl) thumbEl.style.backgroundImage = `url("${safeUrl}")`;
+            if (fg.type === 'video') {
+                thumbEl.style.background = '#1c1c1e';
+                thumbEl.style.color = '#fff';
+                thumbEl.style.display = 'flex';
+                thumbEl.style.alignItems = 'center';
+                thumbEl.style.justifyContent = 'center';
+                thumbEl.style.fontSize = '16px';
+                thumbEl.textContent = '▶';
+            } else if (safeUrl) {
+                thumbEl.style.backgroundImage = `url("${safeUrl}")`;
+            }
             DOM.fgImagesList.appendChild(wrap);
 
             // Render filter controls (lazily quando si apre)
@@ -1518,7 +1619,8 @@ function renderEditor() {
             btn.addEventListener('click', async e => {
                 const id = e.currentTarget.dataset.id;
                 slide.fgImages = slide.fgImages.filter(x => x.id !== id);
-                try { await idbSet(slide.id + '_fgs', slide.fgImages.map(x => ({ id: x.id, url: x.url }))); } catch (err) { toast('Errore salvataggio immagine', 'warning'); }
+                videoBlobs.delete(id);
+                await saveFgsToIDB(slide);
                 trackChange(true); render();
             });
         });
@@ -1617,7 +1719,38 @@ function renderMockup() {
     DOM.mockupPreviewContainer.style.transform = `scale(${scale})`;
 }
 
-function render() { renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); }
+function render() { applyModeLayout(); renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); }
+
+// ════════ MODALITÀ: Carosello (1080×1350) / Storia (1080×1920) ════════
+function applyModeLayout() {
+    const story = state.mode === 'story';
+    if (DOM.previewWrapper)   DOM.previewWrapper.style.aspectRatio = story ? '9 / 16' : '4 / 5';
+    if (DOM.coverLayoutBlock) DOM.coverLayoutBlock.style.display   = story ? 'none' : '';
+    if (DOM.slidesAccordion)  DOM.slidesAccordion.style.display    = story ? 'none' : '';
+    if (DOM.mockupLabelWrap)  DOM.mockupLabelWrap.style.display    = story ? 'none' : '';
+    document.body.classList.toggle('story-mode', story);
+    if (DOM.modeCarousel) { DOM.modeCarousel.classList.toggle('mode-active', !story); DOM.modeCarousel.setAttribute('aria-selected', String(!story)); }
+    if (DOM.modeStory)    { DOM.modeStory.classList.toggle('mode-active', story);     DOM.modeStory.setAttribute('aria-selected', String(story)); }
+}
+function switchMode(mode) {
+    if (state.mode === mode) return;
+    state.mode = mode;
+    state.slides = mode === 'story' ? state.storySlides : state.carouselSlides;
+    state.activeIndex = 0;
+    // Il mockup feed (4:5) non ha senso per le Storie: lo spengo
+    if (DOM.toggleMockup && DOM.toggleMockup.checked) {
+        DOM.toggleMockup.checked = false;
+        DOM.mockupToggleTrack.className = 'toggle-track';
+        DOM.mockupToggleLabel.textContent = 'Feed';
+        DOM.mockupWrapper.classList.remove('active');
+    }
+    trackChange(true);
+    render();
+    setTimeout(updateScale, 50);
+    toast(mode === 'story' ? 'Modalità Storia · 1080×1920 (9:16)' : 'Modalità Carosello · 1080×1350 (4:5)', 'info', 2200);
+}
+if (DOM.modeCarousel) DOM.modeCarousel.addEventListener('click', () => switchMode('carousel'));
+if (DOM.modeStory)    DOM.modeStory.addEventListener('click', () => switchMode('story'));
 
 // ════════ FIX PERFORMANCE #3: html2canvas lazy-load ════════
 let _html2canvasLoaded = null;
@@ -1641,49 +1774,246 @@ async function renderSlideToFile(slide, index, fileName) {
     await Promise.all([document.fonts.ready, preloadImage(safeImageUrl(slide.image))]);
     // Preload anche FG e brand asset
     await Promise.all([
-        ...(slide.fgImages || []).map(f => preloadImage(safeImageUrl(f.url))),
+        ...(slide.fgImages || []).filter(f => f.type !== 'video').map(f => preloadImage(safeImageUrl(f.url))),
         preloadImage(safeImageUrl(state.logoBase64)),
         preloadImage(safeImageUrl(state.themeLogoBase64)),
         preloadImage(safeImageUrl(state.newsBase64)),
     ]);
     const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(slide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
+    // Le storie hanno un nome file dedicato
+    const outName = slide.isStory ? 'storia.png' : fileName;
+    // Attende che eventuali video siano pronti e posiziona il fotogramma iniziale
+    const videos = wrap.querySelectorAll('video');
+    if (videos.length) {
+        await Promise.all([...videos].map(v => new Promise(resolve => {
+            let done = false;
+            const finish = () => { if (done) return; done = true; try { v.pause(); } catch(_){} resolve(); };
+            const seekStart = () => {
+                try {
+                    v.pause();
+                    const onSeeked = () => { v.removeEventListener('seeked', onSeeked); finish(); };
+                    v.addEventListener('seeked', onSeeked);
+                    v.currentTime = 0;
+                    // Se currentTime era già 0 l'evento seeked potrebbe non scattare
+                    setTimeout(finish, 600);
+                } catch(_) { finish(); }
+            };
+            if (v.readyState >= 2) { seekStart(); }
+            else {
+                v.addEventListener('loadeddata', seekStart, { once:true });
+                v.addEventListener('error', finish, { once:true });
+            }
+            setTimeout(finish, 4000); // safety
+        })));
+    }
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // 2 frame per stabilizzare layout
     try {
         const canvas = await h2c(wrap.firstChild, { scale:1, useCORS:true, backgroundColor: null });
         const dataUrl = canvas.toDataURL('image/png');
         const blob = await (await fetch(dataUrl)).blob();
-        return { dataUrl, blob, file: new File([blob], fileName, { type:'image/png' }) };
+        return { dataUrl, blob, file: new File([blob], outName, { type:'image/png' }) };
     } finally { DOM.exportNodesContainer.innerHTML = ''; }
+}
+
+// Una slide contiene un video in primo piano?
+function slideHasVideo(slide) {
+    return !!(slide && slide.fgImages && slide.fgImages.some(f => f.type === 'video' && safeMediaUrl(f.url)));
+}
+
+// Sceglie il formato video supportato dal browser
+function pickVideoMime() {
+    const cands = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    for (const m of cands) {
+        try { if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m; } catch (_) {}
+    }
+    return '';
+}
+
+// Esporta una slide con video come VERO file video (.mp4/.webm)
+async function renderSlideVideoToFile(slide, index, baseName) {
+    if (!window.MediaRecorder) throw new Error('MediaRecorder non supportato');
+    const h2c = await loadHtml2canvas();
+    await Promise.all([
+        document.fonts.ready,
+        preloadImage(safeImageUrl(slide.image)),
+        ...(slide.fgImages || []).filter(f => f.type !== 'video').map(f => preloadImage(safeImageUrl(f.url))),
+        preloadImage(safeImageUrl(state.logoBase64)),
+        preloadImage(safeImageUrl(state.themeLogoBase64)),
+        preloadImage(safeImageUrl(state.newsBase64)),
+    ]);
+    const SLIDE_H = slide.isStory ? 1920 : 1350;
+    const wrap = document.createElement('div');
+    wrap.innerHTML = generateSlideHTML(slide, index, false);
+    DOM.exportNodesContainer.appendChild(wrap);
+    const container = wrap.firstChild;
+
+    try {
+        // 1. Attende metadati + primo frame di ogni video
+        const videoEls = [...container.querySelectorAll('video')];
+        if (!videoEls.length) throw new Error('Nessun video nella slide');
+        await Promise.all(videoEls.map(v => new Promise(resolve => {
+            let done = false;
+            const ok = () => { if (done) return; done = true; resolve(); };
+            v.muted = true; v.loop = false; v.playsInline = true;
+            if (v.readyState >= 2) ok();
+            else {
+                v.addEventListener('loadeddata', ok, { once:true });
+                v.addEventListener('error', ok, { once:true });
+            }
+            setTimeout(ok, 6000);
+        })));
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+        // 2. Geometria di ogni video rispetto al contenitore (1080 x SLIDE_H)
+        const cRect = container.getBoundingClientRect();
+        const scaleX = 1080 / cRect.width, scaleY = SLIDE_H / cRect.height;
+        const layers = videoEls.map(v => {
+            const r = v.getBoundingClientRect();
+            return {
+                el: v,
+                x: (r.left - cRect.left) * scaleX,
+                y: (r.top  - cRect.top ) * scaleY,
+                w: r.width * scaleX,
+                h: r.height * scaleY,
+                filter: v.style.filter || 'none',
+            };
+        });
+
+        // 3. Layer statico (sfondo, testi, immagini) catturato una sola volta
+        const staticCanvas = await h2c(container, { scale:1, useCORS:true, backgroundColor:null });
+
+        // 4. Canvas di composizione
+        const out = document.createElement('canvas');
+        out.width = 1080; out.height = SLIDE_H;
+        const ctx = out.getContext('2d');
+
+        // 5. Stream del canvas + eventuale traccia audio del video
+        const fps = 30;
+        const stream = out.captureStream(fps);
+        for (const v of videoEls) {
+            try {
+                const cap = v.captureStream ? v.captureStream() : (v.mozCaptureStream ? v.mozCaptureStream() : null);
+                if (cap) {
+                    const at = cap.getAudioTracks();
+                    if (at && at.length) { stream.addTrack(at[0]); break; }
+                }
+            } catch (_) {}
+        }
+
+        const mime = pickVideoMime();
+        const recOpts = { videoBitsPerSecond: 8000000 };
+        if (mime) recOpts.mimeType = mime;
+        const recorder = new MediaRecorder(stream, recOpts);
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+
+        // 6. Durata = video piu lungo (cap 60s)
+        let dur = 0;
+        videoEls.forEach(v => { const d = v.duration; if (isFinite(d) && d > dur) dur = d; });
+        if (!dur || !isFinite(dur)) dur = 8;
+        dur = Math.min(dur, 60);
+
+        // 7. Loop di disegno: layer statico + frame video live
+        let drawing = true;
+        const draw = () => {
+            if (!drawing) return;
+            ctx.clearRect(0, 0, out.width, out.height);
+            ctx.drawImage(staticCanvas, 0, 0, out.width, out.height);
+            for (const L of layers) {
+                ctx.save();
+                ctx.filter = (L.filter && L.filter !== '') ? L.filter : 'none';
+                try { ctx.drawImage(L.el, L.x, L.y, L.w, L.h); } catch (_) {}
+                ctx.restore();
+            }
+            requestAnimationFrame(draw);
+        };
+        const stopped = new Promise(res => { recorder.onstop = res; });
+        videoEls.forEach(v => { try { v.currentTime = 0; } catch (_) {} });
+        await Promise.all(videoEls.map(v => v.play().catch(() => {})));
+        draw();                 // primo frame disegnato
+        recorder.start();
+        await new Promise(res => setTimeout(res, dur * 1000 + 350));
+        drawing = false;
+        videoEls.forEach(v => { try { v.pause(); } catch (_) {} });
+        if (recorder.state !== 'inactive') recorder.stop();
+        await stopped;
+
+        if (!chunks.length) throw new Error('Registrazione video vuota');
+        const outMime = (mime || 'video/webm').split(';')[0];
+        const ext = outMime.indexOf('mp4') >= 0 ? 'mp4' : 'webm';
+        const blob = new Blob(chunks, { type: outMime });
+        const fileName = (slide.isStory ? 'storia' : baseName) + '.' + ext;
+        return { blob, file: new File([blob], fileName, { type: outMime }), isVideo: true };
+    } finally {
+        DOM.exportNodesContainer.innerHTML = '';
+    }
 }
 
 async function exportAllSlides() {
     if (state.isExporting) return; state.isExporting = true; state.renderedBlobs = [];
     DOM.renderedPreviews.innerHTML=''; DOM.btnExport.disabled=true; DOM.btnExportSingle.disabled=true; DOM.exportProgressContainer.style.display='block';
     await document.fonts.ready;
+    let videoCount = 0;
     for (let i = 0; i < state.slides.length; i++) {
-        const pct = Math.round(((i+1)/state.slides.length)*100); DOM.exportProgressBar.style.width=pct+'%'; DOM.exportProgressPct.textContent=pct+'%'; DOM.exportProgressLabel.textContent=`Generazione slide ${i+1}/${state.slides.length}…`;
+        const pct = Math.round(((i+1)/state.slides.length)*100); DOM.exportProgressBar.style.width=pct+'%'; DOM.exportProgressPct.textContent=pct+'%';
+        const isVid = slideHasVideo(state.slides[i]);
+        DOM.exportProgressLabel.textContent = isVid
+            ? `Generazione video slide ${i+1}/${state.slides.length}…`
+            : `Generazione slide ${i+1}/${state.slides.length}…`;
         try {
-            const { dataUrl, file } = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
+            let file, previewEl;
+            if (isVid) {
+                try {
+                    const r = await renderSlideVideoToFile(state.slides[i], i, `slide-${i+1}`);
+                    file = r.file; videoCount++;
+                    const vid = document.createElement('video');
+                    vid.src = URL.createObjectURL(file);
+                    vid.className = 'h-48 rounded shadow-sm border flex-shrink-0';
+                    vid.muted = true; vid.loop = true; vid.autoplay = true; vid.playsInline = true; vid.controls = true;
+                    previewEl = vid;
+                } catch (ve) {
+                    // Fallback: se il video non si puo generare, esporta un fotogramma PNG
+                    const r = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
+                    file = r.file;
+                    previewEl = document.createElement('img'); previewEl.src = r.dataUrl;
+                    previewEl.className = 'h-48 rounded shadow-sm border flex-shrink-0';
+                }
+            } else {
+                const r = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
+                file = r.file;
+                previewEl = document.createElement('img'); previewEl.src = r.dataUrl;
+                previewEl.className = 'h-48 rounded shadow-sm border flex-shrink-0';
+            }
             state.renderedBlobs.push(file);
-            const img = document.createElement('img'); img.src=dataUrl; img.className='h-48 rounded shadow-sm border flex-shrink-0'; DOM.renderedPreviews.appendChild(img);
+            DOM.renderedPreviews.appendChild(previewEl);
         } catch (e) {
             const d = document.createElement('div'); d.className='h-48 w-32 rounded border-2 border-red-300 flex items-center justify-center text-xs text-red-500 text-center p-2 flex-shrink-0 whitespace-pre-line'; d.textContent=`⚠️ Errore\nSlide ${i+1}`; DOM.renderedPreviews.appendChild(d);
         }
     }
     state.isExporting=false; DOM.btnExport.disabled=false; DOM.btnExportSingle.disabled=false; DOM.exportProgressContainer.style.display='none'; DOM.btnExport.textContent='Esporta';
     if (!state.renderedBlobs.length) { alert('Nessuna slide generata.'); return; }
-    const d=DOM.shareModal.querySelector('.share-description'); if(d)d.textContent=IS_MOBILE?'Pronte! Salva nel Rullino Foto.':'Pronte! Scaricale sul tuo computer.';
-    DOM.btnNativeShare.textContent=IS_MOBILE?'Salva in Foto / Condividi':'Scarica Immagini'; DOM.shareModal.classList.add('active');
+    const hasVid = videoCount > 0;
+    const d=DOM.shareModal.querySelector('.share-description'); if(d)d.textContent=IS_MOBILE?'Pronte! Salva nel Rullino.':'Pronte! Scaricale sul tuo computer.';
+    DOM.btnNativeShare.textContent=IS_MOBILE?'Salva / Condividi':(hasVid?'Scarica File':'Scarica Immagini'); DOM.shareModal.classList.add('active');
 }
 
 async function exportSingleSlide() {
     if (state.isExporting) return; state.isExporting = true; DOM.btnExport.disabled=true; DOM.btnExportSingle.disabled=true; DOM.btnExportSingle.textContent='…';
     await document.fonts.ready; const i = state.activeIndex;
     try {
-        const { file } = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
+        let file;
+        if (slideHasVideo(state.slides[i])) {
+            try {
+                file = (await renderSlideVideoToFile(state.slides[i], i, `slide-${i+1}`)).file;
+            } catch (ve) {
+                file = (await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`)).file;
+            }
+        } else {
+            file = (await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`)).file;
+        }
         if (IS_MOBILE && navigator.canShare && navigator.canShare({ files:[file] })) await navigator.share({ files:[file], title:`Slide ${i+1}` });
-        else { const u = URL.createObjectURL(file); const a = document.createElement('a'); a.href=u; a.download=file.name; a.click(); URL.revokeObjectURL(u); }
+        else { const u = URL.createObjectURL(file); const a = document.createElement('a'); a.href=u; a.download=file.name; a.click(); setTimeout(()=>URL.revokeObjectURL(u), 4000); }
     } catch (e) { alert('Errore esportazione.'); }
     state.isExporting=false; DOM.btnExport.disabled=false; DOM.btnExportSingle.disabled=false; DOM.btnExportSingle.textContent='↓ Singola';
 }
@@ -1692,7 +2022,7 @@ async function share() {
     if (IS_MOBILE && navigator.canShare && navigator.canShare({ files:state.renderedBlobs })) {
         try { await navigator.share({ files:state.renderedBlobs, title:'Carousel' }); } catch (e) {}
     } else {
-        state.renderedBlobs.forEach((f, i) => { const u=URL.createObjectURL(f); const a=document.createElement('a'); a.href=u; a.download=f.name; setTimeout(()=> { a.click(); URL.revokeObjectURL(u); }, i*300); });
+        state.renderedBlobs.forEach((f, i) => { const u=URL.createObjectURL(f); const a=document.createElement('a'); a.href=u; a.download=f.name; setTimeout(()=> { a.click(); setTimeout(()=>URL.revokeObjectURL(u), 5000); }, i*400); });
     }
     DOM.shareModal.classList.remove('active');
 }
@@ -1756,7 +2086,7 @@ function renderPopupControls() {
     if (slide.fgImages && slide.fgImages.length > 0) {
         html += `<div class="border-t pt-3 mt-1 flex flex-col gap-2">`;
         slide.fgImages.forEach((fg, i) => {
-            html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Img Primo Piano ${i+1}</span><span id="pop-fg-size-val-${fg.id}" class="text-[#0071E3]">${fg.size}%</span></div><input type="range" data-pop-fg-id="${fg.id}" min="10" max="100" step="1" value="${fg.size}" class="w-full pop-fg-size"></div>`;
+            html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'Video':'Img'} Primo Piano ${i+1}</span><span id="pop-fg-size-val-${fg.id}" class="text-[#0071E3]">${fg.size}%</span></div><input type="range" data-pop-fg-id="${fg.id}" min="10" max="100" step="1" value="${fg.size}" class="w-full pop-fg-size"></div>`;
         });
         html += `</div>`;
     }
@@ -1844,7 +2174,7 @@ DOM.btnClosePopup.addEventListener('click', () => {
 // EVENT LISTENERS COMPONENTI MAIN
 
 // ════════ UX#8: Drag & Drop helper su zone upload e su preview-wrapper ════════
-function setupDropzone(el, onFile) {
+function setupDropzone(el, onFile, accept = 'image/') {
     if (!el) return;
     const stop = e => { e.preventDefault(); e.stopPropagation(); };
     el.addEventListener('dragenter', e => { stop(e); el.classList.add('dropzone-active'); });
@@ -1853,8 +2183,8 @@ function setupDropzone(el, onFile) {
     el.addEventListener('drop', e => {
         stop(e); el.classList.remove('dropzone-active');
         const f = e.dataTransfer?.files?.[0];
-        if (f && f.type.startsWith('image/')) onFile(f);
-        else if (f) toast('Trascina un file immagine', 'warning');
+        if (f && f.type.startsWith(accept)) onFile(f);
+        else if (f) toast(`Trascina un file ${accept === 'video/' ? 'video' : 'immagine'}`, 'warning');
     });
 }
 
@@ -1879,14 +2209,34 @@ async function handleFgUpload(file) {
         const b = await compressImage(file);
         const s = state.slides[state.activeIndex];
         if (!s.fgImages) s.fgImages = [];
-        s.fgImages.push({ id: generateId(), url: b, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
-        try { await idbSet(s.id + '_fgs', s.fgImages.map(f => ({ id: f.id, url: f.url }))); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
+        s.fgImages.push({ id: generateId(), type: 'image', url: b, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+        await saveFgsToIDB(s);
         DOM.fgImageUpload.value = '';
         trackChange(true); render();
     } catch (e) { /* toast già mostrato */ }
 }
 DOM.fgImageUpload.addEventListener('change', e => { if (e.target.files[0]) handleFgUpload(e.target.files[0]); });
 setupDropzone(DOM.fgImageUploadLabel, handleFgUpload);
+
+// Video upload (media in primo piano) — Blob salvato in IndexedDB + object URL per la sessione
+async function handleVideoUpload(file) {
+    if (!file) return;
+    if (!file.type.startsWith('video/')) { toast('Il file selezionato non è un video', 'error'); return; }
+    if (file.size > MAX_VIDEO_SIZE) { toast(`Video troppo grande (${(file.size/1048576).toFixed(1)}MB, max ${MAX_VIDEO_SIZE/1048576}MB)`, 'error'); return; }
+    try {
+        const s = state.slides[state.activeIndex];
+        if (!s.fgImages) s.fgImages = [];
+        const id = generateId();
+        videoBlobs.set(id, file);
+        s.fgImages.push({ id, type: 'video', url: URL.createObjectURL(file), x: 50, y: 50, size: 60, filters: { ...DEFAULT_FILTERS } });
+        await saveFgsToIDB(s);
+        DOM.fgVideoUpload.value = '';
+        toast('Video aggiunto alla slide', 'success', 2500);
+        trackChange(true); render();
+    } catch (e) { toast('Errore durante il caricamento del video', 'error'); }
+}
+DOM.fgVideoUpload.addEventListener('change', e => { if (e.target.files[0]) handleVideoUpload(e.target.files[0]); });
+setupDropzone(DOM.fgVideoUploadLabel, handleVideoUpload, 'video/');
 
 // Brand assets — compressione meno aggressiva ma comunque resize per evitare logos enormi
 async function handleBrandUpload(file, kind) {
@@ -2026,10 +2376,14 @@ DOM.btnDuplicateSlide.addEventListener('click', async () => {
         ...src, id: newId,
         textOverlay: src.textOverlay ? { ...src.textOverlay } : null,
         bgFilters: { ...(src.bgFilters || DEFAULT_FILTERS) },
-        fgImages: (src.fgImages || []).map(f => ({ ...f, id: generateId(), filters: { ...(f.filters || DEFAULT_FILTERS) } })),
+        fgImages: (src.fgImages || []).map(f => {
+            const nid = generateId();
+            if (f.type === 'video' && videoBlobs.has(f.id)) videoBlobs.set(nid, videoBlobs.get(f.id));
+            return { ...f, id: nid, filters: { ...(f.filters || DEFAULT_FILTERS) } };
+        }),
     };
     if (src.image) await idbSet(newId, src.image).catch(()=>{});
-    if (copy.fgImages.length) await idbSet(newId + '_fgs', copy.fgImages.map(f => ({ id: f.id, url: f.url }))).catch(()=>{});
+    if (copy.fgImages.length) await saveFgsToIDB(copy);
     state.slides.splice(state.activeIndex+1, 0, copy); state.activeIndex++; trackChange(true); render();
 });
 
@@ -2111,8 +2465,10 @@ DOM.btnResetSlide.addEventListener('click', () => {
         const cur = state.slides[state.activeIndex];
         // Pulisci IDB della slide
         try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); } catch (e) {}
-        // Sostituisci con default mantenendo l'id
-        state.slides[state.activeIndex] = makeDefaultSlide(cur.id);
+        // Libera eventuali video associati
+        (cur.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); });
+        // Sostituisci con default mantenendo l'id e il formato (storia o slide)
+        state.slides[state.activeIndex] = makeDefaultSlide(cur.id, { isStory: cur.isStory });
         trackChange(true); render();
         toast('Slide resettata', 'success');
     });
