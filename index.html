@@ -1369,7 +1369,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // Dimensioni base dei loghi top, scalate dai size globali
     const themeLogoH = Math.round(100 * state.themeLogoSize), themeLogoW = Math.round(300 * state.themeLogoSize);
     const logoH      = Math.round(100 * state.logoSize),      logoW      = Math.round(300 * state.logoSize);
-    const newsH      = Math.round(60  * state.newsSize),      newsW      = Math.round(200 * state.newsSize);
+    const newsH      = Math.round(60  * state.newsSize);
     // Altezza container loghi top = max delle due altezze (così entrambi i loghi possono crescere senza overflow visibile sopra)
     const topRowH = Math.max(themeLogoH, logoH);
     const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
@@ -1379,11 +1379,17 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // Badge: dimensionamento con height esplicito + width:auto (niente object-fit).
     // html2canvas non gestisce correttamente object-fit: era questa la causa del badge
     // pixelato e di dimensione diversa nell'export rispetto all'anteprima.
-    const newsHTML = (cE && cNews && safeNews) ? `<img data-news-badge="1" src="${safeNews}" alt="" style="height:${newsH}px;width:auto;display:block;margin-bottom:16px;">` : '';
+    const newsHTML = (cE && cNews && safeNews) ? `<img data-news-badge="1" src="${safeNews}" alt="" style="height:${newsH}px;width:auto;display:block;margin-bottom:6px;">` : '';
     const titleUppercase = cUpper ? 'text-transform:uppercase;' : '';
     const handleCover = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
+    const titleFs = slide.titleFontSize || 110;
+    // Compensazione bug html2canvas: in export il testo Bebas Neue con line-height:1
+    // viene disegnato più in basso (~0.46em) rispetto al browser, allontanando il badge
+    // dal titolo. Si applica un margine negativo SOLO in export (forPreview === false)
+    // così il titolo torna allineato al badge esattamente come in anteprima.
+    const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${slide.titleFontSize||110}px;line-height:1;margin:0 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
     const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
@@ -2296,13 +2302,14 @@ async function handleVideoUpload(file) {
 DOM.fgVideoUpload.addEventListener('change', e => { if (e.target.files[0]) handleVideoUpload(e.target.files[0]); });
 setupDropzone(DOM.fgVideoUploadLabel, handleVideoUpload, 'video/');
 
-// Brand assets — compressione meno aggressiva ma comunque resize per evitare logos enormi
+// Brand assets — compressione meno aggressiva ma comunque resize per evitare logos enormi.
+// Nota: il badge News/MOC NON passa di qui (vedi insertNewsBadge): viene incorporato
+// a piena risoluzione senza ricompressione.
 async function handleBrandUpload(file, kind) {
     try {
         const b = await compressImage(file);
         if (kind === 'logo')      { state.logoBase64 = b;      lsSet(LS.logo, b); }
         if (kind === 'themeLogo') { state.themeLogoBase64 = b; lsSet(LS.themeLogo, b); }
-        if (kind === 'news')      { state.newsBase64 = b;      lsSet(LS.news, b); }
         trackChange(true); render();
     } catch (e) {}
 }
