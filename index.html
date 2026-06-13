@@ -43,6 +43,9 @@
         .preview-fg-drag { transition:outline 0.15s; }
         .preview-fg-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:4px; border-radius:4px; }
         .preview-fg-drag.dragging { cursor:grabbing !important; outline:2px solid rgba(0,113,227,0.9); outline-offset:4px; border-radius:4px; }
+        /* Background image pan */
+        #preview-bg-img { cursor:grab; }
+        #preview-bg-img.dragging { cursor:grabbing !important; }
         /* Cover text drag */
         #preview-cover-text-drag { transition:outline 0.15s; }
         #preview-cover-text-drag:hover { outline:2px dashed rgba(255,255,255,0.6); outline-offset:8px; border-radius:4px; }
@@ -488,6 +491,10 @@
                     <button type="button" id="zoom-dec" aria-label="Riduci ingrandimento" class="w-8 h-8 flex-shrink-0 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all">−</button>
                     <input type="range" id="input-zoom" min="0.1" max="3" step="0.01" value="1" class="w-full"/>
                     <button type="button" id="zoom-inc" aria-label="Aumenta ingrandimento" class="w-8 h-8 flex-shrink-0 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all">+</button>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                    <span class="text-[11px] text-gray-400 normal-case font-normal">Trascina lo sfondo nell'anteprima per spostarlo</span>
+                    <button type="button" id="btn-center-bg" class="text-[11px] font-semibold text-[#0071E3] hover:underline normal-case">Centra</button>
                 </div>
                 <button id="btn-open-crop" class="mt-2 w-full text-sm font-medium bg-[#0071E3] text-white py-2 rounded-lg hover:bg-[#005bb5] transition-all">✂ Modifica immagine (Crop / Ruota / Flip)</button>
             </div>
@@ -943,7 +950,7 @@ function makeDefaultSlide(id, overrides = {}) {
         titleFontSize: 110,
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
         coverTextY: 60,
-        zoom: 1, bgColor: '#333333', bgMode: 'solid',
+        zoom: 1, bgX: 0, bgY: 0, bgColor: '#333333', bgMode: 'solid',
         gradColor1: '#1a1a2e', gradColor2: '#e94560', gradDir: 'to bottom',
         bgFilters: { ...DEFAULT_FILTERS }, // Feature#8: filtri sfondo
         textOverlay: null,
@@ -974,6 +981,7 @@ const DOM = {
     zoomValue:             document.getElementById('zoom-value'),
     zoomDec:               document.getElementById('zoom-dec'),
     zoomInc:               document.getElementById('zoom-inc'),
+    btnCenterBg:           document.getElementById('btn-center-bg'),
     
     // Foreground images multiple
     fgImageUpload:         document.getElementById('fg-image-upload'),
@@ -1126,7 +1134,7 @@ function _serializeSlide(s) {
         coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
         title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
-        zoom: s.zoom, bgColor: s.bgColor, bgMode: s.bgMode,
+        zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
         // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
@@ -1358,7 +1366,10 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const isStory = !!slide.isStory;
     const SLIDE_H = isStory ? 1920 : 1350;   // Storia 9:16, Carosello 4:5
     const borderRadiusStyle = '';            // immagini croppate con bordi squadrati (no border-radius)
-    const sizeStyle = zoom < 1 ? 'max-width:100%;max-height:100%;object-fit:contain;' : 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
+    // Dimensionamento costante "cover" (riempie il contenitore a zoom=1) così lo
+    // scale è continuo: a 0.99 l'immagine rimpicciolisce esattamente dell'1%, senza
+    // il salto causato dal passaggio object-fit:contain ⇆ cover attorno a 1.00.
+    const sizeStyle = 'min-width:100%;min-height:100%;width:auto;height:auto;max-width:none;max-height:none;';
     const bgWrapStyle = slide.bgMode === 'gradient' ? `background:${bg};` : `background-color:${bgFlat};`;
 
     // BG IMAGE + FILTERS (Feature#8)
@@ -1367,7 +1378,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const bgVignetteHtml = buildVignetteOverlay(slide.bgFilters?.vignette);
     const safeBgUrl = safeImageUrl(slide.image);
     const bgHTML = safeBgUrl
-        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}"><img ${forPreview ? 'id="preview-bg-img"' : ''} src="${safeBgUrl}" alt="" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(${zoom});${sizeStyle}${borderRadiusStyle}${bgFilterStyle}">${bgVignetteHtml}</div>`
+        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:1;${bgWrapStyle}"><img ${forPreview ? 'id="preview-bg-img"' : ''} src="${safeBgUrl}" alt="" style="position:absolute;top:50%;left:50%;transform:${bgTransformStr(zoom, slide.bgX, slide.bgY, SLIDE_H)};${sizeStyle}${borderRadiusStyle}${bgFilterStyle}">${bgVignetteHtml}</div>`
         : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;${bgWrapStyle}"></div>`;
 
     const safeThemeLogo = safeImageUrl(state.themeLogoBase64);
@@ -1379,10 +1390,10 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const newsH      = Math.round(60  * state.newsSize);
     // Altezza container loghi top = max delle due altezze (così entrambi i loghi possono crescere senza overflow visibile sopra)
     const topRowH = Math.max(themeLogoH, logoH);
-    const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
+    const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;${forPreview ? 'pointer-events:none;' : ''}"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
 
     // Cover scorporato (UX#5)
-    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;"></div>` : '';
+    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;${forPreview ? 'pointer-events:none;' : ''}"></div>` : '';
     // Badge: dimensionamento con height esplicito + width:auto (niente object-fit).
     // html2canvas non gestisce correttamente object-fit: era questa la causa del badge
     // pixelato e di dimensione diversa nell'export rispetto all'anteprima.
@@ -1397,7 +1408,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${escapeHtml(slide.source)}</div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
@@ -1489,6 +1500,50 @@ function bindAllDrags() {
     document.querySelectorAll('.preview-fg-drag').forEach(el => {
         bindDragElement(el, 'x', 'y', () => s.fgImages.find(f => f.id === el.dataset.fgId));
     });
+    bindBgDrag();
+}
+
+// Pan dell'immagine di sfondo: aggiorna bgX/bgY (offset in % del contenitore).
+// Stesso sistema di coordinate di anteprima ed export, quindi lo spostamento
+// si riflette identico nell'immagine esportata.
+function bindBgDrag() {
+    const img = document.getElementById('preview-bg-img');
+    if (!img) return;
+    const s = state.slides[state.activeIndex];
+    img.style.cursor = 'grab';
+    img.classList.add('preview-bg-drag');
+
+    const onStart = (e) => {
+        if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
+        e.preventDefault(); e.stopPropagation();
+        img.classList.add('dragging');
+        const rect = DOM.previewWrapper.getBoundingClientRect();
+        const t0 = e.touches ? e.touches[0] : e;
+        const startX = t0.clientX, startY = t0.clientY;
+        const baseX = s.bgX || 0, baseY = s.bgY || 0;
+        const slideH = s.isStory ? 1920 : 1350;
+
+        const onMove = (ev) => {
+            const t = ev.touches ? ev.touches[0] : ev;
+            if (ev.cancelable) ev.preventDefault();
+            let nx = baseX + (t.clientX - startX) / rect.width  * 100;
+            let ny = baseY + (t.clientY - startY) / rect.height * 100;
+            nx = Math.max(-300, Math.min(300, nx));
+            ny = Math.max(-300, Math.min(300, ny));
+            s.bgX = nx; s.bgY = ny;
+            img.style.transform = bgTransformStr(s.zoom || 1, nx, ny, slideH);
+        };
+        const onEnd = () => {
+            img.classList.remove('dragging');
+            document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd);
+            trackChange(true); // snapshot al rilascio
+        };
+        document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive:false });
+        document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd);
+    };
+    img.addEventListener('mousedown', onStart);
+    img.addEventListener('touchstart', onStart, { passive:false });
 }
 
 // UI RENDERING
@@ -1725,21 +1780,23 @@ function updateScale() {
 // Clamp zoom nei limiti dello slider (0.1–3)
 function clampZoom(v) { return Math.min(3, Math.max(0.1, Math.round(v * 100) / 100)); }
 
+// Costruisce il transform dell'immagine di sfondo: centratura + offset (pan) + zoom.
+// Stesso identico calcolo usato sia in anteprima sia in export → match al pixel.
+function bgTransformStr(zoom, bgX, bgY, slideH) {
+    const offX = (bgX || 0) / 100 * 1080;
+    const offY = (bgY || 0) / 100 * (slideH || 1350);
+    return `translate(calc(-50% + ${offX}px), calc(-50% + ${offY}px)) scale(${zoom || 1})`;
+}
+
 // Aggiornamento "live" dello zoom: muta solo il transform dell'immagine di sfondo
 // nell'anteprima, evitando il rebuild completo dell'HTML + rebind dei drag a ogni
 // frame del trascinamento. Il render completo + snapshot avviene al rilascio (change).
 function applyLiveZoom(v) {
     const img = document.getElementById('preview-bg-img');
     if (!img) { renderPreview(); return; }
-    img.style.transform = `translate(-50%,-50%) scale(${v})`;
-    if (v < 1) {
-        img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.objectFit = 'contain';
-        img.style.minWidth = ''; img.style.minHeight = ''; img.style.width = ''; img.style.height = '';
-    } else {
-        img.style.minWidth = '100%'; img.style.minHeight = '100%';
-        img.style.width = 'auto'; img.style.height = 'auto';
-        img.style.maxWidth = 'none'; img.style.maxHeight = 'none'; img.style.objectFit = '';
-    }
+    const s = state.slides[state.activeIndex];
+    const slideH = s.isStory ? 1920 : 1350;
+    img.style.transform = bgTransformStr(v, s.bgX, s.bgY, slideH);
 }
 
 let _previewPending = false;
@@ -2474,6 +2531,12 @@ DOM.inputZoom.addEventListener('change', e => setZoom(parseFloat(e.target.value)
 // Pulsanti di precisione: ±0.01 esatti
 if (DOM.zoomDec) DOM.zoomDec.addEventListener('click', () => setZoom((state.slides[state.activeIndex].zoom || 1) - 0.01, { commit: true }));
 if (DOM.zoomInc) DOM.zoomInc.addEventListener('click', () => setZoom((state.slides[state.activeIndex].zoom || 1) + 0.01, { commit: true }));
+if (DOM.btnCenterBg) DOM.btnCenterBg.addEventListener('click', () => {
+    const s = state.slides[state.activeIndex];
+    s.bgX = 0; s.bgY = 0;
+    renderPreview(); trackChange(true);
+    toast('Sfondo centrato', 'success', 1200);
+});
 
 // ════════ Cover layout enabled + 3 toggle scorporati (UX#5) ════════
 DOM.coverToggleTrack.addEventListener('click', () => DOM.toggleCoverLayout.click());
