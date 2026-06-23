@@ -236,9 +236,6 @@
             <button id="btn-refresh" aria-label="Ricarica" title="Ricarica l'app" class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
             </button>
-            <a id="btn-instagram" href="https://www.instagram.com/itavix_bricks/" target="_blank" rel="noopener noreferrer" aria-label="Profilo Instagram itavix_bricks" title="Seguimi su Instagram" class="text-gray-500 hover:text-black hover:bg-gray-200 p-1.5 rounded-full transition-all inline-flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-            </a>
             <button id="btn-help" class="text-xs font-medium text-[#0071E3] hover:underline bg-gray-200 px-3 py-1 rounded-full">Guida</button>
         </div>
     </div>
@@ -568,6 +565,38 @@
             </button>
             <button id="btn-export-single" class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed">↓ Singola</button>
             <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">Esporta</button>
+        </div>
+    </div>
+
+    <!-- TESTO DEL POST (CAPTION INSTAGRAM) -->
+    <div id="caption-card" class="w-full bg-white border border-black/[0.08] rounded-[12px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
+            <div>
+                <h3 class="font-semibold text-sm text-gray-900">Testo del post Instagram</h3>
+                <p class="text-xs text-gray-500">Generato dalla copertina del carosello</p>
+            </div>
+            <span id="caption-status" class="text-[11px] font-medium px-2 py-1 rounded-full bg-[#E8F0FE] text-[#0071E3] whitespace-nowrap">Sincronizzato col cover</span>
+        </div>
+        <textarea id="input-caption" rows="5" placeholder="Scrivi qui la didascalia del post…" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-[#0071E3] resize-y"></textarea>
+        <div class="flex items-start gap-2 px-3 py-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-[8px]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div class="flex flex-col gap-0.5 min-w-0">
+                <span class="text-[11px] font-semibold text-[#9A3412] uppercase tracking-wide">Riga fissa sempre inclusa</span>
+                <span id="caption-footer-text" class="text-xs text-[#7C2D12] break-words"></span>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+            <span id="caption-count" class="text-xs text-gray-400">0 / 2200</span>
+            <div class="flex gap-2">
+                <button id="btn-caption-sync" title="Rigenera il testo dalla copertina" class="text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-[980px] px-3 py-1.5 hover:bg-gray-100 transition-all inline-flex items-center gap-1.5">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                    Dal cover
+                </button>
+                <button id="btn-caption-copy" title="Copia il testo negli appunti" class="text-xs font-medium text-white bg-[#0071E3] rounded-[980px] px-3 py-1.5 hover:bg-[#005bb5] transition-all inline-flex items-center gap-1.5">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    Copia
+                </button>
+            </div>
         </div>
     </div>
 
@@ -939,6 +968,9 @@ const state = {
     storySlides: [makeDefaultSlide('story-0', { isStory: true })],
     // `slides` punta sempre al set della modalità attiva
     slides: null,
+    // Didascalia del post IG: si auto-genera dalla copertina finché l'utente
+    // non la modifica a mano (manual=true → stop auto-sync).
+    caption: { text: '', manual: false },
 };
 state.slides = state.carouselSlides;
 
@@ -1004,6 +1036,12 @@ const DOM = {
     titleFontSizeValue:    document.getElementById('title-font-size-value'),
     inputBody:             document.getElementById('input-body'),
     inputSource:           document.getElementById('input-source'),
+    inputCaption:          document.getElementById('input-caption'),
+    captionFooterText:     document.getElementById('caption-footer-text'),
+    captionStatus:         document.getElementById('caption-status'),
+    captionCount:          document.getElementById('caption-count'),
+    btnCaptionSync:        document.getElementById('btn-caption-sync'),
+    btnCaptionCopy:        document.getElementById('btn-caption-copy'),
     toggleCoverLayout:     document.getElementById('toggle-cover-layout'),
     coverToggleTrack:      document.getElementById('cover-toggle-track'),
     coverToggleLabel:      document.getElementById('cover-toggle-label'),
@@ -1130,6 +1168,77 @@ const DOM = {
 function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOverlay)s.textOverlay={enabled:true,font:'Bebas Neue',title:'',body:'',titleSize:80,bodySize:40,color:'#ffffff',align:'left',x:50,y:50}; return s.textOverlay; }
 function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
 
+// ════════ CAPTION DEL POST IG (testo dalla copertina) ════════
+const CAPTION_MAX = 2200; // limite didascalia Instagram
+// Riga fissa (CTA brand) SEMPRE aggiunta in coda alla caption, anche con testo editato a mano.
+const CAPTION_FOOTER = '🔥follow @itavix_bricks for other MOC and NEWS on the world of bricks🔥';
+// Varianti storiche del footer da ripulire dai testi salvati (migrazione).
+const _CAPTION_FOOTER_VARIANTS = [
+    CAPTION_FOOTER,
+    '🔥follow @itavix_bricks  for other MOC and NEWS on the world of bricks🔥', // vecchia con doppio spazio
+];
+
+// La copertina del carosello = prima slide con coverEnabled, fallback alla prima.
+function getCoverSlide() {
+    return state.carouselSlides.find(s => s.coverEnabled) || state.carouselSlides[0] || null;
+}
+
+// Rimuove un eventuale footer finale dal corpo (evita duplicati su testi salvati in precedenza).
+function stripCaptionFooter(text) {
+    let t = text || '';
+    for (const f of _CAPTION_FOOTER_VARIANTS) {
+        const trimmed = t.replace(/\s+$/, '');
+        if (trimmed.endsWith(f)) { t = trimmed.slice(0, trimmed.length - f.length).replace(/\s+$/, ''); break; }
+    }
+    return t;
+}
+
+// Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer).
+function buildCaptionFromCover() {
+    const c = getCoverSlide();
+    const parts = [];
+    if (c) {
+        if (c.title && c.title.trim())   parts.push(c.title.trim());
+        if (c.body && c.body.trim())     parts.push(c.body.trim());
+        if (c.source && c.source.trim()) parts.push(c.source.trim());
+    }
+    return parts.join('\n\n');
+}
+
+// Caption completa = corpo editabile + footer fisso. È ciò che viene copiato/conteggiato.
+function getFullCaption() {
+    const body = (state.caption.text || '').trim();
+    return body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER;
+}
+
+function updateCaptionMeta() {
+    if (!DOM.inputCaption) return;
+    const len = getFullCaption().length; // conteggio sul testo realmente pubblicato (corpo + footer)
+    if (DOM.captionCount) {
+        DOM.captionCount.textContent = `${len} / ${CAPTION_MAX}`;
+        DOM.captionCount.className = 'text-xs ' + (len > CAPTION_MAX ? 'text-[#E3000F] font-semibold' : 'text-gray-400');
+    }
+    if (DOM.captionStatus) {
+        if (state.caption.manual) {
+            DOM.captionStatus.textContent = 'Modificato a mano';
+            DOM.captionStatus.className = 'text-[11px] font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-500 whitespace-nowrap';
+        } else {
+            DOM.captionStatus.textContent = 'Sincronizzato col cover';
+            DOM.captionStatus.className = 'text-[11px] font-medium px-2 py-1 rounded-full bg-[#E8F0FE] text-[#0071E3] whitespace-nowrap';
+        }
+    }
+}
+
+// Rigenera il corpo dalla copertina. Con force=true riprende il controllo
+// automatico anche se l'utente aveva modificato a mano. Il footer resta sempre fuori dal corpo.
+function syncCaptionFromCover(force = false) {
+    if (state.caption.manual && !force) { updateCaptionMeta(); return; }
+    if (force) state.caption.manual = false;
+    state.caption.text = buildCaptionFromCover();
+    if (DOM.inputCaption) DOM.inputCaption.value = state.caption.text;
+    updateCaptionMeta();
+}
+
 // ════════ PERSISTENZA (FIX PERFORMANCE #4: debounce + lsSet) ════════
 function _serializeSlide(s) {
     return {
@@ -1150,6 +1259,7 @@ function _saveStateNow() {
         mode: state.mode,
         slides:      state.carouselSlides.map(_serializeSlide),
         storySlides: state.storySlides.map(_serializeSlide),
+        caption:     state.caption,
     };
     lsSet(LS.state, JSON.stringify(toSave));
 }
@@ -1202,6 +1312,9 @@ function loadState() {
         state.mode = saved.mode === 'story' ? 'story' : 'carousel';
         state.slides = state.mode === 'story' ? state.storySlides : state.carouselSlides;
         state.activeIndex = 0;
+        if (saved.caption && typeof saved.caption.text === 'string') {
+            state.caption = { text: saved.caption.text, manual: !!saved.caption.manual };
+        }
     } catch (e) { console.warn('Caricamento stato fallito:', e); toast('Stato precedente non recuperabile', 'warning'); }
 }
 
@@ -1295,6 +1408,7 @@ function restoreFrom(snap) {
     lsSet(LS.newsSize,      String(state.newsSize));
     saveStateImmediate();
     render();
+    syncCaptionFromCover(); // riallinea la caption se segue il cover
     history.suppress = false;
     updateHistoryButtons();
 }
@@ -2564,10 +2678,45 @@ bindCoverFlagToggle(DOM.coverOverlayToggleTrack,   DOM.toggleCoverDarkOverlay, D
 bindCoverFlagToggle(DOM.coverNewsToggleTrack,      DOM.toggleCoverShowNews,    DOM.coverNewsToggleLabel,      'coverShowNews');
 
 DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
-const debouncedPreviewSave = debounce(() => { renderPreview(); trackChange(); }, 150);
+const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
 DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreviewSave(); });
+
+// ════════ CAPTION DEL POST IG ════════
+if (DOM.inputCaption) {
+    // Modifica manuale → la caption smette di seguire il cover
+    DOM.inputCaption.addEventListener('input', e => {
+        state.caption.text = e.target.value;
+        state.caption.manual = true;
+        updateCaptionMeta();
+        saveState();
+    });
+}
+if (DOM.btnCaptionSync) {
+    DOM.btnCaptionSync.addEventListener('click', () => {
+        syncCaptionFromCover(true);
+        saveStateImmediate();
+        toast('Testo rigenerato dalla copertina', 'success', 1400);
+    });
+}
+if (DOM.btnCaptionCopy) {
+    DOM.btnCaptionCopy.addEventListener('click', async () => {
+        const txt = getFullCaption(); // corpo editato + footer fisso
+        try {
+            await navigator.clipboard.writeText(txt);
+            toast('Testo copiato negli appunti', 'success', 1400);
+        } catch (err) {
+            // Fallback per contesti senza Clipboard API (es. http): textarea temporanea
+            const ta = document.createElement('textarea');
+            ta.value = txt; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+            document.body.appendChild(ta); ta.focus(); ta.select();
+            const ok = document.execCommand && document.execCommand('copy');
+            document.body.removeChild(ta);
+            toast(ok ? 'Testo copiato negli appunti' : 'Copia non riuscita, selezionalo manualmente', ok ? 'success' : 'warning', 1600);
+        }
+    });
+}
 
 DOM.overlayToggleTrack.addEventListener('click', () => DOM.toggleTextOverlay.click());
 DOM.toggleTextOverlay.addEventListener('change', e => { const ov=ensureOverlay(); ov.enabled=e.target.checked; DOM.overlayToggleTrack.className='toggle-track'+(ov.enabled?' on':''); DOM.overlayToggleLabel.textContent=ov.enabled?'On':'Off'; DOM.overlayFields.style.display=ov.enabled?'flex':'none'; trackChange(true); renderPreview(); });
@@ -2784,6 +2933,19 @@ if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { cons
 window.addEventListener('load', async () => {
     await openIDB().catch(e => console.warn('IDB non disponibile:', e));
     loadState(); await loadImagesFromIDB(); render();
+    // Mostra la riga fissa sotto la textarea (fonte unica = costante JS)
+    if (DOM.captionFooterText) DOM.captionFooterText.textContent = CAPTION_FOOTER;
+    // Migrazione: i testi salvati dalle versioni precedenti potevano contenere il footer nel corpo → lo tolgo
+    if (state.caption && typeof state.caption.text === 'string') {
+        state.caption.text = stripCaptionFooter(state.caption.text);
+    }
+    // Caption: se l'utente l'ha modificata a mano ripristina il corpo salvato, altrimenti genera dal cover
+    if (state.caption.manual && state.caption.text) {
+        if (DOM.inputCaption) DOM.inputCaption.value = state.caption.text;
+        updateCaptionMeta();
+    } else {
+        syncCaptionFromCover();
+    }
     updateHistoryButtons();
     if (window.matchMedia('(max-width: 767px)').matches) {
         document.querySelectorAll('details.accordion').forEach(d => { if (!d.hasAttribute('data-keep-open')) d.removeAttribute('open'); });
