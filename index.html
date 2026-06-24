@@ -319,7 +319,15 @@
                     </div>
                     <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
                     <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
-                    
+
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <label for="input-cover-color" class="text-xs font-bold text-gray-500 uppercase">Colore Testo</label>
+                        <div class="flex items-center gap-3">
+                            <span id="cover-color-hex" class="text-xs font-mono text-gray-500">#FFFFFF</span>
+                            <input type="color" id="input-cover-color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
+                    </div>
+
                     <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
                         <span class="text-sm font-medium text-blue-900">Maiuscolo titolo</span>
                         <div class="flex items-center gap-2">
@@ -519,7 +527,10 @@
             </details>
 
             <!-- Reset slide -->
-            <button id="btn-reset-slide" class="text-xs text-[#E3000F] hover:underline font-medium self-start">↺ Reset slide attiva</button>
+            <div class="flex flex-wrap items-center gap-4">
+                <button id="btn-reset-slide" class="text-xs text-[#E3000F] hover:underline font-medium self-start">↺ Reset slide attiva</button>
+                <button id="btn-delete-all-images" class="text-xs text-[#E3000F] hover:underline font-medium self-start">🗑 Cancella tutte le immagini</button>
+            </div>
 
             <!-- Immagini in Primo Piano (Multiple) -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -984,6 +995,7 @@ function makeDefaultSlide(id, overrides = {}) {
         coverUppercase: false, coverDarkOverlay: false, coverShowNews: false,
         title: '', body: '', source: '',
         titleFontSize: 110,
+        coverTextColor: '#ffffff',   // colore del testo copertina (titolo+sottotitolo+fonte)
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
         coverTextY: 60,
         zoom: 1, bgX: 0, bgY: 0, bgColor: '#333333', bgMode: 'solid',
@@ -1129,7 +1141,10 @@ const DOM = {
     btnEyedrop2:           document.getElementById('btn-eyedrop-2'),
     btnOpenCrop:           document.getElementById('btn-open-crop'),
     btnResetSlide:         document.getElementById('btn-reset-slide'),
+    btnDeleteAllImages:    document.getElementById('btn-delete-all-images'),
     btnResetApp:           document.getElementById('btn-reset-app'),
+    inputCoverColor:       document.getElementById('input-cover-color'),
+    coverColorHex:         document.getElementById('cover-color-hex'),
     bgFiltersSection:      document.getElementById('bg-filters-section'),
     bgFilterControls:      document.getElementById('bg-filter-controls'),
     btnResetBgFilters:     document.getElementById('btn-reset-bg-filters'),
@@ -1287,7 +1302,7 @@ function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
         coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
-        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize,
+        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
@@ -1567,8 +1582,8 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
@@ -1872,7 +1887,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -2732,6 +2747,7 @@ const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCo
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
 DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreviewSave(); });
+DOM.inputCoverColor.addEventListener('input', e => { state.slides[state.activeIndex].coverTextColor=e.target.value; DOM.coverColorHex.textContent=e.target.value.toUpperCase(); renderPreview(); trackChange(); });
 
 // ════════ CAPTION DEL POST IG ════════
 if (DOM.inputCaption) {
@@ -2907,6 +2923,22 @@ DOM.btnResetSlide.addEventListener('click', () => {
         trackChange(true); render();
         toast('Slide resettata', 'success');
     });
+});
+// Cancella SOLO le immagini (sfondo + primo piano) da TUTTE le slide di entrambi i set
+// (carosello e storie), lasciando intatti testi, colori, layout e impostazioni.
+async function deleteAllImages() {
+    const all = [...state.carouselSlides, ...state.storySlides];
+    for (const sl of all) {
+        sl.image = null;
+        (sl.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); });
+        sl.fgImages = [];
+        try { await idbDelete(sl.id); await idbDelete(sl.id + '_fgs'); } catch (e) {}
+    }
+    trackChange(true); render();
+    toast('Immagini cancellate da tutte le slide', 'success');
+}
+DOM.btnDeleteAllImages.addEventListener('click', () => {
+    openConfirm('Cancellare tutte le immagini?', 'Verranno rimosse tutte le immagini (sfondo e primo piano) da ogni slide di carosello e storie. Testi, colori e impostazioni restano. Operazione irreversibile.', deleteAllImages);
 });
 DOM.btnResetApp.addEventListener('click', () => {
     openConfirm('Reset completo app?', 'Verranno cancellati tutti i contenuti (slide, brand, immagini). Operazione irreversibile.', async () => {
