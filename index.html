@@ -1645,8 +1645,15 @@ function bindBgDrag() {
             if (ev.cancelable) ev.preventDefault();
             let nx = baseX + (t.clientX - startX) / rect.width  * 100;
             let ny = baseY + (t.clientY - startY) / rect.height * 100;
-            nx = Math.max(-300, Math.min(300, nx));
-            ny = Math.max(-300, Math.min(300, ny));
+            // Limita il pan così che resti sempre visibile (e quindi afferrabile)
+            // almeno una porzione dell'immagine: un gesto accidentale non può più
+            // spingerla del tutto fuori dall'anteprima rendendola non modificabile.
+            // L'immagine ha sizing "cover", quindi la sua mezza-dimensione è >= 50%*zoom
+            // del lato; con margine di sicurezza del 20% il limite è 30 + 50*zoom.
+            const z = s.zoom || 1;
+            const maxPan = 30 + 50 * z;
+            nx = Math.max(-maxPan, Math.min(maxPan, nx));
+            ny = Math.max(-maxPan, Math.min(maxPan, ny));
             s.bgX = nx; s.bgY = ny;
             img.style.transform = bgTransformStr(s.zoom || 1, nx, ny, slideH);
         };
