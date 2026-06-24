@@ -1193,14 +1193,20 @@ function stripCaptionFooter(text) {
     return t;
 }
 
+// Decorazioni di SOLO rendering (non vengono salvate nei campi, così l'input
+// resta pulito e le emoji non si accumulano a ogni modifica).
+// Titolo: 💥 davanti e in fondo. Fonte: "Fonte: theverge.com" → "From".
+function decorateTitle(t) { const s = (t || '').trim(); return s ? `💥 ${s} 💥` : s; }
+function decorateSource(src) { return (src || '').replace(/Fonte:\s*theverge\.com/gi, 'From'); }
+
 // Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer).
 function buildCaptionFromCover() {
     const c = getCoverSlide();
     const parts = [];
     if (c) {
-        if (c.title && c.title.trim())   parts.push(c.title.trim());
+        if (c.title && c.title.trim())   parts.push(decorateTitle(c.title));
         if (c.body && c.body.trim())     parts.push(c.body.trim());
-        if (c.source && c.source.trim()) parts.push(c.source.trim());
+        if (c.source && c.source.trim()) parts.push(decorateSource(c.source).trim());
     }
     return parts.join('\n\n');
 }
@@ -1525,7 +1531,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
