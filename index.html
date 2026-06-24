@@ -579,11 +579,12 @@
         </div>
         <textarea id="input-caption" rows="5" placeholder="Scrivi qui la didascalia del post…" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-[#0071E3] resize-y"></textarea>
         <div class="flex items-start gap-2 px-3 py-2 bg-[#FFF7ED] border border-[#FED7AA] rounded-[8px]">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <div class="flex flex-col gap-0.5 min-w-0">
-                <span class="text-[11px] font-semibold text-[#9A3412] uppercase tracking-wide">Riga fissa sempre inclusa</span>
+            <svg id="caption-footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-0.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div class="flex flex-col gap-0.5 min-w-0 flex-1">
+                <span id="caption-footer-label" class="text-[11px] font-semibold text-[#9A3412] uppercase tracking-wide">Riga fissa sempre inclusa</span>
                 <span id="caption-footer-text" class="text-xs text-[#7C2D12] break-words"></span>
             </div>
+            <button id="btn-footer-lock" type="button" title="Blocca o sblocca la riga fissa" class="text-[11px] font-medium text-[#9A3412] bg-white/70 border border-[#FED7AA] rounded-full px-2.5 py-1 hover:bg-white transition-all flex-shrink-0">Sblocca</button>
         </div>
         <div class="flex items-center justify-between gap-2 flex-wrap">
             <span id="caption-count" class="text-xs text-gray-400">0 / 2200</span>
@@ -970,7 +971,7 @@ const state = {
     slides: null,
     // Didascalia del post IG: si auto-genera dalla copertina finché l'utente
     // non la modifica a mano (manual=true → stop auto-sync).
-    caption: { text: '', manual: false },
+    caption: { text: '', manual: false, footerLocked: true },
 };
 state.slides = state.carouselSlides;
 
@@ -1038,6 +1039,8 @@ const DOM = {
     inputSource:           document.getElementById('input-source'),
     inputCaption:          document.getElementById('input-caption'),
     captionFooterText:     document.getElementById('caption-footer-text'),
+    captionFooterLabel:    document.getElementById('caption-footer-label'),
+    btnFooterLock:         document.getElementById('btn-footer-lock'),
     captionStatus:         document.getElementById('caption-status'),
     captionCount:          document.getElementById('caption-count'),
     btnCaptionSync:        document.getElementById('btn-caption-sync'),
@@ -1211,10 +1214,41 @@ function buildCaptionFromCover() {
     return parts.join('\n\n');
 }
 
-// Caption completa = corpo editabile + footer fisso. È ciò che viene copiato/conteggiato.
+// Caption completa = ciò che viene copiato/conteggiato.
+// BLOCCATA (default): footer fisso aggiunto automaticamente in coda.
+// SBLOCCATA: il footer (se voluto) vive già nel corpo editabile → non si aggiunge nulla.
 function getFullCaption() {
     const body = (state.caption.text || '').trim();
+    if (state.caption.footerLocked === false) return body;
     return body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER;
+}
+
+// Aggiorna la box arancione (etichetta, nota, pulsante) in base allo stato lock.
+function updateFooterUI() {
+    const locked = state.caption.footerLocked !== false;
+    if (DOM.captionFooterLabel) DOM.captionFooterLabel.textContent = locked ? 'Riga fissa sempre inclusa' : 'Riga fissa sbloccata';
+    if (DOM.captionFooterText)  DOM.captionFooterText.textContent  = locked ? CAPTION_FOOTER : 'Ora la riga è nel testo: puoi modificarla o rimuoverla.';
+    if (DOM.btnFooterLock)      DOM.btnFooterLock.textContent      = locked ? 'Sblocca' : 'Blocca';
+}
+
+// Blocca/sblocca la riga fissa. Sbloccando, il footer viene spostato DENTRO il corpo
+// editabile (così è modificabile/rimuovibile); ribloccando, viene tolto dal corpo e
+// torna ad essere aggiunto in automatico in coda.
+function setFooterLocked(locked) {
+    locked = !!locked;
+    const wasLocked = state.caption.footerLocked !== false;
+    if (locked === wasLocked) return;
+    if (locked) {
+        state.caption.text = stripCaptionFooter(state.caption.text || '');
+    } else {
+        const body = stripCaptionFooter(state.caption.text || '').replace(/\s+$/, '');
+        state.caption.text = body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER;
+    }
+    state.caption.footerLocked = locked;
+    if (DOM.inputCaption) DOM.inputCaption.value = state.caption.text;
+    updateFooterUI();
+    updateCaptionMeta();
+    saveStateImmediate();
 }
 
 function updateCaptionMeta() {
@@ -1240,7 +1274,10 @@ function updateCaptionMeta() {
 function syncCaptionFromCover(force = false) {
     if (state.caption.manual && !force) { updateCaptionMeta(); return; }
     if (force) state.caption.manual = false;
-    state.caption.text = buildCaptionFromCover();
+    let body = buildCaptionFromCover();
+    // Sbloccata: il footer fa parte del corpo, quindi lo riapplico dopo la rigenerazione.
+    if (state.caption.footerLocked === false) body = body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER;
+    state.caption.text = body;
     if (DOM.inputCaption) DOM.inputCaption.value = state.caption.text;
     updateCaptionMeta();
 }
@@ -1319,7 +1356,7 @@ function loadState() {
         state.slides = state.mode === 'story' ? state.storySlides : state.carouselSlides;
         state.activeIndex = 0;
         if (saved.caption && typeof saved.caption.text === 'string') {
-            state.caption = { text: saved.caption.text, manual: !!saved.caption.manual };
+            state.caption = { text: saved.caption.text, manual: !!saved.caption.manual, footerLocked: saved.caption.footerLocked !== false };
         }
     } catch (e) { console.warn('Caricamento stato fallito:', e); toast('Stato precedente non recuperabile', 'warning'); }
 }
@@ -1530,7 +1567,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;">${escapeHtml(slide.body)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:white;text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
     const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:white;opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
@@ -2706,6 +2743,13 @@ if (DOM.inputCaption) {
         saveState();
     });
 }
+if (DOM.btnFooterLock) {
+    DOM.btnFooterLock.addEventListener('click', () => {
+        const willUnlock = state.caption.footerLocked !== false;
+        setFooterLocked(!willUnlock);
+        toast(willUnlock ? 'Riga fissa sbloccata: ora è modificabile' : 'Riga fissa ribloccata', 'success', 1600);
+    });
+}
 if (DOM.btnCaptionSync) {
     DOM.btnCaptionSync.addEventListener('click', () => {
         syncCaptionFromCover(true);
@@ -2947,11 +2991,12 @@ window.addEventListener('load', async () => {
     await openIDB().catch(e => console.warn('IDB non disponibile:', e));
     loadState(); await loadImagesFromIDB(); render();
     // Mostra la riga fissa sotto la textarea (fonte unica = costante JS)
-    if (DOM.captionFooterText) DOM.captionFooterText.textContent = CAPTION_FOOTER;
-    // Migrazione: i testi salvati dalle versioni precedenti potevano contenere il footer nel corpo → lo tolgo
-    if (state.caption && typeof state.caption.text === 'string') {
+    // Migrazione: i testi salvati dalle versioni precedenti potevano contenere il footer nel
+    // corpo → lo tolgo SOLO se la riga è bloccata (da sbloccata il footer nel corpo è voluto).
+    if (state.caption && typeof state.caption.text === 'string' && state.caption.footerLocked !== false) {
         state.caption.text = stripCaptionFooter(state.caption.text);
     }
+    updateFooterUI();
     // Caption: se l'utente l'ha modificata a mano ripristina il corpo salvato, altrimenti genera dal cover
     if (state.caption.manual && state.caption.text) {
         if (DOM.inputCaption) DOM.inputCaption.value = state.caption.text;
