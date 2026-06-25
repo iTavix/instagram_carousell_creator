@@ -884,11 +884,23 @@ function compressImage(file) {
                 const canvas = document.createElement('canvas');
                 canvas.width = width; canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                // Per PNG mantenuti come PNG se hanno alpha probabile (icone/loghi piccoli)
-                const usePng = file.type === 'image/png' && file.size < 500_000;
-                if (!usePng) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, width, height); }
+                // Disegna su canvas TRASPARENTE (niente fondo bianco): così l'alpha
+                // dell'immagine originale non viene mai distrutto.
                 ctx.drawImage(img, 0, 0, width, height);
-                const mime = usePng ? 'image/png' : 'image/jpeg';
+                // Rileva se l'immagine ha davvero pixel trasparenti.
+                let hasAlpha = false;
+                try {
+                    const data = ctx.getImageData(0, 0, width, height).data;
+                    for (let i = 3; i < data.length; i += 4) { if (data[i] < 255) { hasAlpha = true; break; } }
+                } catch (_) {
+                    // getImageData non disponibile → fallback sul tipo file
+                    hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
+                }
+                // Con trasparenza → PNG lossless (alpha preservato, nessuno sfondo bianco).
+                // Anche i PNG piccoli restano PNG (loghi/testi nitidi, come prima).
+                // Il resto (foto opache) → JPEG più leggero: nessuna regressione.
+                const keepPng = hasAlpha || (file.type === 'image/png' && file.size < 500_000);
+                const mime = keepPng ? 'image/png' : 'image/jpeg';
                 const out = canvas.toDataURL(mime, COMPRESSION_QUALITY);
                 const beforeKB = Math.round(file.size / 1024);
                 const afterKB = Math.round((out.length * 0.75) / 1024); // base64 ≈ 4/3 dei bytes
