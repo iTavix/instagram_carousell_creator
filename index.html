@@ -1217,6 +1217,18 @@ function stripCaptionFooter(text) {
 function decorateTitle(t) { const s = (t || '').trim(); return s ? `💥 ${s} 💥` : s; }
 function decorateSource(src) { return (src || '').replace(/Fonte:\s*theverge\.com/gi, 'From'); }
 
+// Ombra del testo copertina adattiva al colore scelto: per testo chiaro mantiene
+// l'ombra scura storica (nessun cambiamento per il bianco di default); per testo
+// scuro usa un alone chiaro, così il titolo resta leggibile anche sulle zone scure
+// dell'immagine (prima il nero su sfondo scuro spariva).
+function coverTextShadow(hex, soft) {
+    const h = (hex || '#ffffff').replace('#', '');
+    const r = parseInt(h.substr(0, 2) || 'ff', 16), g = parseInt(h.substr(2, 2) || 'ff', 16), b = parseInt(h.substr(4, 2) || 'ff', 16);
+    const isDarkText = (0.299 * r + 0.587 * g + 0.114 * b) < 128;
+    if (!isDarkText) return soft ? '0 2px 6px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.8)';
+    return soft ? '0 2px 6px rgba(255,255,255,0.7)' : '0 0 3px rgba(255,255,255,0.95),0 2px 10px rgba(255,255,255,0.65)';
+}
+
 // Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer).
 function buildCaptionFromCover() {
     const c = getCoverSlide();
@@ -1582,8 +1594,8 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:0 4px 12px rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:0 2px 6px rgba(0,0,0,0.6);${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
 
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
