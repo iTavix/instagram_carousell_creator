@@ -916,6 +916,82 @@ function compressImage(file) {
 
 function preloadImage(src) { if(!src)return Promise.resolve(); return new Promise(resolve => { const img = new Image(); img.onload=img.onerror=resolve; img.src=src; }); }
 
+// Attende font + tutte le immagini della slide (sfondo, fg non-video, brand) pronti.
+// Usato prima di ogni export per non catturare con asset ancora in caricamento.
+function preloadSlideAssets(slide) {
+    return Promise.all([
+        document.fonts.ready,
+        preloadImage(safeImageUrl(slide.image)),
+        ...(slide.fgImages || []).filter(f => f.type !== 'video').map(f => preloadImage(safeImageUrl(f.url))),
+        preloadImage(safeImageUrl(state.logoBase64)),
+        preloadImage(safeImageUrl(state.themeLogoBase64)),
+        preloadImage(safeImageUrl(state.newsBase64)),
+    ]);
+}
+
+// ════════ RIQUADRO BIANCO "STICKER" (segue l'alpha dell'immagine) ════════
+function loadImageEl(src) {
+    return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+}
+// Genera una versione dell'immagine con un contorno bianco che SEGUE la sagoma
+// (alpha) e non il bounding box: l'immagine viene disegnata molte volte attorno a
+// un cerchio per "dilatare" l'alpha, riempita di bianco, poi si ridisegna l'originale
+// sopra. Funziona sia in anteprima sia in export (è un'immagine vera, niente filtri CSS).
+async function makeFramedImage(srcUrl, frameWfrac) {
+    const img = await loadImageEl(srcUrl);
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    if (!w || !h) return srcUrl;
+    const t = Math.max(1, Math.round(Math.min(w, h) * frameWfrac));
+    const cw = w + t * 2, ch = h + t * 2;
+    const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+    const ctx = cv.getContext('2d');
+    const steps = 32;
+    for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * 2 * Math.PI;
+        ctx.drawImage(img, t + Math.cos(a) * t, t + Math.sin(a) * t, w, h);
+    }
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(img, t, t, w, h);
+    return cv.toDataURL('image/png');
+}
+// Cache delle immagini "incorniciate" tenuta FUORI dallo stato (per id fg), così
+// i grandi data URL non finiscono negli snapshot undo né nella serializzazione.
+const framedCache = new Map(); // fg.id → { key, url }
+function getFramedUrl(fg) {
+    if (!fg || fg.type === 'video' || !fg.frame) return null;
+    const c = framedCache.get(fg.id);
+    return c ? c.url : null;
+}
+// Rigenera (se serve) l'immagine incorniciata per ogni fg-immagine col riquadro
+// attivo. Ritorna true se qualcosa è cambiato (→ il chiamante ri-renderizza).
+async function ensureFramedImages(slide) {
+    if (!slide || !slide.fgImages) return false;
+    let changed = false;
+    await Promise.all(slide.fgImages.map(async fg => {
+        const isImg = fg.type !== 'video';
+        if (!fg.frame || !isImg) {
+            if (framedCache.has(fg.id)) { framedCache.delete(fg.id); changed = true; }
+            return;
+        }
+        const url = safeMediaUrl(fg.url);
+        if (!url) return;
+        const key = `${fg.frameW ?? 1}|${url.length}`;
+        const cached = framedCache.get(fg.id);
+        if (cached && cached.key === key) return;
+        try { const out = await makeFramedImage(url, (fg.frameW ?? 1) / 100); framedCache.set(fg.id, { key, url: out }); changed = true; }
+        catch (_) { framedCache.delete(fg.id); }
+    }));
+    return changed;
+}
+// Bake asincrono per la slide attiva + re-render quando pronto.
+async function refreshFrames() {
+    if (await ensureFramedImages(state.slides[state.activeIndex])) renderPreview();
+}
+const debouncedRefreshFrames = debounce(refreshFrames, 130);
+
 // ════════ FILTRI CSS (FEATURE #8) ════════
 function buildFilterCss(filters) {
     if (!filters) return '';
@@ -1332,7 +1408,7 @@ function _serializeSlide(s) {
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
         // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
-        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters })),
+        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW })),
         hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
     };
 }
@@ -1536,10 +1612,22 @@ function generateFgImagesHTML(slide, forPreview) {
             ? `class="preview-fg-drag" data-fg-id="${fg.id}" style="${baseStyle}cursor:grab;user-select:none;"`
             : `style="${baseStyle}"`;
         const handle = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
-        const mediaEl = (fg.type === 'video')
+        const isVideo = fg.type === 'video';
+        // Riquadro bianco. Per le IMMAGINI si usa la versione "baked" (contorno che
+        // segue la sagoma/alpha, generata in makeFramedImage); per i VIDEO, non
+        // bakeabili, si applica la cornice rettangolare con padding bianco.
+        const framedUrl = getFramedUrl(fg);
+        const mediaSrc = framedUrl || safeUrl;
+        const mediaEl = isVideo
             ? `<video src="${safeUrl}" ${forPreview ? 'autoplay loop muted playsinline' : 'muted playsinline preload="auto"'} style="width:100%;height:auto;display:block;${filterStyle}"></video>`
-            : `<img src="${safeUrl}" alt="" style="width:100%;height:auto;display:block;${filterStyle}" draggable="false">`;
-        return `<div ${attrs}>${handle}<div style="position:relative;width:100%;overflow:hidden;">${mediaEl}${vignetteHtml}</div></div>`;
+            : `<img src="${mediaSrc}" alt="" style="width:100%;height:auto;display:block;${filterStyle}" draggable="false">`;
+        const inner = `<div style="position:relative;width:100%;overflow:hidden;">${mediaEl}${vignetteHtml}</div>`;
+        let content = inner;
+        if (isVideo && fg.frame) {
+            const framePx = Math.max(0, Math.round(1080 * ((fg.size ?? 40) / 100) * (fg.frameW ?? 1) / 100));
+            content = `<div style="background:#ffffff;box-sizing:border-box;padding:${framePx}px;border-radius:${Math.round(framePx*0.9)}px;box-shadow:0 ${Math.round(framePx*0.5)}px ${Math.round(framePx*1.4)}px rgba(0,0,0,0.25);">${inner}</div>`;
+        }
+        return `<div ${attrs}>${handle}${content}</div>`;
     }).join('');
 }
 
@@ -1641,6 +1729,20 @@ function showSnapGuides(xHit, yHit, xVal, yVal) {
 }
 function clearSnapGuides() { const layer = DOM.previewWrapper.querySelector('.snap-guides-layer'); if (layer) layer.innerHTML = ''; }
 
+// Plumbing comune del drag: collega i listener di movimento/rilascio (mouse+touch),
+// li rimuove al rilascio ed esegue onEnd una sola volta. La matematica dello
+// spostamento resta nei singoli chiamanti (posizionamento elementi vs pan sfondo).
+function startPointerDrag(onMove, onEnd) {
+    const move = (ev) => onMove(ev);
+    const end = () => {
+        document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move);
+        document.removeEventListener('mouseup', end);   document.removeEventListener('touchend', end);
+        onEnd();
+    };
+    document.addEventListener('mousemove', move); document.addEventListener('touchmove', move, { passive:false });
+    document.addEventListener('mouseup', end);   document.addEventListener('touchend', end);
+}
+
 function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
     if(!el) return;
     el.addEventListener('mousedown', onStart);
@@ -1678,16 +1780,12 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
             targetObj[ox_key] = nx; targetObj[oy_key] = ny;
         }
 
-        function onEnd() {
+        startPointerDrag(onMove, () => {
             el.classList.remove('dragging');
             clearSnapGuides();
-            document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
-            document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd);
-            if(afterDrag) afterDrag();
+            if (afterDrag) afterDrag();
             trackChange(true); // snapshot al rilascio
-        }
-        document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive:false });
-        document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd);
+        });
     }
 }
 
@@ -1739,28 +1837,30 @@ function bindBgDrag() {
             s.bgX = nx; s.bgY = ny;
             img.style.transform = bgTransformStr(s.zoom || 1, nx, ny, slideH);
         };
-        const onEnd = () => {
+        startPointerDrag(onMove, () => {
             img.classList.remove('dragging');
-            document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
-            document.removeEventListener('mouseup', onEnd); document.removeEventListener('touchend', onEnd);
             trackChange(true); // snapshot al rilascio
-        };
-        document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive:false });
-        document.addEventListener('mouseup', onEnd); document.addEventListener('touchend', onEnd);
+        });
     };
     img.addEventListener('mousedown', onStart);
     img.addEventListener('touchstart', onStart, { passive:false });
 }
 
 // UI RENDERING
+// Applica un'immagine "cover/centrata" come sfondo di una thumbnail.
+function setThumbBg(el, url) {
+    if (!url) return;
+    el.style.backgroundImage = `url("${url}")`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+}
 function createThumbElement(slide, i, sizePx) {
     const thumb = document.createElement('div');
     thumb.className = `w-[${sizePx}px] h-[${sizePx}px] flex-shrink-0 rounded-[8px] cursor-pointer overflow-hidden border-2 transition-all ${i===state.activeIndex?'border-[#0071E3] scale-105 shadow-md':'border-gray-300 opacity-80'}`;
     thumb.style.width = sizePx+'px'; thumb.style.height = sizePx+'px';
     thumb.style.background = slide.bgMode==='gradient'?slideBg(slide):(slide.bgColor||'#333333');
     thumb.setAttribute('role', 'listitem'); thumb.setAttribute('tabindex', '0');
-    const safeUrl = safeImageUrl(slide.image);
-    if (safeUrl) { thumb.style.backgroundImage=`url("${safeUrl}")`; thumb.style.backgroundSize='cover'; thumb.style.backgroundPosition='center'; }
+    setThumbBg(thumb, safeImageUrl(slide.image));
     thumb.addEventListener('click', () => { state.activeIndex=i; render(); });
     return thumb;
 }
@@ -1832,6 +1932,13 @@ function renderEditor() {
                     <button class="text-gray-500 hover:text-black p-2 fg-filter-toggle bg-gray-50 rounded-lg transition-all" data-id="${fg.id}" title="Filtri" aria-label="Filtri immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
                     <button class="text-red-500 hover:text-red-700 p-2 fg-delete-btn bg-red-50 rounded-lg transition-all" data-id="${fg.id}" title="Rimuovi" aria-label="Rimuovi immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
                 </div>
+                <label class="flex items-center justify-between gap-2 cursor-pointer select-none pt-2 border-t border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Riquadro bianco</span>
+                    <div class="flex items-center gap-2">
+                        <input type="range" min="1" max="12" step="0.5" value="${fg.frameW ?? 1}" class="w-20 fg-frame-slider ${fg.frame ? '' : 'opacity-40 pointer-events-none'}" data-id="${fg.id}" aria-label="Spessore riquadro">
+                        <div class="toggle-track ${fg.frame ? 'on' : ''} fg-frame-toggle" data-id="${fg.id}" role="switch" aria-label="Attiva riquadro bianco"><div class="toggle-thumb"></div></div>
+                    </div>
+                </label>
                 <div class="fg-filter-panel hidden flex flex-col gap-2 pt-2 border-t border-gray-100">
                     <div class="flex flex-wrap gap-1">
                         <button class="preset-btn" data-preset="none" data-target="fg-${fg.id}">Nessuno</button>
@@ -1896,6 +2003,27 @@ function renderEditor() {
                 }
             });
             slider.addEventListener('change', () => snapshot());
+        });
+        // Riquadro bianco: toggle on/off
+        DOM.fgImagesList.querySelectorAll('.fg-frame-toggle').forEach(tr => {
+            tr.addEventListener('click', () => {
+                const f = slide.fgImages.find(x => x.id === tr.dataset.id);
+                if (!f) return;
+                f.frame = !f.frame;
+                if (f.frame && f.frameW == null) f.frameW = 1;
+                tr.classList.toggle('on', f.frame);
+                const sl = DOM.fgImagesList.querySelector(`.fg-frame-slider[data-id="${f.id}"]`);
+                if (sl) { sl.classList.toggle('opacity-40', !f.frame); sl.classList.toggle('pointer-events-none', !f.frame); }
+                refreshFrames(); trackChange(true);
+            });
+        });
+        // Riquadro bianco: spessore
+        DOM.fgImagesList.querySelectorAll('.fg-frame-slider').forEach(sl => {
+            sl.addEventListener('input', e => {
+                const f = slide.fgImages.find(x => x.id === e.target.dataset.id);
+                if (f) { f.frameW = parseFloat(e.target.value); debouncedRefreshFrames(); saveState(); }
+            });
+            sl.addEventListener('change', () => snapshot());
         });
         DOM.fgImagesList.querySelectorAll('.fg-delete-btn').forEach(btn => {
             btn.addEventListener('click', async e => {
@@ -2023,7 +2151,7 @@ function renderMockup() {
     DOM.mockupPreviewContainer.style.transform = `scale(${scale})`;
 }
 
-function render() { applyModeLayout(); renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); }
+function render() { applyModeLayout(); renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); refreshFrames(); }
 
 // ════════ MODALITÀ: Carosello (1080×1350) / Storia (1080×1920) ════════
 function applyModeLayout() {
@@ -2074,15 +2202,10 @@ function loadHtml2canvas() {
 // EXPORT
 async function renderSlideToFile(slide, index, fileName) {
     const h2c = await loadHtml2canvas();
-    // FIX PERFORMANCE #2: assicura font + immagine pronti prima di catturare
-    await Promise.all([document.fonts.ready, preloadImage(safeImageUrl(slide.image))]);
-    // Preload anche FG e brand asset
-    await Promise.all([
-        ...(slide.fgImages || []).filter(f => f.type !== 'video').map(f => preloadImage(safeImageUrl(f.url))),
-        preloadImage(safeImageUrl(state.logoBase64)),
-        preloadImage(safeImageUrl(state.themeLogoBase64)),
-        preloadImage(safeImageUrl(state.newsBase64)),
-    ]);
+    // FIX PERFORMANCE #2: assicura font + tutte le immagini pronti prima di catturare
+    await preloadSlideAssets(slide);
+    await ensureFramedImages(slide);
+    await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
     const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(slide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
     // Le storie hanno un nome file dedicato
@@ -2188,14 +2311,9 @@ function pickVideoMime() {
 async function renderSlideVideoToFile(slide, index, baseName) {
     if (!window.MediaRecorder) throw new Error('MediaRecorder non supportato');
     const h2c = await loadHtml2canvas();
-    await Promise.all([
-        document.fonts.ready,
-        preloadImage(safeImageUrl(slide.image)),
-        ...(slide.fgImages || []).filter(f => f.type !== 'video').map(f => preloadImage(safeImageUrl(f.url))),
-        preloadImage(safeImageUrl(state.logoBase64)),
-        preloadImage(safeImageUrl(state.themeLogoBase64)),
-        preloadImage(safeImageUrl(state.newsBase64)),
-    ]);
+    await preloadSlideAssets(slide);
+    await ensureFramedImages(slide);
+    await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
     const SLIDE_H = slide.isStory ? 1920 : 1350;
     const wrap = document.createElement('div');
     wrap.innerHTML = generateSlideHTML(slide, index, false);
@@ -2515,7 +2633,7 @@ function renderPopupControls() {
     const popOvFont = document.getElementById('pop-ov-font');
     if (popOvFont && ov) popOvFont.addEventListener('change', e => { ov.font = e.target.value; trackChange(true); renderPreview(); DOM.overlayFont.value = e.target.value; });
     const popOvColor = document.getElementById('pop-ov-color');
-    if (popOvColor && ov) popOvColor.addEventListener('input', e => { ov.color = e.target.value; saveState(); renderPreview(); DOM.overlayColor.value = e.target.value; DOM.overlayColorHex.textContent = e.target.value.toUpperCase(); });
+    if (ov) bindColorInput(popOvColor, DOM.overlayColorHex, v => { ov.color = v; DOM.overlayColor.value = v; saveState(); renderPreview(); });
     document.querySelectorAll('.pop-ov-align').forEach(b => b.addEventListener('click', () => {
         if (!ov) return;
         ov.align = b.dataset.align;
@@ -2557,15 +2675,22 @@ function setupDropzone(el, onFile, accept = 'image/') {
 }
 
 // BG upload (sfondo) — con compressione
-async function handleBgUpload(file) {
+// Comprime il file, esegue `apply(dataUrl)` (assegnazione + persistenza specifica),
+// poi snapshot + render. Gli errori di compressione mostrano già un toast → assorbiti.
+async function withCompressedImage(file, apply) {
     try {
         const b = await compressImage(file);
+        await apply(b);
+        trackChange(true); render();
+    } catch (e) { /* toast già mostrato in compressImage */ }
+}
+async function handleBgUpload(file) {
+    await withCompressedImage(file, async (b) => {
         const s = state.slides[state.activeIndex];
         s.image = b;
         try { await idbSet(s.id, b); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
         DOM.bgUpload.value = '';
-        trackChange(true); render();
-    } catch (e) { /* toast già mostrato in compressImage */ }
+    });
 }
 DOM.bgUpload.addEventListener('change', e => { if (e.target.files[0]) handleBgUpload(e.target.files[0]); });
 setupDropzone(DOM.bgUploadLabel, handleBgUpload);
@@ -2573,15 +2698,13 @@ setupDropzone(DOM.previewWrapper, handleBgUpload);
 
 // FG upload (immagine in primo piano) — con compressione + filters di default
 async function handleFgUpload(file) {
-    try {
-        const b = await compressImage(file);
+    await withCompressedImage(file, async (b) => {
         const s = state.slides[state.activeIndex];
         if (!s.fgImages) s.fgImages = [];
         s.fgImages.push({ id: generateId(), type: 'image', url: b, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
         await saveFgsToIDB(s);
         DOM.fgImageUpload.value = '';
-        trackChange(true); render();
-    } catch (e) { /* toast già mostrato */ }
+    });
 }
 DOM.fgImageUpload.addEventListener('change', e => { if (e.target.files[0]) handleFgUpload(e.target.files[0]); });
 setupDropzone(DOM.fgImageUploadLabel, handleFgUpload);
@@ -2610,12 +2733,10 @@ setupDropzone(DOM.fgVideoUploadLabel, handleVideoUpload, 'video/');
 // Nota: il badge News/MOC NON passa di qui (vedi insertNewsBadge): viene incorporato
 // a piena risoluzione senza ricompressione.
 async function handleBrandUpload(file, kind) {
-    try {
-        const b = await compressImage(file);
+    await withCompressedImage(file, (b) => {
         if (kind === 'logo')      { state.logoBase64 = b;      lsSet(LS.logo, b); }
         if (kind === 'themeLogo') { state.themeLogoBase64 = b; lsSet(LS.themeLogo, b); }
-        trackChange(true); render();
-    } catch (e) {}
+    });
 }
 DOM.logoUpload.addEventListener('change',      e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'logo'); });
 DOM.themeLogoUpload.addEventListener('change', e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'themeLogo'); });
@@ -2696,8 +2817,7 @@ function updateActiveThumb() {
             t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
         } else {
             t.style.background = slide.bgMode === 'gradient' ? slideBg(slide) : (slide.bgColor || '#333333');
-            const safeUrl = safeImageUrl(slide.image);
-            if (safeUrl) { t.style.backgroundImage = `url("${safeUrl}")`; t.style.backgroundSize = 'cover'; t.style.backgroundPosition = 'center'; }
+            setThumbBg(t, safeImageUrl(slide.image));
         }
     });
 }
@@ -2753,6 +2873,16 @@ DOM.toggleCoverLayout.addEventListener('change', e => {
     DOM.coverFields.style.display = e.target.checked?'flex':'none';
     trackChange(true); renderPreview();
 });
+// Collega un <input type="color"> a una label hex (aggiornata in MAIUSCOLO) + un
+// callback di applicazione che riceve il nuovo valore.
+function bindColorInput(input, hexEl, apply) {
+    if (!input) return;
+    input.addEventListener('input', e => {
+        const v = e.target.value;
+        if (hexEl) hexEl.textContent = v.toUpperCase();
+        apply(v);
+    });
+}
 function bindCoverFlagToggle(track, input, label, key) {
     track.addEventListener('click', () => input.click());
     input.addEventListener('change', e => {
@@ -2771,7 +2901,7 @@ const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCo
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
 DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreviewSave(); });
-DOM.inputCoverColor.addEventListener('input', e => { state.slides[state.activeIndex].coverTextColor=e.target.value; DOM.coverColorHex.textContent=e.target.value.toUpperCase(); renderPreview(); trackChange(); });
+bindColorInput(DOM.inputCoverColor, DOM.coverColorHex, v => { state.slides[state.activeIndex].coverTextColor=v; renderPreview(); trackChange(); });
 
 // ════════ CAPTION DEL POST IG ════════
 if (DOM.inputCaption) {
@@ -2822,7 +2952,7 @@ DOM.overlayTitleInput.addEventListener('input', e => { ensureOverlay().title=e.t
 DOM.overlayBodyInput.addEventListener('input', e => { ensureOverlay().body=e.target.value; debouncedPreviewSave(); });
 DOM.overlayTitleSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().titleSize=v; DOM.overlayTitleSizeVal.textContent=v+'px'; renderPreview(); trackChange(); });
 DOM.overlayBodySize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); ensureOverlay().bodySize=v; DOM.overlayBodySizeVal.textContent=v+'px'; renderPreview(); trackChange(); });
-DOM.overlayColor.addEventListener('input', e => { ensureOverlay().color=e.target.value; DOM.overlayColorHex.textContent=e.target.value.toUpperCase(); renderPreview(); trackChange(); });
+bindColorInput(DOM.overlayColor, DOM.overlayColorHex, v => { ensureOverlay().color=v; renderPreview(); trackChange(); });
 DOM.alignBtns.forEach(btn => btn.addEventListener('click', () => { ensureOverlay().align=btn.dataset.align; DOM.alignBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); trackChange(true); renderPreview(); }));
 
 DOM.mockupToggleTrack.addEventListener('click', () => DOM.toggleMockup.click());
