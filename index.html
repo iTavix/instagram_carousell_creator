@@ -452,6 +452,7 @@
                 <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                 <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
             </div>
+            <button id="btn-bg-removebg" style="display:none;" class="w-full py-2 rounded-lg border border-gray-300 bg-white text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all disabled:opacity-50 disabled:pointer-events-none">✂️ Rimuovi sfondo dall'immagine (AI)</button>
 
             <!-- Sfondo controlli -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -992,6 +993,98 @@ async function refreshFrames() {
 }
 const debouncedRefreshFrames = debounce(refreshFrames, 130);
 
+// ════════ RIMOZIONE SFONDO AI (in-browser, lazy da CDN) ════════
+// @imgly/background-removal caricata on-demand (stesso pattern di loadHtml2canvas).
+// Il modello ONNX (~40MB) viene scaricato al primo utilizzo e poi cachato dal browser;
+// l'elaborazione avviene interamente in locale (nessuna immagine lascia il dispositivo).
+const BGREMOVE_LIB_URL    = 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm';
+const BGREMOVE_PUBLIC_URL = 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/';
+let _bgRemovalLib = null;
+function loadBgRemoval() {
+    if (_bgRemovalLib) return _bgRemovalLib;
+    _bgRemovalLib = import(BGREMOVE_LIB_URL).catch(err => { _bgRemovalLib = null; throw err; });
+    return _bgRemovalLib;
+}
+function blobToDataUrl(blob) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+// Originali pre-scontorno tenuti FUORI dallo stato (stesso pattern di framedCache):
+// non gonfiano gli snapshot undo né il localStorage. Persistiti in IndexedDB
+// (nel payload _fgs per le immagini fg, in chiave dedicata _bgorig per lo sfondo).
+const bgOriginals = new Map();   // fg.id / slide.id → dataURL originale
+const bgRemovalBusy = new Set(); // id con rimozione in corso (disabilita i bottoni)
+let _bgrModelWarm = false;
+async function removeImageBackground(srcUrl) {
+    const lib = await loadBgRemoval();
+    if (!_bgrModelWarm) toast('Primo utilizzo: scarico il modello AI (~40MB), può volerci un po\'…', 'info', 8000);
+    const blob = await (await fetch(srcUrl)).blob();
+    const out = await lib.removeBackground(blob, { publicPath: BGREMOVE_PUBLIC_URL, output: { format: 'image/png' } });
+    _bgrModelWarm = true;
+    return blobToDataUrl(out);
+}
+// Toggle scontorno per un'immagine in primo piano (i video non sono processabili).
+async function toggleFgBgRemoval(slide, fg) {
+    if (!fg || fg.type === 'video' || bgRemovalBusy.has(fg.id)) return;
+    if (fg.bgRemoved) {
+        const orig = bgOriginals.get(fg.id);
+        if (orig) fg.url = orig;
+        fg.bgRemoved = false;
+        bgOriginals.delete(fg.id);
+        framedCache.delete(fg.id);
+        await saveFgsToIDB(slide);
+        trackChange(true); render();
+        toast('Sfondo originale ripristinato', 'success', 2000);
+        return;
+    }
+    const src = safeMediaUrl(fg.url);
+    if (!src) return;
+    bgRemovalBusy.add(fg.id); render();
+    try {
+        const cut = await removeImageBackground(src);
+        bgOriginals.set(fg.id, fg.url);
+        fg.url = cut;
+        fg.bgRemoved = true;
+        framedCache.delete(fg.id); // il riquadro bianco va rigenerato sulla nuova sagoma
+        await saveFgsToIDB(slide);
+        trackChange(true);
+        toast('Sfondo rimosso ✂️', 'success', 2000);
+    } catch (e) {
+        console.warn('[removeBackground fg]', e);
+        toast('Rimozione sfondo non riuscita (al primo utilizzo serve la connessione)', 'error');
+    } finally { bgRemovalBusy.delete(fg.id); render(); }
+}
+// Toggle scontorno per l'immagine di SFONDO della slide: rimosso lo sfondo,
+// sotto restano visibili il colore piatto / gradiente della slide.
+async function toggleSlideBgRemoval(slide) {
+    if (!slide || bgRemovalBusy.has(slide.id)) return;
+    if (slide.bgRemoved) {
+        const orig = bgOriginals.get(slide.id);
+        if (orig) { slide.image = orig; try { await idbSet(slide.id, orig); } catch (_) {} }
+        slide.bgRemoved = false;
+        bgOriginals.delete(slide.id);
+        try { await idbDelete(slide.id + '_bgorig'); } catch (_) {}
+        trackChange(true); render();
+        toast('Sfondo originale ripristinato', 'success', 2000);
+        return;
+    }
+    const src = safeImageUrl(slide.image);
+    if (!src) return;
+    bgRemovalBusy.add(slide.id); render();
+    try {
+        const cut = await removeImageBackground(src);
+        bgOriginals.set(slide.id, slide.image);
+        try { await idbSet(slide.id + '_bgorig', slide.image); } catch (_) {}
+        slide.image = cut;
+        slide.bgRemoved = true;
+        try { await idbSet(slide.id, cut); } catch (_) {}
+        trackChange(true);
+        toast('Sfondo rimosso: sotto vedi colore/gradiente della slide ✂️', 'success', 3000);
+    } catch (e) {
+        console.warn('[removeBackground bg]', e);
+        toast('Rimozione sfondo non riuscita (al primo utilizzo serve la connessione)', 'error');
+    } finally { bgRemovalBusy.delete(slide.id); render(); }
+}
+
 // ════════ FILTRI CSS (FEATURE #8) ════════
 function buildFilterCss(filters) {
     if (!filters) return '';
@@ -1105,6 +1198,7 @@ const DOM = {
     btnDuplicateSlide:     document.getElementById('btn-duplicate-slide'),
     bgUpload:              document.getElementById('bg-upload'),
     bgUploadLabel:         document.getElementById('bg-upload-label'),
+    btnBgRemoveBg:         document.getElementById('btn-bg-removebg'),
     inputBgColor:          document.getElementById('input-bg-color'),
     bgModeSolid:           document.getElementById('bg-mode-solid'),
     bgModeGradient:        document.getElementById('bg-mode-gradient'),
@@ -1404,11 +1498,11 @@ function _serializeSlide(s) {
         coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
         title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
-        zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode,
+        zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
         // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
-        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW })),
+        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW, bgRemoved: !!f.bgRemoved })),
         hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
     };
 }
@@ -1481,12 +1575,16 @@ async function loadImagesFromIDB() {
     const allSlides = [...state.carouselSlides, ...state.storySlides];
     await Promise.all(allSlides.map(async slide => {
         try {
-            const [bg, fgs, legacyFg] = await Promise.all([
+            const [bg, fgs, legacyFg, bgOrig] = await Promise.all([
                 idbGet(slide.id),
                 idbGet(slide.id + '_fgs'),
                 idbGet(slide.id + '_fg'),
+                idbGet(slide.id + '_bgorig'),
             ]);
             if (bg) slide.image = bg;
+            // Originale pre-scontorno dello sfondo: se manca, il flag è stantio
+            if (bgOrig) bgOriginals.set(slide.id, bgOrig);
+            else if (slide.bgRemoved) slide.bgRemoved = false;
             if (fgs && Array.isArray(fgs)) {
                 fgs.forEach(savedFg => {
                     if (savedFg.type === 'video' && savedFg.blob) {
@@ -1497,9 +1595,13 @@ async function loadImagesFromIDB() {
                         if (target) { target.url = objUrl; target.type = 'video'; }
                         else slide.fgImages.push({ id: savedFg.id, type: 'video', url: objUrl, x: 50, y: 50, size: 60, filters: { ...DEFAULT_FILTERS } });
                     } else if (savedFg.url) {
+                        if (savedFg.originalUrl) bgOriginals.set(savedFg.id, savedFg.originalUrl);
                         const target = slide.fgImages.find(f => f.id === savedFg.id);
-                        if (target) { target.url = savedFg.url; target.type = target.type || 'image'; }
-                        else slide.fgImages.push({ id: savedFg.id, type: 'image', url: savedFg.url, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+                        if (target) {
+                            target.url = savedFg.url; target.type = target.type || 'image';
+                            if (target.bgRemoved && !savedFg.originalUrl) target.bgRemoved = false;
+                        }
+                        else slide.fgImages.push({ id: savedFg.id, type: 'image', url: savedFg.url, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS }, bgRemoved: !!savedFg.originalUrl });
                     }
                 });
             }
@@ -1518,7 +1620,7 @@ async function saveFgsToIDB(slide) {
     try {
         const payload = (slide.fgImages || []).map(f => f.type === 'video'
             ? { id: f.id, type: 'video', blob: videoBlobs.get(f.id) || null }
-            : { id: f.id, type: 'image', url: f.url });
+            : { id: f.id, type: 'image', url: f.url, originalUrl: bgOriginals.get(f.id) || null });
         await idbSet(slide.id + '_fgs', payload);
     } catch (e) { toast('Errore salvataggio media in IndexedDB', 'warning'); }
 }
@@ -1913,6 +2015,12 @@ function renderEditor() {
     });
     DOM.inputZoom.value = slide.zoom||1; DOM.zoomValue.textContent = (slide.zoom||1).toFixed(2)+'x';
     DOM.bgUploadLabel.textContent = slide.image ? '✓ Immagine caricata — clicca per cambiarla' : 'Carica Immagine Sfondo';
+    // Bottone rimozione sfondo AI (visibile solo con un'immagine di sfondo caricata)
+    DOM.btnBgRemoveBg.style.display = slide.image ? 'block' : 'none';
+    const bgBusy = bgRemovalBusy.has(slide.id);
+    DOM.btnBgRemoveBg.disabled = bgBusy;
+    DOM.btnBgRemoveBg.textContent = bgBusy ? '⏳ Rimozione sfondo in corso…'
+        : (slide.bgRemoved ? '↩️ Ripristina sfondo immagine' : '✂️ Rimuovi sfondo dall\'immagine (AI)');
 
     // FG Images list
     DOM.fgImagesList.innerHTML = '';
@@ -1939,6 +2047,7 @@ function renderEditor() {
                         <div class="toggle-track ${fg.frame ? 'on' : ''} fg-frame-toggle" data-id="${fg.id}" role="switch" aria-label="Attiva riquadro bianco"><div class="toggle-thumb"></div></div>
                     </div>
                 </label>
+                ${fg.type !== 'video' ? `<button class="fg-removebg-btn w-full py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${bgRemovalBusy.has(fg.id) ? 'opacity-50 pointer-events-none border-gray-200 bg-gray-50 text-gray-400' : (fg.bgRemoved ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100')}" data-id="${fg.id}">${bgRemovalBusy.has(fg.id) ? '⏳ Rimozione in corso…' : (fg.bgRemoved ? '↩️ Ripristina sfondo' : '✂️ Rimuovi sfondo (AI)')}</button>` : ''}
                 <div class="fg-filter-panel hidden flex flex-col gap-2 pt-2 border-t border-gray-100">
                     <div class="flex flex-wrap gap-1">
                         <button class="preset-btn" data-preset="none" data-target="fg-${fg.id}">Nessuno</button>
@@ -2025,11 +2134,20 @@ function renderEditor() {
             });
             sl.addEventListener('change', () => snapshot());
         });
+        // Rimozione sfondo AI per singola immagine fg
+        DOM.fgImagesList.querySelectorAll('.fg-removebg-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const f = slide.fgImages.find(x => x.id === e.currentTarget.dataset.id);
+                if (f) toggleFgBgRemoval(slide, f);
+            });
+        });
         DOM.fgImagesList.querySelectorAll('.fg-delete-btn').forEach(btn => {
             btn.addEventListener('click', async e => {
                 const id = e.currentTarget.dataset.id;
                 slide.fgImages = slide.fgImages.filter(x => x.id !== id);
                 videoBlobs.delete(id);
+                bgOriginals.delete(id);
+                framedCache.delete(id);
                 await saveFgsToIDB(slide);
                 trackChange(true); render();
             });
@@ -2688,11 +2806,16 @@ async function handleBgUpload(file) {
     await withCompressedImage(file, async (b) => {
         const s = state.slides[state.activeIndex];
         s.image = b;
+        // Nuova immagine → l'eventuale originale pre-scontorno non è più valido
+        s.bgRemoved = false;
+        bgOriginals.delete(s.id);
+        try { await idbDelete(s.id + '_bgorig'); } catch (e) {}
         try { await idbSet(s.id, b); } catch (e) { toast('Errore salvataggio in IndexedDB', 'warning'); }
         DOM.bgUpload.value = '';
     });
 }
 DOM.bgUpload.addEventListener('change', e => { if (e.target.files[0]) handleBgUpload(e.target.files[0]); });
+DOM.btnBgRemoveBg.addEventListener('click', () => toggleSlideBgRemoval(state.slides[state.activeIndex]));
 setupDropzone(DOM.bgUploadLabel, handleBgUpload);
 setupDropzone(DOM.previewWrapper, handleBgUpload);
 
@@ -3069,9 +3192,10 @@ DOM.btnResetSlide.addEventListener('click', () => {
     openConfirm('Reset slide attiva?', 'Tutti i dati di questa slide verranno azzerati (immagini, testi, filtri).', async () => {
         const cur = state.slides[state.activeIndex];
         // Pulisci IDB della slide
-        try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); } catch (e) {}
-        // Libera eventuali video associati
-        (cur.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); });
+        try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); await idbDelete(cur.id + '_bgorig'); } catch (e) {}
+        // Libera eventuali video associati + cache scontorno/cornici
+        bgOriginals.delete(cur.id);
+        (cur.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); bgOriginals.delete(f.id); framedCache.delete(f.id); });
         // Sostituisci con default mantenendo l'id e il formato (storia o slide)
         state.slides[state.activeIndex] = makeDefaultSlide(cur.id, { isStory: cur.isStory });
         trackChange(true); render();
@@ -3084,9 +3208,11 @@ async function deleteAllImages() {
     const all = [...state.carouselSlides, ...state.storySlides];
     for (const sl of all) {
         sl.image = null;
-        (sl.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); });
+        sl.bgRemoved = false;
+        bgOriginals.delete(sl.id);
+        (sl.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); bgOriginals.delete(f.id); framedCache.delete(f.id); });
         sl.fgImages = [];
-        try { await idbDelete(sl.id); await idbDelete(sl.id + '_fgs'); } catch (e) {}
+        try { await idbDelete(sl.id); await idbDelete(sl.id + '_fgs'); await idbDelete(sl.id + '_bgorig'); } catch (e) {}
     }
     trackChange(true); render();
     toast('Immagini cancellate da tutte le slide', 'success');
