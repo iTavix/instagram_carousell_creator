@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>IG Creator</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%2270%22 y=%2220%22 rx=%2210%22 fill=%22%236d4c41%22/><rect width=%2290%22 height=%2260%22 x=%225%22 y=%2225%22 rx=%225%22 fill=%22%23212121%22/><circle cx=%2250%22 cy=%2255%22 r=%2225%22 fill=%22%23111%22/><path stroke=%22%23555%22 stroke-width=%224%22 d=%22M30 0l20 20M70 0L50 20%22/><circle cx=%2280%22 cy=%2240%22 r=%224%22 fill=%22%23f44336%22/><circle cx=%2280%22 cy=%2255%22 r=%224%22 fill=%22%23ccc%22/><circle cx=%2280%22 cy=%2270%22 r=%224%22 fill=%22%23ccc%22/></svg>">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Carousel App">
@@ -102,7 +102,7 @@
             .mobile-thumb-strip { order: 4; display: flex !important; gap: 6px; overflow-x: auto; padding: 6px; }
             .mobile-thumb-strip > * { flex-shrink: 0; }
             #mockup-wrapper { order: 5; max-width: 240px !important; }
-            .right-panel footer { order: 6; padding: 2px 0 !important; }
+            #app-footer { padding: 2px 0 !important; }
             #caption-card { display: none; } /* accessibile dal tab 📝 Post */
 
             /* Anteprima protagonista: sfrutta tutta l'altezza utile (4:5 e 9:16) */
@@ -151,6 +151,9 @@
         /* DESKTOP ONLY */
         @media (min-width: 768px) {
             .mobile-thumb-strip { display: none !important; }
+            /* Footer a tutta larghezza sotto entrambe le colonne (body è flex-row) */
+            body { flex-wrap: wrap; }
+            #app-footer { flex-basis: 100%; }
         }
 
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
@@ -717,8 +720,10 @@
         </div>
     </div>
 
-    <footer class="text-center text-xs text-gray-400 font-medium py-4">by iTavix 2026</footer>
 </div>
+
+<!-- Footer a livello pagina: sotto entrambe le colonne su desktop, in fondo a tutto su mobile -->
+<footer id="app-footer" class="w-full text-center text-xs text-gray-400 font-medium py-4">by iTavix 2026</footer>
 
 <div id="export-nodes" aria-hidden="true"></div>
 
