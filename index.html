@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>IG Creator</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%2270%22 y=%2220%22 rx=%2210%22 fill=%22%236d4c41%22/><rect width=%2290%22 height=%2260%22 x=%225%22 y=%2225%22 rx=%225%22 fill=%22%23212121%22/><circle cx=%2250%22 cy=%2255%22 r=%2225%22 fill=%22%23111%22/><path stroke=%22%23555%22 stroke-width=%224%22 d=%22M30 0l20 20M70 0L50 20%22/><circle cx=%2280%22 cy=%2240%22 r=%224%22 fill=%22%23f44336%22/><circle cx=%2280%22 cy=%2255%22 r=%224%22 fill=%22%23ccc%22/><circle cx=%2280%22 cy=%2270%22 r=%224%22 fill=%22%23ccc%22/></svg>">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
@@ -74,39 +74,79 @@
         details.accordion .summary-meta { font-size: 11px; color: #9CA3AF; font-weight: 500; margin-left: 8px; }
 
         .mobile-thumb-strip { display: none; }
+        #mobile-tabbar, #mobile-sheet { display: none; }
 
-        /* MOBILE ONLY (< 768px) */
+        /* MOBILE ONLY (< 768px) — layout "editor-first": anteprima protagonista,
+           controlli nella bottom sheet richiamata dalla tab bar.
+           NOTA: !important necessario dove la regola compete con le utility
+           Tailwind presenti sugli stessi elementi (il CDN inietta il suo CSS
+           dopo questo <style> e a parità di specificità vincerebbe lui). */
         @media (max-width: 767px) {
-            body { flex-direction: column !important; padding: 0 !important; gap: 0 !important; }
-            .left-col { display: contents; }
-            .header-group { order: 1; width: 100%; padding: 16px 16px 0 16px; background: #F5F5F7; z-index: 101; }
-            .right-panel {
-                order: 2; position: sticky; top: 0; z-index: 100; background: #F5F5F7;
-                padding: 12px 16px 8px 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); gap: 8px !important;
-                max-height: 60vh;
-            }
-            .left-panel { order: 3; width: 100% !important; padding: 16px; gap: 12px !important; }
-            #preview-wrapper { max-width: 280px !important; max-height: 40vh; }
-            #mockup-wrapper { max-width: 240px !important; }
-            .preview-header { padding: 8px 12px !important; }
+            body { flex-direction: column !important; padding: 10px 12px calc(70px + env(safe-area-inset-bottom)) 12px !important; gap: 10px !important; }
+            .left-col { gap: 10px !important; }
+            .left-panel { display: none !important; } /* i controlli vivono nella bottom sheet */
+            .header-group { padding: 0 2px; }
+            .app-header h1 { font-size: 17px !important; }
+            .app-header p { display: none; }
+            .app-header img { height: 30px; }
+
+            .right-panel { width: 100%; gap: 10px !important; }
+            /* Ordine verticale: header anteprima → anteprima → strip miniature → resto */
+            .preview-header { order: 1; padding: 8px 10px !important; }
             .preview-header h2 { font-size: 14px !important; }
             .preview-header button { padding: 6px 12px !important; font-size: 13px; }
-            .mobile-thumb-strip { display: flex !important; gap: 6px; overflow-x: auto; padding: 4px 0; }
+            #export-progress-container { order: 2; }
+            #original-preview-host { order: 3; max-width: none !important; }
+            .mobile-thumb-strip { order: 4; display: flex !important; gap: 6px; overflow-x: auto; padding: 6px; }
             .mobile-thumb-strip > * { flex-shrink: 0; }
-            .app-header h1 { font-size: 18px !important; }
-            .app-header p { font-size: 11px !important; }
+            #mockup-wrapper { order: 5; max-width: 240px !important; }
+            .right-panel footer { order: 6; padding: 2px 0 !important; }
+            #caption-card { display: none; } /* accessibile dal tab 📝 Post */
+
+            /* Anteprima protagonista: sfrutta tutta l'altezza utile (4:5 e 9:16) */
+            #original-preview-host #preview-wrapper { max-width: min(100%, calc((100vh - 300px) * 0.8)) !important; }
+            #original-preview-host #preview-wrapper { max-width: min(100%, calc((100dvh - 300px) * 0.8)) !important; }
+            body.story-mode #original-preview-host #preview-wrapper { max-width: min(100%, calc((100dvh - 300px) * 0.5625)) !important; }
+
+            /* Tab bar fissa in basso */
+            #mobile-tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 5000;
+                background: #ffffff; border-top: 1px solid rgba(0,0,0,0.08);
+                padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) 8px; gap: 4px; }
+            #mobile-tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+                padding: 6px 2px; border-radius: 10px; font-size: 10px; font-weight: 600; color: #6E6E73; background: transparent; transition: all 0.15s; }
+            #mobile-tabbar button .t-ico { font-size: 18px; line-height: 1; }
+            #mobile-tabbar button.active { color: #0071E3; background: #E8F0FE; }
+            body.story-mode #mtab-slides { display: none; }
+
+            /* Bottom sheet coi controlli veri (nodi spostati, non duplicati) */
+            #mobile-sheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0;
+                bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 4999;
+                height: 45vh; height: 45dvh;
+                background: #ffffff; border-radius: 16px 16px 0 0;
+                box-shadow: 0 -8px 30px rgba(0,0,0,0.18);
+                transform: translateY(115%); transition: transform 0.25s ease, height 0.2s ease; }
+            #mobile-sheet.open { transform: translateY(0); }
+            #mobile-sheet.expanded { height: 80vh; height: 80dvh; }
+            #mobile-sheet-head { flex-shrink: 0; cursor: grab; touch-action: none; }
+            #mobile-sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: #D1D1D6; margin: 8px auto 6px auto; }
+            #mobile-sheet-host { flex: 1; overflow-y: auto; padding: 0 14px 14px 14px; touch-action: pan-y; }
+            #mobile-sheet-host details.accordion { border: none; box-shadow: none; border-radius: 0; background: transparent; }
+            #mobile-sheet-host details.accordion > summary { padding: 2px 0 12px 0; }
+            #mobile-sheet-host details.accordion > summary::after { display: none; }
+            #mobile-sheet-host details.accordion > .accordion-body { padding: 0 0 16px 0; }
+            #mobile-sheet-host #caption-card { display: flex !important; border: none !important; box-shadow: none !important; padding: 2px 0 16px 0 !important; }
+
+            /* Slider touch-friendly (thumb 24px, area tocco 30px) */
+            input[type="range"] { -webkit-appearance: none; appearance: none; height: 30px; background: transparent; }
+            input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #D1D1D6; }
+            input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #0071E3; margin-top: -10px; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+            input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: #D1D1D6; }
+            input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; border: none; border-radius: 50%; background: #0071E3; }
         }
 
         /* DESKTOP ONLY */
         @media (min-width: 768px) {
             .mobile-thumb-strip { display: none !important; }
-            #btn-popup-editor { display: none !important; }
-        }
-
-        /* Modal Preview Styles */
-        #popup-editor-modal #preview-wrapper {
-            max-width: min(95vw, 65vh) !important;
-            max-height: 100% !important;
         }
 
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
@@ -140,9 +180,13 @@
         body.dark-mode #mockup-wrapper svg { stroke: #EBEBF5 !important; }
         body.dark-mode #btn-export-single, body.dark-mode .align-btn:not(.active), body.dark-mode .grad-dir-btn:not(.active-dir) { background-color: #1C1C1E !important; color: #FFFFFF !important; border-color: #38383A !important; }
         body.dark-mode #btn-export-single:hover, body.dark-mode .align-btn:not(.active):hover, body.dark-mode .grad-dir-btn:not(.active-dir):hover { background-color: #2C2C2E !important; }
-        /* Popup editor dark mode fixes */
-        body.dark-mode #popup-editor-modal { background-color: #000000 !important; }
-        body.dark-mode #popup-controls { background-color: #1C1C1E !important; border-top-color: #38383A !important; }
+        /* Mobile tab bar + bottom sheet dark mode */
+        body.dark-mode #mobile-tabbar { background-color: #1C1C1E; border-top-color: #38383A; }
+        body.dark-mode #mobile-tabbar button { color: #EBEBF599; }
+        body.dark-mode #mobile-tabbar button.active { color: #0A84FF; background: #0A84FF22; }
+        body.dark-mode #mobile-sheet { background-color: #1C1C1E; }
+        body.dark-mode #mobile-sheet-grip { background: #48484A; }
+        body.dark-mode #mobile-sheet-head button { background-color: #2C2C2E !important; color: #EBEBF5 !important; }
 
         /* ════════════════ NEW v2 STYLES ════════════════ */
 
@@ -240,13 +284,16 @@
         </div>
     </div>
 
+    <!-- Switcher modalità: fuori dal left-panel perché su mobile deve restare
+         visibile anche quando il pannello controlli è nella bottom sheet -->
+    <div id="mode-switcher" role="tablist" aria-label="Modalità di creazione">
+        <button id="mode-carousel" class="mode-active" role="tab" aria-selected="true">▦ Carosello</button>
+        <button id="mode-story" role="tab" aria-selected="false">▭ Storia</button>
+    </div>
+
     <!-- Controlli -->
     <div class="left-panel w-full flex flex-col gap-6">
-        <div id="mode-switcher" role="tablist" aria-label="Modalità di creazione">
-            <button id="mode-carousel" class="mode-active" role="tab" aria-selected="true">▦ Carosello</button>
-            <button id="mode-story" role="tab" aria-selected="false">▭ Storia</button>
-        </div>
-        <details class="accordion" open>
+        <details class="accordion" open id="accordion-brand">
             <summary><span>Impostazioni Brand</span></summary>
             <div class="accordion-body flex flex-col gap-4">
                 <div>
@@ -291,7 +338,7 @@
             </div>
         </details>
 
-        <details class="accordion">
+        <details class="accordion" id="accordion-text">
             <summary><span>Testo sulla Slide</span></summary>
             <div class="accordion-body flex flex-col gap-4">
                 <p class="text-xs text-gray-500 -mt-2">Layout indipendenti, attivabili insieme o singolarmente</p>
@@ -435,7 +482,7 @@
             </div>
         </details>
 
-        <details class="accordion" open data-keep-open>
+        <details class="accordion" open data-keep-open id="accordion-edit">
             <summary>
                 <span id="editor-title">Modifica Slide 1</span>
                 <div class="flex gap-3 items-center" onclick="event.stopPropagation();">
@@ -571,10 +618,6 @@
             </label>
         </div>
         <div class="flex gap-2 items-center">
-            <!-- Tasto Pop-up Editor (Sostituisce il vecchio fullscreen per Mobile) -->
-            <button id="btn-popup-editor" class="p-2 text-[#0071E3] bg-blue-50 hover:bg-blue-100 rounded-full transition-all" aria-label="Modifica in Pop-up" title="Modifica in Pop-up (Mobile)">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-            </button>
             <button id="btn-export-single" class="bg-white border border-gray-200 text-gray-700 rounded-[980px] px-4 py-2 text-sm font-medium hover:bg-gray-100 transition-all disabled:opacity-60 disabled:cursor-not-allowed">↓ Singola</button>
             <button id="btn-export" class="bg-[#0071E3] text-white rounded-[980px] px-6 py-2 font-medium hover:bg-[#005bb5] transition-all disabled:opacity-60 disabled:cursor-not-allowed">Esporta</button>
         </div>
@@ -675,21 +718,27 @@
 
 <div id="export-nodes" aria-hidden="true"></div>
 
-<!-- MODALE: POP-UP EDITOR MOBILE -->
-<div id="popup-editor-modal" class="modal fixed inset-0 z-[10000] bg-[#F5F5F7] flex-col items-center justify-start">
-    <div class="w-full flex justify-between items-center bg-white p-4 shadow-sm z-20 flex-shrink-0">
-        <h3 class="font-bold text-lg">Modifica Layout</h3>
-        <button id="btn-close-popup" class="text-[#0071E3] font-medium px-4 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-all">Chiudi</button>
+<!-- MOBILE: bottom sheet + tab bar. La sheet NON duplica i controlli: i veri
+     nodi del pannello sinistro vengono spostati qui dentro al tocco di un tab
+     (stesso pattern di reparenting usato in passato per l'anteprima nel popup). -->
+<div id="mobile-sheet" aria-hidden="true">
+    <div id="mobile-sheet-head">
+        <div id="mobile-sheet-grip" aria-hidden="true"></div>
+        <div class="flex items-center justify-between w-full px-4 pb-2">
+            <span id="mobile-sheet-title" class="font-bold text-sm"></span>
+            <div class="flex items-center gap-2">
+                <button id="mobile-sheet-expand" class="p-2 rounded-full bg-gray-100 text-gray-600" aria-label="Espandi o riduci il pannello">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+                <button id="mobile-sheet-close" class="p-2 rounded-full bg-gray-100 text-gray-600" aria-label="Chiudi il pannello">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
     </div>
-    <!-- Area che ospiterà momentaneamente l'anteprima gigante -->
-    <div id="popup-preview-host" class="w-full flex items-center justify-center p-4 overflow-hidden relative" style="height: calc(100vh - 60px - 35vh);">
-        <!-- preview-wrapper injected here during edit mode -->
-    </div>
-    <!-- Controlli contestuali rigenerati dinamicamente -->
-    <div id="popup-controls" class="w-full bg-white border-t border-gray-200 p-4 overflow-y-auto flex flex-col gap-4 z-20 custom-scrollbar flex-shrink-0" style="height: 35vh; box-shadow: 0 -4px 16px rgba(0,0,0,0.05);">
-        <!-- Sliders injected dynamically -->
-    </div>
+    <div id="mobile-sheet-host" class="custom-scrollbar"></div>
 </div>
+<nav id="mobile-tabbar" aria-label="Sezioni editor"></nav>
 
 <!-- MODALE: GUIDA -->
 <div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
@@ -699,8 +748,8 @@
             <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
             <p><strong>2. Testo sulla Slide:</strong> Due layout indipendenti. Trascinali nell'anteprima per riposizionarli.</p>
             <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione).</p>
-            <p><strong>4. Immagini in Primo Piano Multiple:</strong> Carica quante immagini vuoi sopra lo sfondo. Trascinale nell'anteprima per spostarle, regola la loro dimensione dai pannelli o tramite la Modifica in Pop-up.</p>
-            <p><strong>5. Modifica in Pop-up (Mobile):</strong> Usa il tasto con le freccette blu nell'area Anteprima per aprire una vista a schermo intero confortevole dove trascinare le immagini e regolarne la grandezza al volo.</p>
+            <p><strong>4. Immagini in Primo Piano Multiple:</strong> Carica quante immagini vuoi sopra lo sfondo. Trascinale nell'anteprima per spostarle e regola la loro dimensione dal pannello "Modifica Slide".</p>
+            <p><strong>5. Su Mobile:</strong> L'anteprima occupa tutto lo schermo; i controlli si aprono dalla barra in basso (Slide, Testi, Slides, Brand, Post). Trascina la maniglia del pannello per allargarlo o chiuderlo, e usa due dita sullo sfondo per zoomare.</p>
             <p><strong>6. Mockup Instagram:</strong> Attiva "Feed" per vedere la slide nel contesto di un post.</p>
             <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
             <p><strong>8. Duplica:</strong> Il tasto "⧉" copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
@@ -1311,12 +1360,6 @@ const DOM = {
     mockupToggleTrack:     document.getElementById('mockup-toggle-track'),
     mockupToggleLabel:     document.getElementById('mockup-toggle-label'),
     
-    // Popup Editor
-    popupEditorModal:      document.getElementById('popup-editor-modal'),
-    popupPreviewHost:      document.getElementById('popup-preview-host'),
-    popupControls:         document.getElementById('popup-controls'),
-    btnPopupEditor:        document.getElementById('btn-popup-editor'),
-    btnClosePopup:         document.getElementById('btn-close-popup'),
 
     exportNodesContainer:  document.getElementById('export-nodes'),
     slideCountTitle:       document.getElementById('slide-count-title'),
@@ -1970,8 +2013,37 @@ function bindBgDrag() {
     img.style.cursor = 'grab';
     img.classList.add('preview-bg-drag');
 
+    // Pinch-to-zoom (due dita) sullo sfondo: aggiorna slide.zoom con feedback
+    // live (applyLiveZoom, niente rebuild) e commit al rilascio.
+    const startPinch = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const dist = (ts) => Math.hypot(ts[0].clientX - ts[1].clientX, ts[0].clientY - ts[1].clientY);
+        const d0 = dist(e.touches);
+        const z0 = s.zoom || 1;
+        if (!d0) return;
+        const onMove = (ev) => {
+            if (!ev.touches || ev.touches.length < 2) return;
+            if (ev.cancelable) ev.preventDefault();
+            const v = clampZoom(z0 * dist(ev.touches) / d0);
+            s.zoom = v;
+            applyLiveZoom(v);
+            DOM.inputZoom.value = v; DOM.zoomValue.textContent = v.toFixed(2) + 'x';
+        };
+        const onEnd = (ev) => {
+            if (ev.touches && ev.touches.length >= 2) return;
+            window.removeEventListener('touchmove', onMove);
+            window.removeEventListener('touchend', onEnd);
+            window.removeEventListener('touchcancel', onEnd);
+            renderPreview(); trackChange(true);
+        };
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
+    };
+
     const onStart = (e) => {
         if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
+        if (e.touches && e.touches.length >= 2) return startPinch(e);
         e.preventDefault(); e.stopPropagation();
         img.classList.add('dragging');
         const rect = DOM.previewWrapper.getBoundingClientRect();
@@ -1981,6 +2053,7 @@ function bindBgDrag() {
         const slideH = s.isStory ? 1920 : 1350;
 
         const onMove = (ev) => {
+            if (ev.touches && ev.touches.length >= 2) return; // pinch in corso
             const t = ev.touches ? ev.touches[0] : ev;
             if (ev.cancelable) ev.preventDefault();
             let nx = baseX + (t.clientX - startX) / rect.width  * 100;
@@ -2327,7 +2400,7 @@ function renderMockup() {
     DOM.mockupPreviewContainer.style.transform = `scale(${scale})`;
 }
 
-function render() { applyModeLayout(); renderThumbnails(); renderEditor(); renderPreview(); if(DOM.popupEditorModal.classList.contains('active')) renderPopupControls(); refreshFrames(); }
+function render() { applyModeLayout(); renderThumbnails(); renderEditor(); renderPreview(); refreshFrames(); }
 
 // ════════ MODALITÀ: Carosello (1080×1350) / Storia (1080×1920) ════════
 function applyModeLayout() {
@@ -2352,6 +2425,8 @@ function switchMode(mode) {
         DOM.mockupToggleLabel.textContent = 'Feed';
         DOM.mockupWrapper.classList.remove('active');
     }
+    // Su mobile il tab "Slides" non esiste in modalità Storia: chiudi la sheet se aperta lì
+    if (mode === 'story' && mobileActiveTab === 'slides') closeMobileSheet();
     trackChange(true);
     render();
     setTimeout(updateScale, 50);
@@ -2675,163 +2750,104 @@ async function share() {
     DOM.shareModal.classList.remove('active');
 }
 
-// POPUP EDITOR MOBILE (UX#6: aggiunti controlli mancanti)
-function renderPopupControls() {
-    const slide = state.slides[state.activeIndex];
-    const ov = slide.textOverlay;
-    const isGrad = slide.bgMode === 'gradient';
+// ════════ MOBILE UI: tab bar + bottom sheet (sostituisce il popup editor) ════════
+// I tab NON duplicano i controlli: spostano dentro la sheet i VERI nodi del
+// pannello sinistro (i listener sopravvivono al reparenting, renderEditor()
+// continua a funzionare perché i riferimenti DOM.* restano validi). Ogni nodo
+// ha un segnaposto fisso nel pannello per tornare al suo posto esatto.
+const MOBILE_TABS = [
+    { key: 'slide',  label: 'Slide',  icon: '🖼️', sel: '#accordion-edit',   title: 'Modifica slide' },
+    { key: 'testi',  label: 'Testi',  icon: '✏️', sel: '#accordion-text',   title: 'Testo sulla slide' },
+    { key: 'slides', label: 'Slides', icon: '🎞️', sel: '#slides-accordion', title: 'Gestione slides' },
+    { key: 'brand',  label: 'Brand',  icon: '🏷️', sel: '#accordion-brand',  title: 'Impostazioni brand' },
+    { key: 'post',   label: 'Post',   icon: '📝', sel: '#caption-card',     title: 'Testo del post' },
+];
+const mobileSheet     = document.getElementById('mobile-sheet');
+const mobileSheetHost = document.getElementById('mobile-sheet-host');
+const mobileTabbar    = document.getElementById('mobile-tabbar');
+let mobileActiveTab = null;
 
-    let html = `
-        <div class="flex flex-col gap-1">
-            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Zoom Sfondo</span><span id="pop-zoom-val" class="text-[#0071E3]">${(slide.zoom || 1).toFixed(2)}x</span></div>
-            <input type="range" id="pop-zoom" min="0.1" max="3" step="0.01" value="${slide.zoom || 1}" class="w-full">
-        </div>
-
-        <div class="border-t pt-3 mt-1">
-            <div class="text-xs font-bold text-gray-500 uppercase mb-2">Sfondo</div>
-            <div class="flex gap-2 mb-2">
-                <button id="pop-bg-solid"    class="flex-1 py-1.5 rounded text-xs font-bold ${isGrad?'bg-white text-gray-600 border border-gray-200':'bg-[#0071E3] text-white'}">Colore</button>
-                <button id="pop-bg-gradient" class="flex-1 py-1.5 rounded text-xs font-bold ${isGrad?'bg-[#0071E3] text-white':'bg-white text-gray-600 border border-gray-200'}">Gradiente</button>
-            </div>
-            <div id="pop-bg-solid-row" class="${isGrad?'hidden':''} flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore</span><input type="color" id="pop-bg-color" value="${slide.bgColor || '#333333'}" class="w-9 h-9"></div>
-            <div id="pop-bg-grad-rows" class="${isGrad?'':'hidden'} flex flex-col gap-2">
-                <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore 1</span><input type="color" id="pop-grad-1" value="${slide.gradColor1 || '#1a1a2e'}" class="w-9 h-9"></div>
-                <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-500 uppercase">Colore 2</span><input type="color" id="pop-grad-2" value="${slide.gradColor2 || '#e94560'}" class="w-9 h-9"></div>
-                <div class="flex gap-1 text-xs">
-                    <button data-dir="to bottom" class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='to bottom'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">↓ Vert</button>
-                    <button data-dir="to right"  class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='to right'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">→ Oriz</button>
-                    <button data-dir="135deg"    class="pop-grad-dir flex-1 py-1.5 rounded border ${slide.gradDir==='135deg'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">↘ Diag</button>
-                </div>
-            </div>
-        </div>`;
-
-    if (slide.coverEnabled) {
-        html += `<div class="border-t pt-3 mt-1 flex flex-col gap-1">
-            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo Copertina</span><span id="pop-title-size-val" class="text-[#0071E3]">${slide.titleFontSize || 110}px</span></div>
-            <input type="range" id="pop-title-size" min="40" max="200" step="2" value="${slide.titleFontSize || 110}" class="w-full">
-        </div>`;
-    }
-
-    if (ov && ov.enabled) {
-        html += `<div class="border-t pt-3 mt-1">
-            <div class="text-xs font-bold text-gray-500 uppercase mb-2">Testo libero</div>
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-500 uppercase">Font</span>
-                    <select id="pop-ov-font" class="bg-[#F5F5F7] rounded p-1.5 text-xs">${Object.keys(FONTS).map(f=>`<option value="${f}" ${ov.font===f?'selected':''}>${f}</option>`).join('')}</select>
-                </div>
-                <div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Titolo</span><span id="pop-ov-title-size-val" class="text-[#0071E3]">${ov.titleSize || 80}px</span></div><input type="range" id="pop-ov-title-size" min="30" max="200" step="2" value="${ov.titleSize || 80}" class="w-full"></div>
-                <div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>Corpo</span><span id="pop-ov-body-size-val" class="text-[#0071E3]">${ov.bodySize || 40}px</span></div><input type="range" id="pop-ov-body-size" min="20" max="120" step="2" value="${ov.bodySize || 40}" class="w-full"></div>
-                <div class="flex items-center justify-between"><span class="text-xs font-bold text-gray-500 uppercase">Colore</span><input type="color" id="pop-ov-color" value="${ov.color || '#ffffff'}" class="w-9 h-9"></div>
-                <div class="flex gap-1 text-xs">
-                    <button data-align="left"   class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='left'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">◀ Sin</button>
-                    <button data-align="center" class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='center'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">■ Cen</button>
-                    <button data-align="right"  class="pop-ov-align flex-1 py-1.5 rounded border ${ov.align==='right'?'bg-[#0071E3] text-white border-[#0071E3]':'bg-white border-gray-200'}">Des ▶</button>
-                </div>
-            </div>
-        </div>`;
-    }
-
-    if (slide.fgImages && slide.fgImages.length > 0) {
-        html += `<div class="border-t pt-3 mt-1 flex flex-col gap-2">`;
-        slide.fgImages.forEach((fg, i) => {
-            html += `<div class="flex flex-col gap-1"><div class="flex justify-between text-xs font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'Video':'Img'} Primo Piano ${i+1}</span><span id="pop-fg-size-val-${fg.id}" class="text-[#0071E3]">${fg.size}%</span></div><input type="range" data-pop-fg-id="${fg.id}" min="10" max="100" step="1" value="${fg.size}" class="w-full pop-fg-size"></div>`;
-        });
-        html += `</div>`;
-    }
-
-    DOM.popupControls.innerHTML = html;
-
-    // ── BIND ──
-    const bindRange = (id, keyFn, valId, suffix, domSync = null) => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', e => {
-            const val = parseFloat(e.target.value); keyFn(val);
-            const vEl = document.getElementById(valId); if (vEl) vEl.textContent = val + suffix;
-            if (domSync) domSync(val);
-            saveState(); renderPreview();
-        });
-        if (el) el.addEventListener('change', () => snapshot());
-    };
-    // Zoom popup: aggiornamento live durante il drag, render completo al rilascio
-    const popZoom = document.getElementById('pop-zoom');
-    if (popZoom) {
-        const syncZoom = (v, commit) => {
-            v = clampZoom(v);
-            slide.zoom = v;
-            popZoom.value = v;
-            const vEl = document.getElementById('pop-zoom-val'); if (vEl) vEl.textContent = v.toFixed(2) + 'x';
-            DOM.inputZoom.value = v; DOM.zoomValue.textContent = v.toFixed(2) + 'x';
-            if (commit) { renderPreview(); saveState(); }
-            else { applyLiveZoom(v); saveState(); }
-        };
-        popZoom.addEventListener('input', e => syncZoom(parseFloat(e.target.value), false));
-        popZoom.addEventListener('change', e => { syncZoom(parseFloat(e.target.value), true); snapshot(); });
-    }
-    bindRange('pop-title-size', v=>slide.titleFontSize=v, 'pop-title-size-val', 'px', v=>{DOM.inputTitleFontSize.value=v; DOM.titleFontSizeValue.textContent=v+'px';});
-    if (ov) {
-        bindRange('pop-ov-title-size', v=>ov.titleSize=v, 'pop-ov-title-size-val', 'px', v=>{DOM.overlayTitleSize.value=v; DOM.overlayTitleSizeVal.textContent=v+'px';});
-        bindRange('pop-ov-body-size',  v=>ov.bodySize=v,  'pop-ov-body-size-val',  'px', v=>{DOM.overlayBodySize.value=v;  DOM.overlayBodySizeVal.textContent=v+'px';});
-    }
-    document.querySelectorAll('.pop-fg-size').forEach(slider => {
-        slider.addEventListener('input', e => {
-            const fg = slide.fgImages.find(f => f.id === e.target.getAttribute('data-pop-fg-id'));
-            if (fg) {
-                fg.size = parseInt(e.target.value, 10);
-                document.getElementById(`pop-fg-size-val-${fg.id}`).textContent = fg.size + '%';
-                const sMain = DOM.fgImagesList.querySelector(`.fg-size-slider[data-id="${fg.id}"]`);
-                if (sMain) { sMain.value = fg.size; sMain.parentElement.querySelector('span:last-child').textContent = fg.size + '%'; }
-                const el = document.querySelector(`.preview-fg-drag[data-fg-id="${fg.id}"]`);
-                if (el) el.style.width = fg.size + '%';
-                saveState();
-            }
-        });
-        slider.addEventListener('change', () => snapshot());
-    });
-
-    // Background mode toggles
-    const popSolid = document.getElementById('pop-bg-solid'), popGrad = document.getElementById('pop-bg-gradient');
-    if (popSolid) popSolid.addEventListener('click', () => { slide.bgMode='solid'; trackChange(true); render(); });
-    if (popGrad)  popGrad.addEventListener('click',  () => { slide.bgMode='gradient'; trackChange(true); render(); });
-    const popBgColor = document.getElementById('pop-bg-color');
-    if (popBgColor) popBgColor.addEventListener('input', e => { slide.bgColor = e.target.value; renderPreview(); saveState(); DOM.inputBgColor.value = e.target.value; });
-    const popG1 = document.getElementById('pop-grad-1');
-    if (popG1) popG1.addEventListener('input', e => { slide.gradColor1 = e.target.value; renderPreview(); saveState(); DOM.inputGradColor1.value = e.target.value; });
-    const popG2 = document.getElementById('pop-grad-2');
-    if (popG2) popG2.addEventListener('input', e => { slide.gradColor2 = e.target.value; renderPreview(); saveState(); DOM.inputGradColor2.value = e.target.value; });
-    document.querySelectorAll('.pop-grad-dir').forEach(b => b.addEventListener('click', () => {
-        slide.gradDir = b.dataset.dir;
-        document.querySelectorAll('.pop-grad-dir').forEach(x => { x.classList.remove('bg-[#0071E3]','text-white','border-[#0071E3]'); x.classList.add('bg-white','border-gray-200'); });
-        b.classList.remove('bg-white','border-gray-200'); b.classList.add('bg-[#0071E3]','text-white','border-[#0071E3]');
-        trackChange(true); renderPreview();
-    }));
-
-    // Overlay controls
-    const popOvFont = document.getElementById('pop-ov-font');
-    if (popOvFont && ov) popOvFont.addEventListener('change', e => { ov.font = e.target.value; trackChange(true); renderPreview(); DOM.overlayFont.value = e.target.value; });
-    const popOvColor = document.getElementById('pop-ov-color');
-    if (ov) bindColorInput(popOvColor, DOM.overlayColorHex, v => { ov.color = v; DOM.overlayColor.value = v; saveState(); renderPreview(); });
-    document.querySelectorAll('.pop-ov-align').forEach(b => b.addEventListener('click', () => {
-        if (!ov) return;
-        ov.align = b.dataset.align;
-        document.querySelectorAll('.pop-ov-align').forEach(x => { x.classList.remove('bg-[#0071E3]','text-white','border-[#0071E3]'); x.classList.add('bg-white','border-gray-200'); });
-        b.classList.remove('bg-white','border-gray-200'); b.classList.add('bg-[#0071E3]','text-white','border-[#0071E3]');
-        DOM.alignBtns.forEach(x => x.classList.toggle('active', x.dataset.align === b.dataset.align));
-        trackChange(true); renderPreview();
-    }));
+function returnSheetContent() {
+    const cur = mobileSheetHost.firstElementChild;
+    if (!cur || !mobileActiveTab) return;
+    const ph = document.querySelector(`[data-placeholder-for="${mobileActiveTab}"]`);
+    if (ph) ph.parentNode.insertBefore(cur, ph.nextSibling);
 }
-
-DOM.btnPopupEditor.addEventListener('click', () => {
-    DOM.popupEditorModal.classList.add('active');
-    DOM.popupPreviewHost.appendChild(DOM.previewWrapper);
-    renderPopupControls();
-    setTimeout(updateScale, 50); // Attendiamo che il modal sia visibile per calcolare le width
-});
-DOM.btnClosePopup.addEventListener('click', () => {
-    DOM.popupEditorModal.classList.remove('active');
-    DOM.originalPreviewHost.appendChild(DOM.previewWrapper);
-    renderEditor(); // sync eventuali variazioni non catturate
-    setTimeout(updateScale, 50);
-});
+function openMobileSheet(key) {
+    returnSheetContent();
+    const t = MOBILE_TABS.find(x => x.key === key);
+    const node = t && document.querySelector(t.sel);
+    if (!node) return;
+    mobileActiveTab = key;
+    mobileSheetHost.appendChild(node);
+    if (node.tagName === 'DETAILS') node.open = true;
+    document.getElementById('mobile-sheet-title').textContent = t.title;
+    mobileSheet.classList.add('open');
+    mobileSheet.setAttribute('aria-hidden', 'false');
+    mobileSheetHost.scrollTop = 0;
+    mobileTabbar.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+}
+function closeMobileSheet() {
+    returnSheetContent();
+    mobileActiveTab = null;
+    mobileSheet.classList.remove('open', 'expanded');
+    mobileSheet.setAttribute('aria-hidden', 'true');
+    mobileTabbar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+}
+function setSheetExpanded(on) { mobileSheet.classList.toggle('expanded', on); }
+// Fase 3: trascina la testata della sheet per ridimensionarla / chiuderla
+function bindSheetDrag() {
+    const head = document.getElementById('mobile-sheet-head');
+    const onStart = (e) => {
+        if (e.target.closest('button')) return;
+        if (e.cancelable) e.preventDefault();
+        const t0 = e.touches ? e.touches[0] : e;
+        const startY = t0.clientY;
+        const startH = mobileSheet.getBoundingClientRect().height;
+        let lastH = startH;
+        mobileSheet.style.transition = 'none'; // segue il dito senza lag
+        const onMove = (ev) => {
+            const t = ev.touches ? ev.touches[0] : ev;
+            if (ev.cancelable) ev.preventDefault();
+            lastH = Math.min(window.innerHeight * 0.85, Math.max(120, startH + (startY - t.clientY)));
+            mobileSheet.style.height = lastH + 'px';
+        };
+        startPointerDrag(onMove, () => {
+            mobileSheet.style.transition = '';
+            mobileSheet.style.height = '';
+            if (lastH < window.innerHeight * 0.22) closeMobileSheet();
+            else setSheetExpanded(lastH > window.innerHeight * 0.6);
+        });
+    };
+    head.addEventListener('mousedown', onStart);
+    head.addEventListener('touchstart', onStart, { passive: false });
+}
+function initMobileUI() {
+    mobileTabbar.innerHTML = MOBILE_TABS.map(t =>
+        `<button id="mtab-${t.key}" data-key="${t.key}" type="button"><span class="t-ico">${t.icon}</span>${t.label}</button>`).join('');
+    mobileTabbar.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.key;
+        if (mobileActiveTab === k) closeMobileSheet(); else openMobileSheet(k);
+    }));
+    MOBILE_TABS.forEach(t => {
+        const node = document.querySelector(t.sel);
+        if (!node) return;
+        const ph = document.createElement('div');
+        ph.style.display = 'none';
+        ph.dataset.placeholderFor = t.key;
+        node.parentNode.insertBefore(ph, node);
+        // dentro la sheet i <details> devono restare aperti
+        if (node.tagName === 'DETAILS') node.addEventListener('toggle', () => {
+            if (node.closest('#mobile-sheet-host') && !node.open) node.open = true;
+        });
+    });
+    document.getElementById('mobile-sheet-close').addEventListener('click', closeMobileSheet);
+    document.getElementById('mobile-sheet-expand').addEventListener('click', () => setSheetExpanded(!mobileSheet.classList.contains('expanded')));
+    bindSheetDrag();
+    // Tornati su desktop: rimetti i controlli al loro posto nel pannello
+    window.matchMedia('(min-width: 768px)').addEventListener('change', ev => { if (ev.matches) closeMobileSheet(); });
+}
+initMobileUI();
 
 // EVENT LISTENERS COMPONENTI MAIN
 
