@@ -82,7 +82,9 @@
            Tailwind presenti sugli stessi elementi (il CDN inietta il suo CSS
            dopo questo <style> e a parità di specificità vincerebbe lui). */
         @media (max-width: 767px) {
-            body { flex-direction: column !important; padding: 10px 12px calc(70px + env(safe-area-inset-bottom)) 12px !important; gap: 10px !important; }
+            /* padding-top con safe-area: la status bar iOS (PWA black-translucent)
+               non deve sovrapporsi alla prima riga dell'app */
+            body { flex-direction: column !important; padding: calc(10px + env(safe-area-inset-top)) 12px calc(70px + env(safe-area-inset-bottom)) 12px !important; gap: 10px !important; }
             .left-col { gap: 10px !important; }
             .left-panel { display: none !important; } /* i controlli vivono nella bottom sheet */
             .header-group { padding: 0 2px; }
@@ -114,7 +116,8 @@
                 padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) 8px; gap: 4px; }
             #mobile-tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
                 padding: 6px 2px; border-radius: 10px; font-size: 10px; font-weight: 600; color: #6E6E73; background: transparent; transition: all 0.15s; }
-            #mobile-tabbar button .t-ico { font-size: 18px; line-height: 1; }
+            #mobile-tabbar button .t-ico { line-height: 1; }
+            #mobile-tabbar button .t-ico svg { display: block; }
             #mobile-tabbar button.active { color: #0071E3; background: #E8F0FE; }
             body.story-mode #mtab-slides { display: none; }
 
@@ -128,6 +131,8 @@
             #mobile-sheet.open { transform: translateY(0); }
             #mobile-sheet.expanded { height: 80vh; height: 80dvh; }
             #mobile-sheet-head { flex-shrink: 0; cursor: grab; touch-action: none; }
+            #mobile-sheet-expand svg { transition: transform 0.2s; }
+            #mobile-sheet.expanded #mobile-sheet-expand svg { transform: rotate(180deg); }
             #mobile-sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: #D1D1D6; margin: 8px auto 6px auto; }
             #mobile-sheet-host { flex: 1; overflow-y: auto; padding: 0 14px 14px 14px; touch-action: pan-y; }
             #mobile-sheet-host details.accordion { border: none; box-shadow: none; border-radius: 0; background: transparent; }
@@ -287,8 +292,8 @@
     <!-- Switcher modalità: fuori dal left-panel perché su mobile deve restare
          visibile anche quando il pannello controlli è nella bottom sheet -->
     <div id="mode-switcher" role="tablist" aria-label="Modalità di creazione">
-        <button id="mode-carousel" class="mode-active" role="tab" aria-selected="true">▦ Carosello</button>
-        <button id="mode-story" role="tab" aria-selected="false">▭ Storia</button>
+        <button id="mode-carousel" class="mode-active" role="tab" aria-selected="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Carosello</button>
+        <button id="mode-story" role="tab" aria-selected="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/></svg> Storia</button>
     </div>
 
     <!-- Controlli -->
@@ -488,7 +493,7 @@
                 <div class="flex gap-3 items-center" onclick="event.stopPropagation();">
                     <button id="btn-move-left"      class="text-gray-500 text-xs hover:text-black hidden">&larr;</button>
                     <button id="btn-move-right"     class="text-gray-500 text-xs hover:text-black hidden">&rarr;</button>
-                    <button id="btn-duplicate-slide" class="text-[#0071E3] text-xs font-medium hover:underline" title="Duplica">⧉</button>
+                    <button id="btn-duplicate-slide" class="text-[#0071E3] text-xs font-medium hover:underline" title="Duplica" aria-label="Duplica slide"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
                     <button id="btn-delete-slide"   class="text-[#E3000F] text-xs font-medium hover:underline hidden">Elimina</button>
                 </div>
             </summary>
@@ -499,7 +504,7 @@
                 <input type="file" id="bg-upload" accept="image/*" aria-label="Carica immagine sfondo" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                 <span id="bg-upload-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica Immagine Sfondo</span>
             </div>
-            <button id="btn-bg-removebg" style="display:none;" class="w-full py-2 rounded-lg border border-gray-300 bg-white text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all disabled:opacity-50 disabled:pointer-events-none">✂️ Rimuovi sfondo dall'immagine (AI)</button>
+            <button id="btn-bg-removebg" style="display:none;" class="w-full py-2 rounded-lg border border-gray-300 bg-white text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all disabled:opacity-50 disabled:pointer-events-none inline-flex items-center justify-center gap-1.5"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg> Rimuovi sfondo dall'immagine (AI)</button>
 
             <!-- Sfondo controlli -->
             <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -576,8 +581,8 @@
 
             <!-- Reset slide -->
             <div class="flex flex-wrap items-center gap-4">
-                <button id="btn-reset-slide" class="text-xs text-[#E3000F] hover:underline font-medium self-start">↺ Reset slide attiva</button>
-                <button id="btn-delete-all-images" class="text-xs text-[#E3000F] hover:underline font-medium self-start">🗑 Cancella tutte le immagini</button>
+                <button id="btn-reset-slide" class="text-xs text-[#E3000F] hover:underline font-medium self-start inline-flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Reset slide attiva</button>
+                <button id="btn-delete-all-images" class="text-xs text-[#E3000F] hover:underline font-medium self-start inline-flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Cancella tutte le immagini</button>
             </div>
 
             <!-- Immagini in Primo Piano (Multiple) -->
@@ -591,7 +596,7 @@
                 </div>
                 <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
                     <input type="file" id="fg-video-upload" accept="video/*" aria-label="Aggiungi video in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
-                    <span id="fg-video-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">🎬 Aggiungi un video sopra lo sfondo</span>
+                    <span id="fg-video-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Aggiungi un video sopra lo sfondo</span>
                 </div>
                 
                 <!-- Lista immagini in primo piano aggiunte -->
@@ -752,7 +757,7 @@
             <p><strong>5. Su Mobile:</strong> L'anteprima occupa tutto lo schermo; i controlli si aprono dalla barra in basso (Slide, Testi, Slides, Brand, Post). Trascina la maniglia del pannello per allargarlo o chiuderlo, e usa due dita sullo sfondo per zoomare.</p>
             <p><strong>6. Mockup Instagram:</strong> Attiva "Feed" per vedere la slide nel contesto di un post.</p>
             <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
-            <p><strong>8. Duplica:</strong> Il tasto "⧉" copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
+            <p><strong>8. Duplica:</strong> Il tasto "Duplica" (icona a due riquadri) copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
             <p><strong>9. Persistenza:</strong> Tutte le immagini vengono salvate nel browser (IndexedDB) e ripristinate automaticamente.</p>
             <p><strong>10. Annulla / Ripeti:</strong> Usa <code>Ctrl+Z</code> e <code>Ctrl+Shift+Z</code> (o ⌘ su Mac) per tornare indietro.</p>
             <p><strong>11. Video:</strong> Nella sezione "Immagini in Primo Piano" puoi aggiungere anche un video. Le slide che contengono un video vengono esportate come file video vero e proprio (.mp4 o .webm a seconda del browser), con l'audio se presente.</p>
@@ -866,6 +871,21 @@ function escapeHtml(str) { const el = document.createElement('div'); el.appendCh
 function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
 function throttle(fn, ms = 100) { let last = 0, pending = null; return (...args) => { const now = Date.now(); if (now - last >= ms) { last = now; fn(...args); } else { clearTimeout(pending); pending = setTimeout(() => { last = Date.now(); fn(...args); }, ms - (now - last)); } }; }
 function generateId() { return Math.random().toString(36).substr(2, 9); }
+
+// Icone SVG line-style (minimal, stroke currentColor) usate nei template JS.
+const ICONS = {
+    scissors:  '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/>',
+    restore:   '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>',
+    hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+    image:     '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+    type:      '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>',
+    copy:      '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    tag:       '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
+    fileText:  '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+};
+function ico(name, size = 14, sw = 2) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;display:inline-block;vertical-align:-2px;">${ICONS[name]}</svg>`;
+}
 function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
 // ════════ LOCALSTORAGE GUARDS (FIX SICUREZZA #5) ════════
@@ -1154,7 +1174,7 @@ async function toggleFgBgRemoval(slide, fg) {
         framedCache.delete(fg.id); // il riquadro bianco va rigenerato sulla nuova sagoma
         await saveFgsToIDB(slide);
         trackChange(true);
-        toast('Sfondo rimosso ✂️', 'success', 2000);
+        toast('Sfondo rimosso', 'success', 2000);
     } catch (e) {
         console.warn('[removeBackground fg]', e);
         toast('Rimozione sfondo non riuscita (al primo utilizzo serve la connessione)', 'error');
@@ -1185,7 +1205,7 @@ async function toggleSlideBgRemoval(slide) {
         slide.bgRemoved = true;
         try { await idbSet(slide.id, cut); } catch (_) {}
         trackChange(true);
-        toast('Sfondo rimosso: sotto vedi colore/gradiente della slide ✂️', 'success', 3000);
+        toast('Sfondo rimosso: sotto vedi colore/gradiente della slide', 'success', 3000);
     } catch (e) {
         console.warn('[removeBackground bg]', e);
         toast('Rimozione sfondo non riuscita (al primo utilizzo serve la connessione)', 'error');
@@ -1946,7 +1966,7 @@ function startPointerDrag(onMove, onEnd) {
     document.addEventListener('mouseup', end);   document.addEventListener('touchend', end);
 }
 
-function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
+function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag, keepInside = false) {
     if(!el) return;
     el.addEventListener('mousedown', onStart);
     el.addEventListener('touchstart', onStart, { passive:false });
@@ -1966,15 +1986,35 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
         const ox = touch.clientX - rect.left - cx;
         const oy = touch.clientY - rect.top  - cy;
 
+        // keepInside (testi): limiti calcolati sul bounding box REALE dell'elemento,
+        // non sull'ancora — l'ancora dipende dall'allineamento (left/center/right) e
+        // il solo clamp 0–100 permetteva a un drag accidentale di portare il testo
+        // quasi del tutto fuori dal riquadro.
+        let minX = 0, maxX = 100, minY = 0, maxY = 100;
+        if (keepInside) {
+            const er = el.getBoundingClientRect();
+            const aL = er.left - rect.left - cx; // offset del bordo sinistro rispetto all'ancora
+            const aT = er.top  - rect.top  - cy;
+            minX = Math.max(0, (-aL) / rect.width * 100);
+            maxX = Math.min(100, (rect.width - er.width - aL) / rect.width * 100);
+            minY = Math.max(0, (-aT) / rect.height * 100);
+            maxY = Math.min(100, (rect.height - er.height - aT) / rect.height * 100);
+            // Elemento più grande del riquadro: blocca l'asse al punto medio
+            if (maxX < minX) { const m = (minX + maxX) / 2; minX = maxX = m; }
+            if (maxY < minY) { const m = (minY + maxY) / 2; minY = maxY = m; }
+        }
+        const clampX = v => Math.max(minX, Math.min(maxX, v));
+        const clampY = v => Math.max(minY, Math.min(maxY, v));
+
         function onMove(e) {
             const t = e.touches ? e.touches[0] : e;
-            let nx = Math.max(0, Math.min(100, (t.clientX - rect.left - ox) / rect.width  * 100));
-            let ny = Math.max(0, Math.min(100, (t.clientY - rect.top  - oy) / rect.height * 100));
+            let nx = clampX((t.clientX - rect.left - ox) / rect.width  * 100);
+            let ny = clampY((t.clientY - rect.top  - oy) / rect.height * 100);
             // SHIFT bypassa snap se l'utente lo desidera
             const noSnap = e.shiftKey;
             if (!noSnap) {
                 const sx = trySnap(nx), sy = trySnap(ny);
-                nx = sx.snapped; ny = sy.snapped;
+                nx = clampX(sx.snapped); ny = clampY(sy.snapped);
                 showSnapGuides(sx.hit, sy.hit, nx, ny);
             } else {
                 clearSnapGuides();
@@ -1994,8 +2034,9 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag) {
 
 function bindAllDrags() {
     const s = state.slides[state.activeIndex];
-    bindDragElement(document.getElementById('preview-overlay-drag'), 'x', 'y', () => s.textOverlay?.enabled ? s.textOverlay : null);
-    bindDragElement(document.getElementById('preview-cover-text-drag'), 'coverTextX', 'coverTextY', () => s.coverEnabled ? s : null);
+    // I due blocchi di TESTO restano sempre interamente dentro il riquadro (keepInside)
+    bindDragElement(document.getElementById('preview-overlay-drag'), 'x', 'y', () => s.textOverlay?.enabled ? s.textOverlay : null, null, true);
+    bindDragElement(document.getElementById('preview-cover-text-drag'), 'coverTextX', 'coverTextY', () => s.coverEnabled ? s : null, null, true);
     
     document.querySelectorAll('.preview-fg-drag').forEach(el => {
         bindDragElement(el, 'x', 'y', () => s.fgImages.find(f => f.id === el.dataset.fgId));
@@ -2150,8 +2191,8 @@ function renderEditor() {
     DOM.btnBgRemoveBg.style.display = slide.image ? 'block' : 'none';
     const bgBusy = bgRemovalBusy.has(slide.id);
     DOM.btnBgRemoveBg.disabled = bgBusy;
-    DOM.btnBgRemoveBg.textContent = bgBusy ? '⏳ Rimozione sfondo in corso…'
-        : (slide.bgRemoved ? '↩️ Ripristina sfondo immagine' : '✂️ Rimuovi sfondo dall\'immagine (AI)');
+    DOM.btnBgRemoveBg.innerHTML = bgBusy ? ico('hourglass', 13) + ' Rimozione sfondo in corso…'
+        : (slide.bgRemoved ? ico('restore', 13) + ' Ripristina sfondo immagine' : ico('scissors', 13) + ' Rimuovi sfondo dall\'immagine (AI)');
 
     // FG Images list
     DOM.fgImagesList.innerHTML = '';
@@ -2165,7 +2206,7 @@ function renderEditor() {
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center"></div>
                     <div class="flex-grow flex flex-col gap-1">
-                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'🎬 Video':'Img'} ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
+                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'Video':'Img'} ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
                         <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
                     </div>
                     <button class="text-gray-500 hover:text-black p-2 fg-filter-toggle bg-gray-50 rounded-lg transition-all" data-id="${fg.id}" title="Filtri" aria-label="Filtri immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
@@ -2178,7 +2219,7 @@ function renderEditor() {
                         <div class="toggle-track ${fg.frame ? 'on' : ''} fg-frame-toggle" data-id="${fg.id}" role="switch" aria-label="Attiva riquadro bianco"><div class="toggle-thumb"></div></div>
                     </div>
                 </label>
-                ${fg.type !== 'video' ? `<button class="fg-removebg-btn w-full py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${bgRemovalBusy.has(fg.id) ? 'opacity-50 pointer-events-none border-gray-200 bg-gray-50 text-gray-400' : (fg.bgRemoved ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100')}" data-id="${fg.id}">${bgRemovalBusy.has(fg.id) ? '⏳ Rimozione in corso…' : (fg.bgRemoved ? '↩️ Ripristina sfondo' : '✂️ Rimuovi sfondo (AI)')}</button>` : ''}
+                ${fg.type !== 'video' ? `<button class="fg-removebg-btn w-full py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 ${bgRemovalBusy.has(fg.id) ? 'opacity-50 pointer-events-none border-gray-200 bg-gray-50 text-gray-400' : (fg.bgRemoved ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100')}" data-id="${fg.id}">${bgRemovalBusy.has(fg.id) ? ico('hourglass', 11) + ' Rimozione in corso…' : (fg.bgRemoved ? ico('restore', 11) + ' Ripristina sfondo' : ico('scissors', 11) + ' Rimuovi sfondo (AI)')}</button>` : ''}
                 <div class="fg-filter-panel hidden flex flex-col gap-2 pt-2 border-t border-gray-100">
                     <div class="flex flex-wrap gap-1">
                         <button class="preset-btn" data-preset="none" data-target="fg-${fg.id}">Nessuno</button>
@@ -2756,11 +2797,11 @@ async function share() {
 // continua a funzionare perché i riferimenti DOM.* restano validi). Ogni nodo
 // ha un segnaposto fisso nel pannello per tornare al suo posto esatto.
 const MOBILE_TABS = [
-    { key: 'slide',  label: 'Slide',  icon: '🖼️', sel: '#accordion-edit',   title: 'Modifica slide' },
-    { key: 'testi',  label: 'Testi',  icon: '✏️', sel: '#accordion-text',   title: 'Testo sulla slide' },
-    { key: 'slides', label: 'Slides', icon: '🎞️', sel: '#slides-accordion', title: 'Gestione slides' },
-    { key: 'brand',  label: 'Brand',  icon: '🏷️', sel: '#accordion-brand',  title: 'Impostazioni brand' },
-    { key: 'post',   label: 'Post',   icon: '📝', sel: '#caption-card',     title: 'Testo del post' },
+    { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sel: '#accordion-edit',   title: 'Modifica slide' },
+    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sel: '#accordion-text',   title: 'Testo sulla slide' },
+    { key: 'slides', label: 'Slides', icon: ico('copy', 20),     sel: '#slides-accordion', title: 'Gestione slides' },
+    { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sel: '#accordion-brand',  title: 'Impostazioni brand' },
+    { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sel: '#caption-card',     title: 'Testo del post' },
 ];
 const mobileSheet     = document.getElementById('mobile-sheet');
 const mobileSheetHost = document.getElementById('mobile-sheet-host');
