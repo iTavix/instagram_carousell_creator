@@ -119,7 +119,6 @@
             #mobile-tabbar button .t-ico { line-height: 1; }
             #mobile-tabbar button .t-ico svg { display: block; }
             #mobile-tabbar button.active { color: #0071E3; background: #E8F0FE; }
-            body.story-mode #mtab-slides { display: none; }
 
             /* Bottom sheet coi controlli veri (nodi spostati, non duplicati) */
             #mobile-sheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0;
@@ -2466,8 +2465,6 @@ function switchMode(mode) {
         DOM.mockupToggleLabel.textContent = 'Feed';
         DOM.mockupWrapper.classList.remove('active');
     }
-    // Su mobile il tab "Slides" non esiste in modalità Storia: chiudi la sheet se aperta lì
-    if (mode === 'story' && mobileActiveTab === 'slides') closeMobileSheet();
     trackChange(true);
     render();
     setTimeout(updateScale, 50);
@@ -2796,12 +2793,14 @@ async function share() {
 // pannello sinistro (i listener sopravvivono al reparenting, renderEditor()
 // continua a funzionare perché i riferimenti DOM.* restano validi). Ogni nodo
 // ha un segnaposto fisso nel pannello per tornare al suo posto esatto.
+// Il tab "Slide" monta ENTRAMBI gli accordion (gestione slides + modifica):
+// la sezione Slides su mobile era ridondante come tab separato (miniature e "+"
+// sono già nella strip sotto l'anteprima) ma resta utile in cima al pannello.
 const MOBILE_TABS = [
-    { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sel: '#accordion-edit',   title: 'Modifica slide' },
-    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sel: '#accordion-text',   title: 'Testo sulla slide' },
-    { key: 'slides', label: 'Slides', icon: ico('copy', 20),     sel: '#slides-accordion', title: 'Gestione slides' },
-    { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sel: '#accordion-brand',  title: 'Impostazioni brand' },
-    { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sel: '#caption-card',     title: 'Testo del post' },
+    { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sels: ['#slides-accordion', '#accordion-edit'], title: 'Modifica slide' },
+    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sels: ['#accordion-text'],                      title: 'Testo sulla slide' },
+    { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sels: ['#accordion-brand'],                     title: 'Impostazioni brand' },
+    { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sels: ['#caption-card'],                        title: 'Testo del post' },
 ];
 const mobileSheet     = document.getElementById('mobile-sheet');
 const mobileSheetHost = document.getElementById('mobile-sheet-host');
@@ -2809,19 +2808,25 @@ const mobileTabbar    = document.getElementById('mobile-tabbar');
 let mobileActiveTab = null;
 
 function returnSheetContent() {
-    const cur = mobileSheetHost.firstElementChild;
-    if (!cur || !mobileActiveTab) return;
-    const ph = document.querySelector(`[data-placeholder-for="${mobileActiveTab}"]`);
-    if (ph) ph.parentNode.insertBefore(cur, ph.nextSibling);
+    // Ogni nodo ha il suo segnaposto (per id): l'ordine originale è garantito
+    let cur;
+    while ((cur = mobileSheetHost.firstElementChild)) {
+        const ph = document.querySelector(`[data-placeholder-for="${cur.id}"]`);
+        if (ph) ph.parentNode.insertBefore(cur, ph.nextSibling);
+        else mobileSheetHost.removeChild(cur);
+    }
 }
 function openMobileSheet(key) {
     returnSheetContent();
     const t = MOBILE_TABS.find(x => x.key === key);
-    const node = t && document.querySelector(t.sel);
-    if (!node) return;
+    if (!t) return;
+    const nodes = t.sels.map(sel => document.querySelector(sel)).filter(Boolean);
+    if (!nodes.length) return;
     mobileActiveTab = key;
-    mobileSheetHost.appendChild(node);
-    if (node.tagName === 'DETAILS') node.open = true;
+    nodes.forEach(node => {
+        mobileSheetHost.appendChild(node);
+        if (node.tagName === 'DETAILS') node.open = true;
+    });
     document.getElementById('mobile-sheet-title').textContent = t.title;
     mobileSheet.classList.add('open');
     mobileSheet.setAttribute('aria-hidden', 'false');
@@ -2870,18 +2875,26 @@ function initMobileUI() {
         const k = b.dataset.key;
         if (mobileActiveTab === k) closeMobileSheet(); else openMobileSheet(k);
     }));
-    MOBILE_TABS.forEach(t => {
-        const node = document.querySelector(t.sel);
+    MOBILE_TABS.flatMap(t => t.sels).forEach(sel => {
+        const node = document.querySelector(sel);
         if (!node) return;
         const ph = document.createElement('div');
         ph.style.display = 'none';
-        ph.dataset.placeholderFor = t.key;
+        ph.dataset.placeholderFor = node.id;
         node.parentNode.insertBefore(ph, node);
         // dentro la sheet i <details> devono restare aperti
         if (node.tagName === 'DETAILS') node.addEventListener('toggle', () => {
             if (node.closest('#mobile-sheet-host') && !node.open) node.open = true;
         });
     });
+    // Tocco FUORI dalla sheet (e dalla tab bar) → chiusura automatica.
+    // Capture: i drag dell'anteprima fanno stopPropagation sul loro mousedown.
+    // Esclusi i modali (conferma, crop, guida) che si aprono sopra la sheet.
+    document.addEventListener('pointerdown', (e) => {
+        if (!mobileActiveTab) return;
+        if (e.target.closest('#mobile-sheet, #mobile-tabbar, .modal, #toast-container')) return;
+        closeMobileSheet();
+    }, true);
     document.getElementById('mobile-sheet-close').addEventListener('click', closeMobileSheet);
     document.getElementById('mobile-sheet-expand').addEventListener('click', () => setSheetExpanded(!mobileSheet.classList.contains('expanded')));
     bindSheetDrag();
