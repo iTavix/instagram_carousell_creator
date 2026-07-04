@@ -1020,7 +1020,65 @@ async function removeImageBackground(srcUrl) {
     const blob = await (await fetch(srcUrl)).blob();
     const out = await lib.removeBackground(blob, { publicPath: BGREMOVE_PUBLIC_URL, output: { format: 'image/png' } });
     _bgrModelWarm = true;
-    return blobToDataUrl(out);
+    return cleanCutout(await blobToDataUrl(out));
+}
+// Post-processing dello scontorno. Il modello a volte lascia "fantasmi"
+// semi-trasparenti di oggetti secondari (es. pannelli/badge accanto al soggetto).
+// 1) Curva alpha: sotto LO → trasparente pieno, sopra HI → opaco pieno,
+//    rampa lineare in mezzo (i bordi antialiasing del soggetto sopravvivono).
+// 2) Componenti connesse sull'alpha residuo: si tiene sempre la componente
+//    dominante (il soggetto); le altre restano solo se sono abbastanza grandi
+//    E davvero solide (quota di pixel pienamente opachi ≥ 35%) — i residui
+//    traslucidi non lo sono mai e vengono azzerati.
+const CUTOUT_ALPHA_LO = 90, CUTOUT_ALPHA_HI = 170;
+async function cleanCutout(dataUrl) {
+    try {
+        const img = await loadImageEl(dataUrl);
+        const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        if (!w || !h) return dataUrl;
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const d = imgData.data;
+        const n = w * h;
+        for (let p = 0; p < n; p++) {
+            const a = d[p * 4 + 3];
+            d[p * 4 + 3] = a <= CUTOUT_ALPHA_LO ? 0 : a >= CUTOUT_ALPHA_HI ? 255
+                : Math.round((a - CUTOUT_ALPHA_LO) * 255 / (CUTOUT_ALPHA_HI - CUTOUT_ALPHA_LO));
+        }
+        const label = new Int32Array(n);      // 0 = non visitato / trasparente
+        const stack = new Int32Array(n);
+        const comps = [];                     // { area, alphaSum, opaque }
+        for (let p = 0; p < n; p++) {
+            if (label[p] || d[p * 4 + 3] === 0) continue;
+            const id = comps.length + 1;
+            let top = 0; stack[top++] = p; label[p] = id;
+            let area = 0, alphaSum = 0, opaque = 0;
+            while (top) {
+                const q = stack[--top];
+                const a = d[q * 4 + 3];
+                area++; alphaSum += a; if (a === 255) opaque++;
+                const x = q % w;
+                if (x > 0     && !label[q - 1] && d[(q - 1) * 4 + 3]) { label[q - 1] = id; stack[top++] = q - 1; }
+                if (x < w - 1 && !label[q + 1] && d[(q + 1) * 4 + 3]) { label[q + 1] = id; stack[top++] = q + 1; }
+                if (q >= w    && !label[q - w] && d[(q - w) * 4 + 3]) { label[q - w] = id; stack[top++] = q - w; }
+                if (q < n - w && !label[q + w] && d[(q + w) * 4 + 3]) { label[q + w] = id; stack[top++] = q + w; }
+            }
+            comps.push({ area, alphaSum, opaque });
+        }
+        if (comps.length > 1) {
+            let main = 0;
+            comps.forEach((c, i) => { if (c.alphaSum > comps[main].alphaSum) main = i; });
+            const minArea = Math.max(64, comps[main].area * 0.005);
+            const keep = comps.map((c, i) => i === main || (c.area >= minArea && c.opaque / c.area >= 0.35));
+            for (let p = 0; p < n; p++) {
+                if (label[p] && !keep[label[p] - 1]) d[p * 4 + 3] = 0;
+            }
+        }
+        ctx.putImageData(imgData, 0, 0);
+        return cv.toDataURL('image/png');
+    } catch (e) { console.warn('[cleanCutout]', e); return dataUrl; }
 }
 // Toggle scontorno per un'immagine in primo piano (i video non sono processabili).
 async function toggleFgBgRemoval(slide, fg) {
