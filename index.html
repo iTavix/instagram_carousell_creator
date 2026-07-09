@@ -2793,6 +2793,38 @@ async function share() {
     DOM.shareModal.classList.remove('active');
 }
 
+// ════════ Integrazione con il sito galleria iTavix (../index.html) ════════
+// Se l'app viene aperta dal sito (?sito=1, via window.open), accanto a
+// "Esporta" compare "Invia al sito": esporta la slide attiva come PNG e la
+// rimanda alla finestra del sito via postMessage, che la usa come immagine
+// del nuovo contenuto. Nessun effetto quando l'app è aperta normalmente.
+(function () {
+    let daSito = false;
+    try { daSito = new URLSearchParams(location.search).has('sito') && !!window.opener; } catch (_) {}
+    if (!daSito || !DOM.btnExport) return;
+    const b = document.createElement('button');
+    b.id = 'btn-invia-sito';
+    b.className = DOM.btnExportSingle ? DOM.btnExportSingle.className : DOM.btnExport.className;
+    b.textContent = '↗ Invia al sito';
+    DOM.btnExport.parentNode.insertBefore(b, DOM.btnExport);
+    b.addEventListener('click', async () => {
+        if (state.isExporting) return;
+        const i = state.activeIndex, slide = state.slides[i];
+        if (slideHasVideo(slide)) { toast('Le slide con video non si possono inviare al sito: esporta il file e caricalo manualmente.', 'error'); return; }
+        state.isExporting = true; b.disabled = true; const orig = b.textContent; b.textContent = '…';
+        try {
+            await document.fonts.ready;
+            const r = await renderSlideToFile(slide, i, `slide-${i + 1}.png`);
+            if (!window.opener || window.opener.closed) throw new Error('La finestra del sito è stata chiusa: riapri Carousell dal sito.');
+            window.opener.postMessage({ type: 'carousell-to-sito', dataUrl: r.dataUrl, isStory: !!slide.isStory }, '*');
+            toast('Slide inviata al sito ✓', 'success');
+        } catch (e) {
+            toast('Invio non riuscito.' + (e && e.message ? ' ' + e.message : ''), 'error');
+        }
+        state.isExporting = false; b.disabled = false; b.textContent = orig;
+    });
+})();
+
 // ════════ MOBILE UI: tab bar + bottom sheet (sostituisce il popup editor) ════════
 // I tab NON duplicano i controlli: spostano dentro la sheet i VERI nodi del
 // pannello sinistro (i listener sopravvivono al reparenting, renderEditor()
