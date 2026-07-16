@@ -758,7 +758,7 @@
             <p><strong>2. Testo sulla Slide:</strong> Due layout indipendenti. Trascinali nell'anteprima per riposizionarli.</p>
             <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione).</p>
             <p><strong>4. Immagini in Primo Piano Multiple:</strong> Carica quante immagini vuoi sopra lo sfondo. Trascinale nell'anteprima per spostarle e regola la loro dimensione dal pannello "Modifica Slide".</p>
-            <p><strong>5. Su Mobile:</strong> L'anteprima occupa tutto lo schermo; i controlli si aprono dalla barra in basso (Slide, Testi, Slides, Brand, Post). Trascina la maniglia del pannello per allargarlo o chiuderlo, e usa due dita sullo sfondo per zoomare.</p>
+            <p><strong>5. Su Mobile:</strong> L'anteprima occupa tutto lo schermo; i controlli si aprono dalla barra in basso (Slide, Testi, Slides, Brand, Post). Trascina la maniglia del pannello per allargarlo o chiuderlo, e usa due dita per zoomare lo sfondo o le immagini in primo piano (un dito sull'immagine, l'altro dove vuoi).</p>
             <p><strong>6. Mockup Instagram:</strong> Attiva "Feed" per vedere la slide nel contesto di un post.</p>
             <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
             <p><strong>8. Duplica:</strong> Il tasto "Duplica" (icona a due riquadri) copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
@@ -1981,6 +1981,7 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag, keepInside =
 
     function onStart(e) {
         if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
+        if (e.touches && e.touches.length >= 2) return; // pinch: gestito da bindFgPinch
         e.preventDefault(); e.stopPropagation();
         el.classList.add('dragging');
 
@@ -2015,6 +2016,7 @@ function bindDragElement(el, ox_key, oy_key, dataFinder, afterDrag, keepInside =
         const clampY = v => Math.max(minY, Math.min(maxY, v));
 
         function onMove(e) {
+            if (e.touches && e.touches.length >= 2) return; // pinch in corso: non trascinare
             const t = e.touches ? e.touches[0] : e;
             let nx = clampX((t.clientX - rect.left - ox) / rect.width  * 100);
             let ny = clampY((t.clientY - rect.top  - oy) / rect.height * 100);
@@ -2045,11 +2047,67 @@ function bindAllDrags() {
     // I due blocchi di TESTO restano sempre interamente dentro il riquadro (keepInside)
     bindDragElement(document.getElementById('preview-overlay-drag'), 'x', 'y', () => s.textOverlay?.enabled ? s.textOverlay : null, null, true);
     bindDragElement(document.getElementById('preview-cover-text-drag'), 'coverTextX', 'coverTextY', () => s.coverEnabled ? s : null, null, true);
-    
+
     document.querySelectorAll('.preview-fg-drag').forEach(el => {
-        bindDragElement(el, 'x', 'y', () => s.fgImages.find(f => f.id === el.dataset.fgId));
+        const findFg = () => s.fgImages.find(f => f.id === el.dataset.fgId);
+        bindDragElement(el, 'x', 'y', findFg);
+        bindFgPinch(el, findFg);
     });
     bindBgDrag();
+}
+
+// Pinch-to-zoom (due dita) sulle immagini in primo piano: aggiorna fg.size con
+// feedback live (width dell'elemento) e commit al rilascio, come per lo sfondo.
+// Il primo dito deve stare sull'immagine; il secondo può atterrare ovunque
+// (le immagini fg possono essere piccole, pretendere due dita sopra è scomodo).
+function bindFgPinch(el, dataFinder) {
+    const FG_SIZE_MIN = 10, FG_SIZE_MAX = 200; // stessi limiti dello slider
+    const dist = ts => Math.hypot(ts[0].clientX - ts[1].clientX, ts[0].clientY - ts[1].clientY);
+
+    function startPinch(e) {
+        const f = dataFinder();
+        if (!f) return;
+        if (e.cancelable) e.preventDefault();
+        const d0 = dist(e.touches);
+        if (!d0) return;
+        const s0 = f.size ?? 40;
+        const onMove = (ev) => {
+            if (!ev.touches || ev.touches.length < 2) return;
+            if (ev.cancelable) ev.preventDefault();
+            const v = Math.round(Math.max(FG_SIZE_MIN, Math.min(FG_SIZE_MAX, s0 * dist(ev.touches) / d0)));
+            f.size = v;
+            el.style.width = v + '%';
+            // Sincronizza lo slider della card (se montato, anche dentro la sheet mobile)
+            const sl = DOM.fgImagesList?.querySelector(`.fg-size-slider[data-id="${f.id}"]`);
+            if (sl) { sl.value = v; sl.parentElement.querySelector('span:last-child').textContent = v + '%'; }
+        };
+        const onEnd = (ev) => {
+            if (ev.touches && ev.touches.length >= 2) return;
+            window.removeEventListener('touchmove', onMove);
+            window.removeEventListener('touchend', onEnd);
+            window.removeEventListener('touchcancel', onEnd);
+            renderPreview(); trackChange(true);
+        };
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+        window.addEventListener('touchcancel', onEnd);
+    }
+
+    el.addEventListener('touchstart', (e) => {
+        if (e.touches.length >= 2) return startPinch(e);
+        // Un solo dito sull'immagine: "arma" il pinch — se un secondo dito tocca
+        // in qualunque punto dello schermo mentre questo è ancora giù, si zooma.
+        const arm = (e2) => { if (e2.touches.length >= 2) { cleanup(); startPinch(e2); } };
+        const cleanup = () => {
+            window.removeEventListener('touchstart', arm);
+            window.removeEventListener('touchend', maybeCleanup);
+            window.removeEventListener('touchcancel', maybeCleanup);
+        };
+        const maybeCleanup = (e2) => { if (!e2.touches.length) cleanup(); };
+        window.addEventListener('touchstart', arm, { passive: false });
+        window.addEventListener('touchend', maybeCleanup);
+        window.addEventListener('touchcancel', maybeCleanup);
+    }, { passive: false });
 }
 
 // Pan dell'immagine di sfondo: aggiorna bgX/bgY (offset in % del contenitore).
