@@ -1286,7 +1286,6 @@ const state = {
     // Set di slide per il carosello (1080x1350)
     carouselSlides: [makeDefaultSlide('slide-0', {
         coverEnabled: true, coverUppercase: true, coverDarkOverlay: true, coverShowNews: true,
-        title: 'Titolo Copertina', body: 'Testo di copertina.', source: 'Fonte: theverge.com',
     })],
     // Set per le Storie: una sola slide in formato 1080x1920 (9:16)
     storySlides: [makeDefaultSlide('story-0', { isStory: true })],
@@ -1627,7 +1626,7 @@ function _serializeSlide(s) {
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
         // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
-        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW, bgRemoved: !!f.bgRemoved })),
+        fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW, behindOverlay: !!f.behindOverlay, bgRemoved: !!f.bgRemoved })),
         hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
     };
 }
@@ -1672,6 +1671,11 @@ function _rebuildSlide(s, idx, forceStory) {
         pSlide.fgImages.push({ id: 'fg-legacy', type: 'image', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40, filters: { ...DEFAULT_FILTERS } });
     }
     delete pSlide.coverStyle;
+    // I testi demo prefillati delle vecchie versioni non vanno più mostrati:
+    // si svuotano solo se corrispondono ESATTAMENTE ai default storici.
+    if (pSlide.title === 'Titolo Copertina') pSlide.title = '';
+    if (pSlide.body === 'Testo di copertina.') pSlide.body = '';
+    if (/^Fonte:\s*theverge\.com$/i.test(pSlide.source || '')) pSlide.source = '';
     return pSlide;
 }
 
@@ -1831,7 +1835,8 @@ function generateFgImagesHTML(slide, forPreview) {
     return slide.fgImages.map(fg => {
         const safeUrl = safeMediaUrl(fg.url);
         if (!safeUrl) return '';
-        const baseStyle = `position:absolute;left:${fg.x??50}%;top:${fg.y??50}%;transform:translate(-50%,-50%);width:${fg.size??40}%;z-index:30;pointer-events:auto;`;
+        // z-index: 30 = davanti all'overlay scuro della copertina (z10, default), 5 = dietro (scelta per-immagine)
+        const baseStyle = `position:absolute;left:${fg.x??50}%;top:${fg.y??50}%;transform:translate(-50%,-50%);width:${fg.size??40}%;z-index:${fg.behindOverlay ? 5 : 30};pointer-events:auto;`;
         const filterCss = buildFilterCss(fg.filters);
         const vignetteHtml = buildVignetteOverlay(fg.filters?.vignette);
         const filterStyle = filterCss ? `filter:${filterCss};` : '';
@@ -1922,9 +1927,8 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(decorateSource(slide.source))}</div>` : '';
-
-    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
+    // La fonte ("From") non viene più mostrata sulla copertina: resta solo nella caption del post.
+    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
 
 // DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
@@ -2210,8 +2214,8 @@ function renderEditor() {
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center"></div>
                     <div class="flex-grow flex flex-col gap-1">
-                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'Video':'Img'} ${idx+1}</span><span class="text-[#0071E3]">${fg.size}%</span></div>
-                        <input type="range" min="10" max="100" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
+                        <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>${fg.type==='video'?'Video':'Img'} ${idx+1} — Zoom</span><span class="text-[#0071E3]">${fg.size}%</span></div>
+                        <input type="range" min="10" max="200" step="1" value="${fg.size}" class="w-full fg-size-slider" data-id="${fg.id}">
                     </div>
                     <button class="text-gray-500 hover:text-black p-2 fg-filter-toggle bg-gray-50 rounded-lg transition-all" data-id="${fg.id}" title="Filtri" aria-label="Filtri immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
                     <button class="text-red-500 hover:text-red-700 p-2 fg-delete-btn bg-red-50 rounded-lg transition-all" data-id="${fg.id}" title="Rimuovi" aria-label="Rimuovi immagine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
@@ -2222,6 +2226,10 @@ function renderEditor() {
                         <input type="range" min="1" max="12" step="0.5" value="${fg.frameW ?? 1}" class="w-20 fg-frame-slider ${fg.frame ? '' : 'opacity-40 pointer-events-none'}" data-id="${fg.id}" aria-label="Spessore riquadro">
                         <div class="toggle-track ${fg.frame ? 'on' : ''} fg-frame-toggle" data-id="${fg.id}" role="switch" aria-label="Attiva riquadro bianco"><div class="toggle-thumb"></div></div>
                     </div>
+                </label>
+                <label class="flex items-center justify-between gap-2 cursor-pointer select-none pt-2 border-t border-gray-100">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Dietro l'overlay scuro</span>
+                    <div class="toggle-track ${fg.behindOverlay ? 'on' : ''} fg-behind-toggle" data-id="${fg.id}" role="switch" aria-label="Metti l'immagine dietro l'overlay scuro"><div class="toggle-thumb"></div></div>
                 </label>
                 ${fg.type !== 'video' ? `<button class="fg-removebg-btn w-full py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all inline-flex items-center justify-center gap-1.5 ${bgRemovalBusy.has(fg.id) ? 'opacity-50 pointer-events-none border-gray-200 bg-gray-50 text-gray-400' : (fg.bgRemoved ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100')}" data-id="${fg.id}">${bgRemovalBusy.has(fg.id) ? ico('hourglass', 11) + ' Rimozione in corso…' : (fg.bgRemoved ? ico('restore', 11) + ' Ripristina sfondo' : ico('scissors', 11) + ' Rimuovi sfondo (AI)')}</button>` : ''}
                 <div class="fg-filter-panel hidden flex flex-col gap-2 pt-2 border-t border-gray-100">
@@ -2300,6 +2308,16 @@ function renderEditor() {
                 const sl = DOM.fgImagesList.querySelector(`.fg-frame-slider[data-id="${f.id}"]`);
                 if (sl) { sl.classList.toggle('opacity-40', !f.frame); sl.classList.toggle('pointer-events-none', !f.frame); }
                 refreshFrames(); trackChange(true);
+            });
+        });
+        // Posizione rispetto all'overlay scuro della copertina: davanti (default) o dietro
+        DOM.fgImagesList.querySelectorAll('.fg-behind-toggle').forEach(tr => {
+            tr.addEventListener('click', () => {
+                const f = slide.fgImages.find(x => x.id === tr.dataset.id);
+                if (!f) return;
+                f.behindOverlay = !f.behindOverlay;
+                tr.classList.toggle('on', f.behindOverlay);
+                renderPreview(); trackChange(true);
             });
         });
         // Riquadro bianco: spessore
@@ -2792,38 +2810,6 @@ async function share() {
     }
     DOM.shareModal.classList.remove('active');
 }
-
-// ════════ Integrazione con il sito galleria iTavix (../index.html) ════════
-// Se l'app viene aperta dal sito (?sito=1, via window.open), accanto a
-// "Esporta" compare "Invia al sito": esporta la slide attiva come PNG e la
-// rimanda alla finestra del sito via postMessage, che la usa come immagine
-// del nuovo contenuto. Nessun effetto quando l'app è aperta normalmente.
-(function () {
-    let daSito = false;
-    try { daSito = new URLSearchParams(location.search).has('sito') && !!window.opener; } catch (_) {}
-    if (!daSito || !DOM.btnExport) return;
-    const b = document.createElement('button');
-    b.id = 'btn-invia-sito';
-    b.className = DOM.btnExportSingle ? DOM.btnExportSingle.className : DOM.btnExport.className;
-    b.textContent = '↗ Invia al sito';
-    DOM.btnExport.parentNode.insertBefore(b, DOM.btnExport);
-    b.addEventListener('click', async () => {
-        if (state.isExporting) return;
-        const i = state.activeIndex, slide = state.slides[i];
-        if (slideHasVideo(slide)) { toast('Le slide con video non si possono inviare al sito: esporta il file e caricalo manualmente.', 'error'); return; }
-        state.isExporting = true; b.disabled = true; const orig = b.textContent; b.textContent = '…';
-        try {
-            await document.fonts.ready;
-            const r = await renderSlideToFile(slide, i, `slide-${i + 1}.png`);
-            if (!window.opener || window.opener.closed) throw new Error('La finestra del sito è stata chiusa: riapri Carousell dal sito.');
-            window.opener.postMessage({ type: 'carousell-to-sito', dataUrl: r.dataUrl, isStory: !!slide.isStory }, '*');
-            toast('Slide inviata al sito ✓', 'success');
-        } catch (e) {
-            toast('Invio non riuscito.' + (e && e.message ? ' ' + e.message : ''), 'error');
-        }
-        state.isExporting = false; b.disabled = false; b.textContent = orig;
-    });
-})();
 
 // ════════ MOBILE UI: tab bar + bottom sheet (sostituisce il popup editor) ════════
 // I tab NON duplicano i controlli: spostano dentro la sheet i VERI nodi del
