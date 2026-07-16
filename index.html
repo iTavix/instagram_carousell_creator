@@ -1927,8 +1927,10 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
         ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
-    // La fonte ("From") non viene più mostrata sulla copertina: resta solo nella caption del post.
-    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
+    // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
+    // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
+    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
+    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
 }
 
 // DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
