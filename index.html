@@ -1755,9 +1755,14 @@ async function saveFgsToIDB(slide) {
 }
 
 // ════════ UNDO/REDO (UX #1) ════════
-const history = { stack: [], future: [], suppress: false };
-function _captureState() {
-    return deepClone({
+// `last` è la baseline: la copia dello stato com'era DOPO l'ultimo snapshot
+// committato. Serve perché snapshot() viene chiamato dai handler DOPO la
+// mutazione: lo stato da mettere nello stack undo è quello precedente (last),
+// non quello corrente — altrimenti il primo "Annulla" ripristina lo stato in
+// cui si è già (bug storico: undo sembrava non fare nulla al primo click).
+const history = { stack: [], future: [], suppress: false, last: null, lastJson: null };
+function _rawState() {
+    return {
         mode: state.mode,
         carouselSlides: state.carouselSlides,
         storySlides: state.storySlides,
@@ -1768,16 +1773,42 @@ function _captureState() {
         logoSize: state.logoSize,
         themeLogoSize: state.themeLogoSize,
         newsSize: state.newsSize,
-    });
+    };
 }
+function _captureState() { return deepClone(_rawState()); }
 function snapshot() {
     if (history.suppress) return;
-    history.stack.push(_captureState());
-    if (history.stack.length > HISTORY_MAX) history.stack.shift();
+    const json = JSON.stringify(_rawState());
+    // Dedup: trackChange tardivi senza modifiche reali (es. debounce che scatta
+    // dopo un undo) non devono impilare snapshot duplicati (= undo "a vuoto").
+    if (json === history.lastJson) return;
+    if (history.last) {
+        history.stack.push(history.last); // stato PRE-modifica
+        if (history.stack.length > HISTORY_MAX) history.stack.shift();
+    }
+    history.last = JSON.parse(json);
+    history.lastJson = json;
     history.future.length = 0; // ogni nuova azione cancella la coda redo
     updateHistoryButtons();
 }
-const snapshotDebounced = debounce(snapshot, 350);
+// La baseline dev'essere una COPIA: dopo undo/redo lo snapshot ripristinato
+// diventa lo stato vivo, e se `last` puntasse allo stesso oggetto le modifiche
+// successive muterebbero anche la history (undo corrotto).
+function _setBaseline(snap) {
+    const j = JSON.stringify(snap);
+    history.last = JSON.parse(j);
+    history.lastJson = j;
+}
+// Debounce con flush esplicito: se l'utente preme Annulla mentre uno snapshot
+// è ancora in attesa (es. sta digitando), prima si committa quello.
+let _snapTimer = null;
+function snapshotDebounced() {
+    clearTimeout(_snapTimer);
+    _snapTimer = setTimeout(() => { _snapTimer = null; snapshot(); }, 350);
+}
+function flushPendingSnapshot() {
+    if (_snapTimer) { clearTimeout(_snapTimer); _snapTimer = null; snapshot(); }
+}
 function restoreFrom(snap) {
     history.suppress = true;
     state.carouselSlides = snap.carouselSlides || state.carouselSlides;
@@ -1802,18 +1833,22 @@ function restoreFrom(snap) {
     updateHistoryButtons();
 }
 function undo() {
+    flushPendingSnapshot(); // committa un'eventuale modifica in attesa di debounce
     if (!history.stack.length) return;
     const current = _captureState();
     const prev = history.stack.pop();
     history.future.push(current);
+    _setBaseline(prev);
     restoreFrom(prev);
     toast('Azione annullata', 'info', 1500);
 }
 function redo() {
+    flushPendingSnapshot();
     if (!history.future.length) return;
     const current = _captureState();
     const next = history.future.pop();
     history.stack.push(current);
+    _setBaseline(next);
     restoreFrom(next);
     toast('Azione ripetuta', 'info', 1500);
 }
@@ -3513,6 +3548,9 @@ if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { cons
 window.addEventListener('load', async () => {
     await openIDB().catch(e => console.warn('IDB non disponibile:', e));
     loadState(); await loadImagesFromIDB(); render();
+    // Baseline undo: lo stato appena caricato è il punto di partenza a cui
+    // il primo "Annulla" deve poter tornare.
+    _setBaseline(_captureState());
     // Mostra la riga fissa sotto la textarea (fonte unica = costante JS)
     // Migrazione: i testi salvati dalle versioni precedenti potevano contenere il footer nel
     // corpo → lo tolgo SOLO se la riga è bloccata (da sbloccata il footer nel corpo è voluto).
