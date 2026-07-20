@@ -372,6 +372,13 @@
                         <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
                     </div>
                     <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
+                    <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                            <label for="input-body-font-size">Dimensione Sottotitolo</label>
+                            <span id="body-font-size-value" class="text-[#0071E3]">36px</span>
+                        </div>
+                        <input type="range" id="input-body-font-size" min="18" max="90" step="1" value="36" class="w-full mt-2"/>
+                    </div>
                     <input type="text" id="input-source" placeholder="Fonte (es. theverge.com)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 text-sm outline-none focus:ring-2 focus:ring-[#0071E3]"/>
 
                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -1306,6 +1313,7 @@ function makeDefaultSlide(id, overrides = {}) {
         coverUppercase: false, coverDarkOverlay: false, coverShowNews: false,
         title: '', body: '', source: '',
         titleFontSize: 110,
+        bodyFontSize: 36,            // dimensione del sottotitolo copertina
         coverTextColor: '#ffffff',   // colore del testo copertina (titolo+sottotitolo+fonte)
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
         coverTextY: 60,
@@ -1359,6 +1367,8 @@ const DOM = {
     inputTitle:            document.getElementById('input-title'),
     inputTitleFontSize:    document.getElementById('input-title-font-size'),
     titleFontSizeValue:    document.getElementById('title-font-size-value'),
+    inputBodyFontSize:     document.getElementById('input-body-font-size'),
+    bodyFontSizeValue:     document.getElementById('body-font-size-value'),
     inputBody:             document.getElementById('input-body'),
     inputSource:           document.getElementById('input-source'),
     inputCaption:          document.getElementById('input-caption'),
@@ -1620,7 +1630,7 @@ function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
         coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
-        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, coverTextColor: s.coverTextColor,
+        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
@@ -1961,7 +1971,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:36px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
     const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
@@ -2446,7 +2456,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -2477,7 +2487,7 @@ const FILTER_RANGES = {
     brightness: { min:50, max:200, step:1, suffix:'%' },
     contrast:   { min:50, max:200, step:1, suffix:'%' },
     saturation: { min:0,  max:200, step:1, suffix:'%' },
-    blur:       { min:0,  max:20,  step:0.5, suffix:'px' },
+    blur:       { min:0,  max:40,  step:0.5, suffix:'px' },
     vignette:   { min:0,  max:100, step:1, suffix:'%' },
 };
 const FILTER_LABELS = { brightness:'Luminosità', contrast:'Contrasto', saturation:'Saturazione', blur:'Sfocatura', vignette:'Vignetta' };
@@ -2606,6 +2616,69 @@ function loadHtml2canvas() {
     return _html2canvasLoaded;
 }
 
+// ════════ BAKE FILTRI PER L'EXPORT ════════
+// html2canvas ignora la proprietà CSS `filter`: sfocatura, luminosità, contrasto
+// e saturazione si vedevano in anteprima ma SPARIVANO dal file esportato. Prima
+// della cattura i filtri vengono quindi "cotti" nell'immagine con canvas 2D
+// (ctx.filter), e azzerati nell'HTML di export. La vignetta è un overlay div
+// (radial-gradient) che html2canvas rende correttamente, quindi resta com'è.
+function ctxFilterSupported() {
+    const t = document.createElement('canvas').getContext('2d');
+    t.filter = 'blur(2px)';
+    return t.filter === 'blur(2px)';
+}
+// `dispWFor(natW, natH)` = larghezza a cui l'immagine è RESA nella slide (in px
+// 1080-based). Serve per scalare il blur: in CSS i px di blur si applicano alla
+// dimensione visualizzata, non a quella naturale — una foto 4000px sfocata a
+// 12px e poi ridotta a 1080 apparirebbe quasi nitida senza questa correzione.
+async function bakeFilteredImage(url, filters, dispWFor) {
+    if (!buildFilterCss(filters)) return null;
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const natW = img.naturalWidth, natH = img.naturalHeight;
+    if (!natW || !natH) return null;
+    const dispW = Math.max(1, dispWFor(natW, natH));
+    // Bake a 2x della dimensione resa (= EXPORT_SCALE) per non perdere qualità,
+    // senza superare il naturale (upscalare non aggiunge nulla) né 6000px (memoria).
+    const w = Math.max(1, Math.round(Math.min(dispW * 2, Math.max(natW, dispW), 6000)));
+    const h = Math.max(1, Math.round(natH * w / natW));
+    const cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
+    const ctx = cnv.getContext('2d');
+    const parts = [];
+    const base = buildFilterCss({ ...filters, blur: 0 });
+    if (base) parts.push(base);
+    const blurBaked = (filters.blur || 0) * (w / dispW);
+    if (blurBaked > 0) parts.push(`blur(${blurBaked.toFixed(2)}px)`);
+    ctx.filter = parts.join(' ');
+    ctx.drawImage(img, 0, 0, w, h);
+    return cnv.toDataURL('image/png'); // PNG: il blur crea bordi semi-trasparenti
+}
+// Ritorna una copia della slide con i filtri cotti nelle immagini (o la slide
+// stessa se non c'è nulla da fare / ctx.filter non supportato → export come prima).
+async function bakeSlideForExport(slide) {
+    const bgCss = slide.image ? buildFilterCss(slide.bgFilters) : '';
+    const fgToBake = (slide.fgImages || []).filter(f => f.type !== 'video' && f.url && buildFilterCss(f.filters));
+    if ((!bgCss && !fgToBake.length) || !ctxFilterSupported()) return slide;
+    const SLIDE_H = slide.isStory ? 1920 : 1350;
+    const clone = { ...slide, bgFilters: { ...slide.bgFilters }, fgImages: (slide.fgImages || []).map(f => ({ ...f, filters: f.filters ? { ...f.filters } : f.filters })) };
+    try {
+        if (bgCss) {
+            // Sfondo "cover": larghezza resa di base = max(1080, natW*SLIDE_H/natH)
+            const baked = await bakeFilteredImage(safeImageUrl(clone.image), clone.bgFilters, (nw, nh) => Math.max(1080, nw * SLIDE_H / nh));
+            if (baked) { clone.image = baked; clone.bgFilters = { ...DEFAULT_FILTERS, vignette: clone.bgFilters.vignette || 0 }; }
+        }
+        for (const f of clone.fgImages) {
+            if (f.type === 'video' || !f.url || !buildFilterCss(f.filters)) continue;
+            // Se c'è il riquadro bianco si cuoce il filtro sopra l'immagine GIÀ
+            // incorniciata (in anteprima il filtro CSS agisce anche sulla cornice).
+            const src = getFramedUrl(f) || safeMediaUrl(f.url);
+            if (!src) continue;
+            const baked = await bakeFilteredImage(src, f.filters, () => 1080 * (f.size ?? 40) / 100);
+            if (baked) { f.url = baked; f.frame = false; f.filters = { ...DEFAULT_FILTERS, vignette: f.filters.vignette || 0 }; }
+        }
+    } catch (e) { console.warn('Bake filtri export fallito, uso le immagini originali:', e); return slide; }
+    return clone;
+}
+
 // EXPORT
 async function renderSlideToFile(slide, index, fileName) {
     const h2c = await loadHtml2canvas();
@@ -2613,7 +2686,9 @@ async function renderSlideToFile(slide, index, fileName) {
     await preloadSlideAssets(slide);
     await ensureFramedImages(slide);
     await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
-    const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(slide, index, false);
+    // Filtri (sfocatura ecc.) cotti nelle immagini: html2canvas ignora i filter CSS
+    const exportSlide = await bakeSlideForExport(slide);
+    const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(exportSlide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
     // Le storie hanno un nome file dedicato
     const outName = slide.isStory ? 'storia.png' : fileName;
@@ -3266,6 +3341,7 @@ bindCoverFlagToggle(DOM.coverOverlayToggleTrack,   DOM.toggleCoverDarkOverlay, D
 bindCoverFlagToggle(DOM.coverNewsToggleTrack,      DOM.toggleCoverShowNews,    DOM.coverNewsToggleLabel,      'coverShowNews');
 
 DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
+DOM.inputBodyFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].bodyFontSize=v; DOM.bodyFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
 const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
