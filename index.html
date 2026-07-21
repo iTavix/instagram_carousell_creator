@@ -2622,10 +2622,94 @@ function loadHtml2canvas() {
 // della cattura i filtri vengono quindi "cotti" nell'immagine con canvas 2D
 // (ctx.filter), e azzerati nell'HTML di export. La vignetta è un overlay div
 // (radial-gradient) che html2canvas rende correttamente, quindi resta com'è.
+// Rilevamento FUNZIONALE di ctx.filter: Safari accetta la proprietà ma non
+// applica l'effetto, quindi controllare il valore riflesso non basta — si
+// disegna una mezza riga bianca con blur e si verifica che sia "sanguinata"
+// oltre il bordo. Risultato cacheato.
+let _ctxFilterOk = null;
 function ctxFilterSupported() {
-    const t = document.createElement('canvas').getContext('2d');
-    t.filter = 'blur(2px)';
-    return t.filter === 'blur(2px)';
+    if (_ctxFilterOk !== null) return _ctxFilterOk;
+    try {
+        const c = document.createElement('canvas'); c.width = 8; c.height = 1;
+        const x = c.getContext('2d');
+        x.filter = 'blur(2px)';
+        x.fillStyle = '#fff';
+        x.fillRect(0, 0, 4, 1);
+        _ctxFilterOk = x.getImageData(6, 0, 1, 1).data[3] > 0;
+    } catch (_) { _ctxFilterOk = false; }
+    return _ctxFilterOk;
+}
+
+// ── Fallback manuale (Safari: niente ctx.filter) ──
+// Luminosità/contrasto/saturazione secondo le formule della spec Filter Effects
+// (stesso ordine di buildFilterCss), blur = gaussiana approssimata con 3 box
+// blur (algoritmo di Kutskir), sigma = px di blur come da spec CSS.
+function _boxesForGauss(sigma, n) {
+    const wIdeal = Math.sqrt((12 * sigma * sigma / n) + 1);
+    let wl = Math.floor(wIdeal); if (wl % 2 === 0) wl--;
+    const wu = wl + 2;
+    const m = Math.round((12 * sigma * sigma - n * wl * wl - 4 * n * wl - 3 * n) / (-4 * wl - 4));
+    const sizes = [];
+    for (let i = 0; i < n; i++) sizes.push(i < m ? wl : wu);
+    return sizes;
+}
+function _boxBlurH(src, dst, w, h, r) {
+    const iarr = 1 / (2 * r + 1);
+    for (let y = 0; y < h; y++) {
+        let ti = y * w, li = ti, ri = ti + r;
+        const fv = src[ti], lv = src[ti + w - 1];
+        let val = (r + 1) * fv;
+        for (let j = 0; j < r; j++) val += src[ti + j];
+        for (let j = 0; j <= r; j++)         { val += src[ri++] - fv;        dst[ti++] = Math.round(val * iarr); }
+        for (let j = r + 1; j < w - r; j++)  { val += src[ri++] - src[li++]; dst[ti++] = Math.round(val * iarr); }
+        for (let j = w - r; j < w; j++)      { val += lv        - src[li++]; dst[ti++] = Math.round(val * iarr); }
+    }
+}
+function _boxBlurV(src, dst, w, h, r) {
+    const iarr = 1 / (2 * r + 1);
+    for (let x = 0; x < w; x++) {
+        let ti = x, li = ti, ri = ti + r * w;
+        const fv = src[ti], lv = src[ti + w * (h - 1)];
+        let val = (r + 1) * fv;
+        for (let j = 0; j < r; j++) val += src[ti + j * w];
+        for (let j = 0; j <= r; j++)         { val += src[ri] - fv;      dst[ti] = Math.round(val * iarr); ri += w; ti += w; }
+        for (let j = r + 1; j < h - r; j++)  { val += src[ri] - src[li]; dst[ti] = Math.round(val * iarr); li += w; ri += w; ti += w; }
+        for (let j = h - r; j < h; j++)      { val += lv      - src[li]; dst[ti] = Math.round(val * iarr); li += w; ti += w; }
+    }
+}
+function _gaussBlurRGBA(data, w, h, sigma) {
+    const boxes = _boxesForGauss(sigma, 3);
+    const n = w * h;
+    const a = new Uint8ClampedArray(n), b = new Uint8ClampedArray(n);
+    for (let ch = 0; ch < 4; ch++) {
+        for (let i = 0; i < n; i++) a[i] = data[i * 4 + ch];
+        for (const bs of boxes) {
+            // r limitato alla metà del lato: finestre più larghe dell'immagine degenerano
+            const rH = Math.min((bs - 1) / 2, Math.floor((w - 1) / 2));
+            const rV = Math.min((bs - 1) / 2, Math.floor((h - 1) / 2));
+            _boxBlurH(a, b, w, h, rH);
+            _boxBlurV(b, a, w, h, rV);
+        }
+        for (let i = 0; i < n; i++) data[i * 4 + ch] = a[i];
+    }
+}
+function applyFiltersManually(ctx, w, h, f) {
+    const id = ctx.getImageData(0, 0, w, h);
+    const d = id.data;
+    const b = (f.brightness ?? 100) / 100, c = (f.contrast ?? 100) / 100, s = (f.saturation ?? 100) / 100;
+    if (b !== 1 || c !== 1 || s !== 1) {
+        const ci = 255 * (0.5 - c / 2);
+        for (let i = 0; i < d.length; i += 4) {
+            let r = d[i] * b * c + ci, g = d[i+1] * b * c + ci, bl = d[i+2] * b * c + ci;
+            if (s !== 1) {
+                const lum = 0.213 * r + 0.715 * g + 0.072 * bl;
+                r = lum + (r - lum) * s; g = lum + (g - lum) * s; bl = lum + (bl - lum) * s;
+            }
+            d[i] = r; d[i+1] = g; d[i+2] = bl; // Uint8ClampedArray clampa da sé
+        }
+    }
+    if ((f.blur || 0) > 0.25) _gaussBlurRGBA(d, w, h, f.blur);
+    ctx.putImageData(id, 0, 0);
 }
 // `dispWFor(natW, natH)` = larghezza a cui l'immagine è RESA nella slide (in px
 // 1080-based). Serve per scalare il blur: in CSS i px di blur si applicano alla
@@ -2643,13 +2727,19 @@ async function bakeFilteredImage(url, filters, dispWFor) {
     const h = Math.max(1, Math.round(natH * w / natW));
     const cnv = document.createElement('canvas'); cnv.width = w; cnv.height = h;
     const ctx = cnv.getContext('2d');
-    const parts = [];
-    const base = buildFilterCss({ ...filters, blur: 0 });
-    if (base) parts.push(base);
     const blurBaked = (filters.blur || 0) * (w / dispW);
-    if (blurBaked > 0) parts.push(`blur(${blurBaked.toFixed(2)}px)`);
-    ctx.filter = parts.join(' ');
-    ctx.drawImage(img, 0, 0, w, h);
+    if (ctxFilterSupported()) {
+        const parts = [];
+        const base = buildFilterCss({ ...filters, blur: 0 });
+        if (base) parts.push(base);
+        if (blurBaked > 0) parts.push(`blur(${blurBaked.toFixed(2)}px)`);
+        ctx.filter = parts.join(' ');
+        ctx.drawImage(img, 0, 0, w, h);
+    } else {
+        // Safari: ctx.filter non applica nulla → filtri calcolati sui pixel
+        ctx.drawImage(img, 0, 0, w, h);
+        applyFiltersManually(ctx, w, h, { ...filters, blur: blurBaked });
+    }
     return cnv.toDataURL('image/png'); // PNG: il blur crea bordi semi-trasparenti
 }
 // Ritorna una copia della slide con i filtri cotti nelle immagini (o la slide
@@ -2657,7 +2747,7 @@ async function bakeFilteredImage(url, filters, dispWFor) {
 async function bakeSlideForExport(slide) {
     const bgCss = slide.image ? buildFilterCss(slide.bgFilters) : '';
     const fgToBake = (slide.fgImages || []).filter(f => f.type !== 'video' && f.url && buildFilterCss(f.filters));
-    if ((!bgCss && !fgToBake.length) || !ctxFilterSupported()) return slide;
+    if (!bgCss && !fgToBake.length) return slide;
     const SLIDE_H = slide.isStory ? 1920 : 1350;
     const clone = { ...slide, bgFilters: { ...slide.bgFilters }, fgImages: (slide.fgImages || []).map(f => ({ ...f, filters: f.filters ? { ...f.filters } : f.filters })) };
     try {
@@ -2797,8 +2887,11 @@ async function renderSlideVideoToFile(slide, index, baseName) {
     await ensureFramedImages(slide);
     await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
     const SLIDE_H = slide.isStory ? 1920 : 1350;
+    // Anche qui i filtri vanno cotti: il layer statico è catturato con html2canvas,
+    // che ignora i filter CSS (i video mantengono il loro filtro via ctx.filter nel draw).
+    const exportSlide = await bakeSlideForExport(slide);
     const wrap = document.createElement('div');
-    wrap.innerHTML = generateSlideHTML(slide, index, false);
+    wrap.innerHTML = generateSlideHTML(exportSlide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
     const container = wrap.firstChild;
 
