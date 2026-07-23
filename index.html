@@ -665,6 +665,7 @@
             <div class="flex flex-col gap-0.5 min-w-0 flex-1">
                 <span id="caption-footer-label" class="text-[11px] font-semibold text-[#9A3412] uppercase tracking-wide">Riga fissa sempre inclusa</span>
                 <span id="caption-footer-text" class="text-xs text-[#7C2D12] break-words"></span>
+                <span id="caption-hashtags-text" class="text-xs text-[#0071E3] break-words font-medium hidden"></span>
             </div>
             <button id="btn-footer-lock" type="button" title="Blocca o sblocca la riga fissa" class="text-[11px] font-medium text-[#9A3412] bg-white/70 border border-[#FED7AA] rounded-full px-2.5 py-1 hover:bg-white transition-all flex-shrink-0">Sblocca</button>
         </div>
@@ -1445,6 +1446,7 @@ const DOM = {
     inputCaption:          document.getElementById('input-caption'),
     captionFooterText:     document.getElementById('caption-footer-text'),
     captionFooterLabel:    document.getElementById('caption-footer-label'),
+    captionHashtagsText:   document.getElementById('caption-hashtags-text'),
     btnFooterLock:         document.getElementById('btn-footer-lock'),
     captionStatus:         document.getElementById('caption-status'),
     captionCount:          document.getElementById('caption-count'),
@@ -1622,45 +1624,55 @@ function coverTextShadow(hex, soft) {
 // visiva vera dei pixel richiederebbe un secondo modello AI (~40MB) con qualità
 // scarsa sui temi LEGO: il testo è più preciso e istantaneo.
 const CAPTION_BASE_TAGS = ['#lego', '#legominifigures', '#legoinstagram'];
+// Ogni tag porta la sua NOTORIETÀ verificata (stima in migliaia di post su IG,
+// da ricerca luglio 2026 — fonti: brickpredator.com, best-hashtags, conoscenza
+// delle community LEGO). Un tag sotto MIN_TAG_POP non viene mai inserito:
+// meglio un fallback popolare che un hashtag che non usa nessuno.
+const MIN_TAG_POP = 50; // migliaia di post
 const THEME_TAG_RULES = [
-    { rx: /star\s*wars|jedi|sith|darth|vader|skywalker|mandalorian|grogu|clone\s*wars|stormtrooper|r2[- ]?d2|millennium\s*falcon|x[- ]?wing|death\s*star/i, tags: ['#legostarwars', '#starwars'] },
-    { rx: /technic/i, tags: ['#legotechnic'] },
-    { rx: /harry\s*potter|hogwarts|silente|dumbledore|grifondoro|gryffindor/i, tags: ['#legoharrypotter'] },
-    { rx: /marvel|avengers|spider[- ]?man|iron\s*man|hulk|thanos|x[- ]?men|deadpool|venom|wolverine/i, tags: ['#legomarvel'] },
-    { rx: /batman|superman|\bdc\b|joker|gotham/i, tags: ['#legobatman', '#legodc'] },
-    { rx: /ninjago/i, tags: ['#legoninjago'] },
-    { rx: /\bcity\b|città/i, tags: ['#legocity'] },
-    { rx: /\bicons\b/i, tags: ['#legoicons'] },
-    { rx: /\bideas\b/i, tags: ['#legoideas'] },
-    { rx: /\bf1\b|formula\s*1|ferrari|mclaren|red\s*bull\s*racing/i, tags: ['#legof1', '#f1'] },
-    { rx: /speed\s*champions|porsche|lamborghini|bugatti|aston\s*martin/i, tags: ['#legospeedchampions'] },
-    { rx: /minecraft/i, tags: ['#legominecraft'] },
-    { rx: /\bmario\b|luigi|\bpeach\b|bowser/i, tags: ['#legosupermario'] },
-    { rx: /zelda|hyrule|\blink\b/i, tags: ['#legozelda'] },
-    { rx: /animal\s*crossing/i, tags: ['#legoanimalcrossing'] },
-    { rx: /jurassic|dinosaur|dinosaur[oi]|t[- ]?rex/i, tags: ['#legojurassicworld'] },
-    { rx: /disney|frozen|encanto|stitch|topolino|mickey/i, tags: ['#legodisney'] },
-    { rx: /botanic|fior[ei]|flower|orchid|bonsai|piant[ae]|bouquet/i, tags: ['#legobotanicals', '#legoflowers'] },
-    { rx: /architecture|skyline/i, tags: ['#legoarchitecture'] },
-    { rx: /modular/i, tags: ['#legomodular'] },
-    { rx: /castello|castle|cavalier[ei]|knight|medieval[ei]?/i, tags: ['#legocastle'] },
-    { rx: /pirat[aei]/i, tags: ['#legopirates'] },
-    { rx: /tren[oi]|train/i, tags: ['#legotrains'] },
-    { rx: /friends/i, tags: ['#legofriends'] },
-    { rx: /creator/i, tags: ['#legocreator'] },
-    { rx: /\bucs\b/i, tags: ['#ucs'] },
-    { rx: /\bgwp\b|gift\s*with\s*purchase/i, tags: ['#legogwp'] },
-    { rx: /\bmoc\b/i, tags: ['#legomoc', '#moc'] },
-    { rx: /leak|rumor/i, tags: ['#legoleaks'] },
+    { rx: /star\s*wars|jedi|sith|darth|vader|skywalker|mandalorian|grogu|clone\s*wars|stormtrooper|r2[- ]?d2|millennium\s*falcon|x[- ]?wing|death\s*star/i, tags: [['#legostarwars', 3000], ['#starwars', 40000]] },
+    { rx: /technic/i, tags: [['#legotechnic', 800]] },
+    { rx: /harry\s*potter|hogwarts|silente|dumbledore|grifondoro|gryffindor/i, tags: [['#legoharrypotter', 400]] },
+    { rx: /marvel|avengers|spider[- ]?man|iron\s*man|hulk|thanos|x[- ]?men|deadpool|venom|wolverine/i, tags: [['#legomarvel', 600]] },
+    { rx: /batman|superman|\bdc\b|joker|gotham/i, tags: [['#legobatman', 500], ['#legodc', 200]] },
+    { rx: /ninjago/i, tags: [['#legoninjago', 800]] },
+    { rx: /\bcity\b|città/i, tags: [['#legocity', 1200]] },
+    { rx: /\bicons\b/i, tags: [['#legoicons', 150]] },
+    { rx: /\bideas\b/i, tags: [['#legoideas', 400]] },
+    { rx: /\bf1\b|formula\s*1|ferrari|mclaren|red\s*bull\s*racing/i, tags: [['#legof1', 60], ['#f1', 30000]] },
+    { rx: /speed\s*champions|porsche|lamborghini|bugatti|aston\s*martin/i, tags: [['#legospeedchampions', 300]] },
+    { rx: /minecraft/i, tags: [['#legominecraft', 200]] },
+    { rx: /\bmario\b|luigi|\bpeach\b|bowser/i, tags: [['#legosupermario', 250]] },
+    { rx: /zelda|hyrule|\blink\b/i, tags: [['#legozelda', 80]] },
+    { rx: /animal\s*crossing/i, tags: [['#legoanimalcrossing', 80]] },
+    { rx: /jurassic|dinosaur|dinosaur[oi]|t[- ]?rex/i, tags: [['#legojurassicworld', 250]] },
+    { rx: /disney|frozen|encanto|stitch|topolino|mickey/i, tags: [['#legodisney', 400]] },
+    { rx: /botanic|fior[ei]|flower|orchid|bonsai|piant[ae]|bouquet/i, tags: [['#legobotanicals', 300], ['#legoflowers', 250]] },
+    { rx: /architecture|skyline/i, tags: [['#legoarchitecture', 500]] },
+    { rx: /modular/i, tags: [['#legomodular', 150]] },
+    { rx: /castello|castle|cavalier[ei]|knight|medieval[ei]?/i, tags: [['#legocastle', 250]] },
+    { rx: /pirat[aei]/i, tags: [['#legopirates', 150]] },
+    { rx: /tren[oi]|train/i, tags: [['#legotrains', 200]] },
+    { rx: /friends/i, tags: [['#legofriends', 300]] },
+    { rx: /creator/i, tags: [['#legocreator', 400]] },
+    { rx: /\bucs\b/i, tags: [['#ucs', 150]] },
+    { rx: /\bgwp\b|gift\s*with\s*purchase/i, tags: [['#legogwp', 20]] },   // sotto soglia: mai inserito
+    { rx: /\bmoc\b/i, tags: [['#legomoc', 2500], ['#moc', 1500]] },
+    { rx: /leak|rumor/i, tags: [['#legoleaks', 100]] },
 ];
-const THEME_TAG_FALLBACKS = ['#legonews', '#afol'];
+// Fallback ordinati per notorietà (#afol ≈ 2M post, #legonews ≈ 150k)
+const THEME_TAG_FALLBACKS = ['#afol', '#legonews'];
 function themeHashtags(text) {
     const out = [];
     const taken = new Set(CAPTION_BASE_TAGS);
     const add = t => { if (out.length < 2 && !taken.has(t)) { out.push(t); taken.add(t); } };
-    const matched = THEME_TAG_RULES.filter(r => r.rx.test(text || ''));
-    matched.forEach(r => add(r.tags[0]));                 // 1ª passata: tag principale di ogni tema trovato
-    matched.forEach(r => r.tags.slice(1).forEach(add));   // 2ª passata: tag secondari se c'è ancora spazio
+    const matched = THEME_TAG_RULES.map(r => ({
+        ...r,
+        // filtro notorietà + dentro la regola vince il tag più popolare
+        pool: r.tags.filter(([, pop]) => pop >= MIN_TAG_POP).map(([t]) => t),
+    })).filter(r => r.pool.length && r.rx.test(text || ''));
+    matched.forEach(r => add(r.pool[0]));                 // 1ª passata: tag principale di ogni tema trovato
+    matched.forEach(r => r.pool.slice(1).forEach(add));   // 2ª passata: tag secondari se c'è ancora spazio
     THEME_TAG_FALLBACKS.forEach(add);                     // riempimento coi generici
     return out;
 }
@@ -1670,9 +1682,9 @@ function buildCaptionHashtags() {
     return [...CAPTION_BASE_TAGS, ...themeHashtags(txt)].join(' ');
 }
 
-// Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer)
-// + riga hashtag automatica (3 fissi + 2 tematici, si aggiorna finché la caption
-// non viene modificata a mano — stessa logica del resto del corpo).
+// Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer).
+// Gli hashtag NON stanno nel corpo: sono la coda fissa DOPO la riga follow
+// (vedi getFullCaption), sempre calcolati dal cover corrente.
 function buildCaptionFromCover() {
     const c = getCoverSlide();
     const parts = [];
@@ -1681,18 +1693,29 @@ function buildCaptionFromCover() {
         if (c.body && c.body.trim())     parts.push(c.body.trim());
         if (c.source && c.source.trim()) parts.push(decorateSource(c.source).trim());
     }
-    if (!parts.length) return '';           // copertina vuota → caption vuota (niente soli hashtag)
-    parts.push(buildCaptionHashtags());
     return parts.join('\n\n');
+}
+
+// La riga hashtag compare solo se la copertina ha del testo (copertina vuota →
+// nessuna caption "di soli hashtag").
+function captionHashtagLine() {
+    const c = getCoverSlide();
+    const hasText = c && [c.title, c.body, c.source].some(v => v && v.trim());
+    return hasText ? buildCaptionHashtags() : '';
 }
 
 // Caption completa = ciò che viene copiato/conteggiato.
 // BLOCCATA (default): footer fisso aggiunto automaticamente in coda.
 // SBLOCCATA: il footer (se voluto) vive già nel corpo editabile → non si aggiunge nulla.
+// In entrambi i casi la riga hashtag (3 fissi + 2 tematici) chiude la caption.
 function getFullCaption() {
     const body = (state.caption.text || '').trim();
-    if (state.caption.footerLocked === false) return body;
-    return body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER;
+    const withFooter = state.caption.footerLocked === false
+        ? body
+        : (body ? body + '\n\n' + CAPTION_FOOTER : CAPTION_FOOTER);
+    const tags = captionHashtagLine();
+    if (!tags) return withFooter;
+    return withFooter ? withFooter + '\n\n' + tags : tags;
 }
 
 // Aggiorna la box arancione (etichetta, nota, pulsante) in base allo stato lock.
@@ -1725,7 +1748,13 @@ function setFooterLocked(locked) {
 
 function updateCaptionMeta() {
     if (!DOM.inputCaption) return;
-    const len = getFullCaption().length; // conteggio sul testo realmente pubblicato (corpo + footer)
+    // Anteprima della riga hashtag automatica (in coda alla caption pubblicata)
+    if (DOM.captionHashtagsText) {
+        const tags = captionHashtagLine();
+        DOM.captionHashtagsText.textContent = tags;
+        DOM.captionHashtagsText.classList.toggle('hidden', !tags);
+    }
+    const len = getFullCaption().length; // conteggio sul testo realmente pubblicato (corpo + footer + hashtag)
     if (DOM.captionCount) {
         DOM.captionCount.textContent = `${len} / ${CAPTION_MAX}`;
         DOM.captionCount.className = 'text-xs ' + (len > CAPTION_MAX ? 'text-[#E3000F] font-semibold' : 'text-gray-400');
