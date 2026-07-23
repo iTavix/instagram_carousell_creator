@@ -616,6 +616,19 @@
 
             </div>
         </details>
+
+        <details class="accordion" id="accordion-cutout">
+            <summary><span>Scontorna Immagini (AI)</span></summary>
+            <div class="accordion-body flex flex-col gap-3">
+                <p class="text-xs text-gray-500 -mt-1">Carica una o più foto: lo sfondo viene rimosso sul dispositivo (nessuna immagine va online). Poi scarica i PNG o aggiungili direttamente alla slide.</p>
+                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-6 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
+                    <input type="file" id="cutout-upload" accept="image/png,image/jpeg,image/webp" multiple aria-label="Carica immagini da scontornare" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <span class="text-sm font-medium text-[#6E6E73] pointer-events-none">Carica immagini da scontornare</span>
+                </div>
+                <div id="cutout-list" class="flex flex-col gap-2 empty:hidden"></div>
+                <button id="btn-cutout-download-all" class="hidden w-full py-2 rounded-lg bg-[#0071E3] text-white text-sm font-medium hover:bg-[#005bb5] transition-all">Scarica tutte</button>
+            </div>
+        </details>
     </div>
 </div>
 
@@ -1156,9 +1169,67 @@ async function cleanCutout(dataUrl) {
                 if (label[p] && !keep[label[p] - 1]) d[p * 4 + 3] = 0;
             }
         }
+        // 3) Rifinitura bordi (affinamento scontorno):
+        //    a) smoothing 3×3 del SOLO alpha, limitato alla fascia di bordo
+        //       (pixel parziali o con vicini di opacità mista) → niente scalettature;
+        //    b) decontaminazione colore: i pixel semi-trasparenti del bordo
+        //       trattengono il colore dello sfondo ORIGINALE (alone visibile sui
+        //       nuovi sfondi) → si sostituisce il loro RGB con la media dei vicini
+        //       solidi (α≥200), 2 passate, così il bordo sfuma col colore del
+        //       soggetto e non con quello dello sfondo rimosso.
+        refineCutoutEdges(d, w, h);
         ctx.putImageData(imgData, 0, 0);
         return cv.toDataURL('image/png');
     } catch (e) { console.warn('[cleanCutout]', e); return dataUrl; }
+}
+function refineCutoutEdges(d, w, h) {
+    const n = w * h;
+    // a) smoothing alpha sulla fascia di bordo
+    const a0 = new Uint8ClampedArray(n);
+    for (let p = 0; p < n; p++) a0[p] = d[p * 4 + 3];
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const p = y * w + x, a = a0[p];
+            // bordo = alpha parziale, oppure pieno/vuoto con vicino di segno opposto
+            let isEdge = a > 0 && a < 255;
+            if (!isEdge) {
+                const l = x > 0 ? a0[p-1] : a, r = x < w-1 ? a0[p+1] : a;
+                const u = y > 0 ? a0[p-w] : a, dn = y < h-1 ? a0[p+w] : a;
+                isEdge = (a === 0) !== (l === 0 && r === 0 && u === 0 && dn === 0) ||
+                         (a === 255) !== (l === 255 && r === 255 && u === 255 && dn === 255);
+            }
+            if (!isEdge) continue;
+            let sum = 0, cnt = 0;
+            for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+                const yy = y + dy, xx = x + dx;
+                if (yy < 0 || yy >= h || xx < 0 || xx >= w) continue;
+                sum += a0[yy * w + xx]; cnt++;
+            }
+            d[p * 4 + 3] = Math.round(sum / cnt);
+        }
+    }
+    // b) decontaminazione colore dei pixel di bordo (2 passate)
+    for (let pass = 0; pass < 2; pass++) {
+        const solid = new Uint8Array(n);
+        for (let p = 0; p < n; p++) solid[p] = d[p * 4 + 3] >= 200 ? 1 : 0;
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                const p = y * w + x, a = d[p * 4 + 3];
+                if (a === 0 || a >= 200) continue;
+                let r = 0, g = 0, b = 0, wsum = 0;
+                for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+                    if (!dy && !dx) continue;
+                    const yy = y + dy, xx = x + dx;
+                    if (yy < 0 || yy >= h || xx < 0 || xx >= w) continue;
+                    const q = yy * w + xx;
+                    if (!solid[q]) continue;
+                    const wq = d[q * 4 + 3];
+                    r += d[q * 4] * wq; g += d[q * 4 + 1] * wq; b += d[q * 4 + 2] * wq; wsum += wq;
+                }
+                if (wsum > 0) { d[p * 4] = r / wsum; d[p * 4 + 1] = g / wsum; d[p * 4 + 2] = b / wsum; }
+            }
+        }
+    }
 }
 // Toggle scontorno per un'immagine in primo piano (i video non sono processabili).
 async function toggleFgBgRemoval(slide, fg) {
@@ -3086,6 +3157,7 @@ const MOBILE_TABS = [
     { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sels: ['#slides-accordion', '#accordion-edit'], title: 'Modifica slide' },
     { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sels: ['#accordion-text'],                      title: 'Testo sulla slide' },
     { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sels: ['#accordion-brand'],                     title: 'Impostazioni brand' },
+    { key: 'cutout', label: 'Ritagli', icon: ico('scissors', 20), sels: ['#accordion-cutout'],                    title: 'Scontorna immagini' },
     { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sels: ['#caption-card'],                        title: 'Testo del post' },
 ];
 const mobileSheet     = document.getElementById('mobile-sheet');
@@ -3706,6 +3778,128 @@ DOM.btnCropApply.addEventListener('click', async () => {
         trackChange(true); render();
         toast('Immagine aggiornata', 'success');
     } catch (e) { toast('Errore durante il crop', 'error'); }
+});
+
+// ════════ SCONTORNA IMMAGINI (tool autonomo, solo in sessione) ════════
+// Carica foto → rimozione sfondo AI (stessa pipeline delle immagini fg, tutta
+// on-device) → scarica il PNG o aggiungilo come immagine fg alla slide attiva.
+// Gli elementi NON sono persistiti: servono come utility una-tantum.
+const cutoutItems = []; // { id, name, url, result, busy, error }
+const cutoutDOM = {
+    upload:      document.getElementById('cutout-upload'),
+    list:        document.getElementById('cutout-list'),
+    downloadAll: document.getElementById('btn-cutout-download-all'),
+};
+const CUTOUT_CHECKER = 'conic-gradient(#e5e7eb 25%,#ffffff 0 50%,#e5e7eb 0 75%,#ffffff 0)';
+const CUTOUT_TRASH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+
+function renderCutoutList() {
+    cutoutDOM.list.innerHTML = '';
+    cutoutItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'flex flex-col gap-2 p-2 bg-white border border-gray-200 rounded-lg shadow-sm';
+        const statusHtml = item.busy ? ico('hourglass', 11) + ' Rimozione in corso…'
+            : item.error ? 'Errore' : (item.result ? 'Pronta' : 'In coda…');
+        card.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="cutout-thumb w-14 h-14 rounded border flex-shrink-0"></div>
+                <div class="flex-grow min-w-0">
+                    <div class="cutout-name text-xs font-medium text-gray-900 truncate"></div>
+                    <div class="text-[10px] font-bold uppercase flex items-center gap-1 ${item.error ? 'text-red-500' : item.result ? 'text-green-600' : 'text-gray-500'}">${statusHtml}</div>
+                </div>
+                <button class="cutout-del text-red-500 hover:text-red-700 p-2 bg-red-50 rounded-lg transition-all" title="Rimuovi" aria-label="Rimuovi">${CUTOUT_TRASH_SVG}</button>
+            </div>
+            ${item.result ? `<div class="flex gap-2">
+                <button class="cutout-dl flex-1 py-1.5 rounded-lg bg-[#0071E3] text-white text-[11px] font-bold uppercase hover:bg-[#005bb5] transition-all">Scarica PNG</button>
+                <button class="cutout-add flex-1 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-[11px] font-bold uppercase hover:bg-gray-100 transition-all">Aggiungi alla slide</button>
+            </div>` : (item.error ? `<button class="cutout-retry w-full py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-700 text-[11px] font-bold uppercase hover:bg-amber-100 transition-all">Riprova</button>` : '')}
+        `;
+        card.querySelector('.cutout-name').textContent = item.name;
+        const thumb = card.querySelector('.cutout-thumb');
+        const shown = safeImageUrl(item.result || item.url);
+        // Scacchiera sotto l'immagine per mostrare la trasparenza ottenuta
+        thumb.style.backgroundImage = (shown ? `url("${shown}"), ` : '') + CUTOUT_CHECKER;
+        thumb.style.backgroundSize = (shown ? 'contain, ' : '') + '14px 14px';
+        thumb.style.backgroundPosition = 'center';
+        thumb.style.backgroundRepeat = 'no-repeat, repeat';
+        card.querySelector('.cutout-del').addEventListener('click', () => {
+            const i = cutoutItems.indexOf(item);
+            if (i >= 0) cutoutItems.splice(i, 1);
+            renderCutoutList();
+        });
+        card.querySelector('.cutout-dl')?.addEventListener('click', () => downloadCutout(item));
+        card.querySelector('.cutout-add')?.addEventListener('click', async () => {
+            const s = state.slides[state.activeIndex];
+            s.fgImages.push({ id: generateId(), type: 'image', url: item.result, x: 50, y: 50, size: 40, filters: { ...DEFAULT_FILTERS } });
+            await saveFgsToIDB(s);
+            trackChange(true); render();
+            toast('Immagine aggiunta alla slide', 'success');
+        });
+        card.querySelector('.cutout-retry')?.addEventListener('click', () => {
+            item.error = false;
+            renderCutoutList(); processCutoutQueue();
+        });
+        cutoutDOM.list.appendChild(card);
+    });
+    cutoutDOM.downloadAll.classList.toggle('hidden', cutoutItems.filter(i => i.result).length < 2);
+}
+
+function _cutoutFileName(item) { return item.name.replace(/\.[^.]+$/, '') + '-scontornata.png'; }
+function _cutoutDirectDownload(item) {
+    const a = document.createElement('a');
+    a.href = item.result; a.download = _cutoutFileName(item);
+    document.body.appendChild(a); a.click(); a.remove();
+}
+async function downloadCutout(item) {
+    // Su iPhone/iPad la share sheet permette "Salva immagine" nel Rullino
+    if (IS_MOBILE && navigator.canShare) {
+        try {
+            const blob = await (await fetch(item.result)).blob();
+            const file = new File([blob], _cutoutFileName(item), { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: _cutoutFileName(item) }); return; }
+        } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    _cutoutDirectDownload(item);
+}
+
+let _cutoutRunning = false;
+async function processCutoutQueue() {
+    if (_cutoutRunning) return;
+    _cutoutRunning = true;
+    try {
+        let item;
+        while ((item = cutoutItems.find(i => !i.result && !i.error && !i.busy))) {
+            item.busy = true; renderCutoutList();
+            try { item.result = await removeImageBackground(item.url); }
+            catch (err) { console.warn('[cutout]', err); item.error = true; toast('Rimozione sfondo non riuscita: ' + item.name, 'error'); }
+            item.busy = false; renderCutoutList();
+        }
+    } finally { _cutoutRunning = false; }
+}
+
+cutoutDOM.upload.addEventListener('change', async e => {
+    const files = [...(e.target.files || [])];
+    e.target.value = '';
+    for (const f of files) {
+        try {
+            const url = await compressImage(f);
+            cutoutItems.push({ id: generateId(), name: f.name || 'immagine', url, result: null, busy: false, error: false });
+        } catch (_) { /* toast già mostrato da compressImage */ }
+    }
+    renderCutoutList();
+    processCutoutQueue();
+});
+cutoutDOM.downloadAll.addEventListener('click', async () => {
+    const done = cutoutItems.filter(i => i.result);
+    if (!done.length) return;
+    if (IS_MOBILE && navigator.canShare) {
+        try {
+            const files = await Promise.all(done.map(async i =>
+                new File([await (await fetch(i.result)).blob()], _cutoutFileName(i), { type: 'image/png' })));
+            if (navigator.canShare({ files })) { await navigator.share({ files, title: 'Immagini scontornate' }); return; }
+        } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    done.forEach((i, idx) => setTimeout(() => _cutoutDirectDownload(i), idx * 400));
 });
 
 // Dark mode (usa lsGet/lsSet)
