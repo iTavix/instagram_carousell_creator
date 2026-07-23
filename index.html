@@ -1616,7 +1616,63 @@ function coverTextShadow(hex, soft) {
     return soft ? '0 2px 6px rgba(255,255,255,0.7)' : '0 0 3px rgba(255,255,255,0.95),0 2px 10px rgba(255,255,255,0.65)';
 }
 
-// Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer).
+// ════════ HASHTAG AUTOMATICI ════════
+// 3 tag fissi + 2 tematici dedotti dai testi della copertina (titolo/sottotitolo/
+// fonte — nel flusso dell'app descrivono il contenuto delle immagini). Analisi
+// visiva vera dei pixel richiederebbe un secondo modello AI (~40MB) con qualità
+// scarsa sui temi LEGO: il testo è più preciso e istantaneo.
+const CAPTION_BASE_TAGS = ['#lego', '#legominifigures', '#legoinstagram'];
+const THEME_TAG_RULES = [
+    { rx: /star\s*wars|jedi|sith|darth|vader|skywalker|mandalorian|grogu|clone\s*wars|stormtrooper|r2[- ]?d2|millennium\s*falcon|x[- ]?wing|death\s*star/i, tags: ['#legostarwars', '#starwars'] },
+    { rx: /technic/i, tags: ['#legotechnic'] },
+    { rx: /harry\s*potter|hogwarts|silente|dumbledore|grifondoro|gryffindor/i, tags: ['#legoharrypotter'] },
+    { rx: /marvel|avengers|spider[- ]?man|iron\s*man|hulk|thanos|x[- ]?men|deadpool|venom|wolverine/i, tags: ['#legomarvel'] },
+    { rx: /batman|superman|\bdc\b|joker|gotham/i, tags: ['#legobatman', '#legodc'] },
+    { rx: /ninjago/i, tags: ['#legoninjago'] },
+    { rx: /\bcity\b|città/i, tags: ['#legocity'] },
+    { rx: /\bicons\b/i, tags: ['#legoicons'] },
+    { rx: /\bideas\b/i, tags: ['#legoideas'] },
+    { rx: /\bf1\b|formula\s*1|ferrari|mclaren|red\s*bull\s*racing/i, tags: ['#legof1', '#f1'] },
+    { rx: /speed\s*champions|porsche|lamborghini|bugatti|aston\s*martin/i, tags: ['#legospeedchampions'] },
+    { rx: /minecraft/i, tags: ['#legominecraft'] },
+    { rx: /\bmario\b|luigi|\bpeach\b|bowser/i, tags: ['#legosupermario'] },
+    { rx: /zelda|hyrule|\blink\b/i, tags: ['#legozelda'] },
+    { rx: /animal\s*crossing/i, tags: ['#legoanimalcrossing'] },
+    { rx: /jurassic|dinosaur|dinosaur[oi]|t[- ]?rex/i, tags: ['#legojurassicworld'] },
+    { rx: /disney|frozen|encanto|stitch|topolino|mickey/i, tags: ['#legodisney'] },
+    { rx: /botanic|fior[ei]|flower|orchid|bonsai|piant[ae]|bouquet/i, tags: ['#legobotanicals', '#legoflowers'] },
+    { rx: /architecture|skyline/i, tags: ['#legoarchitecture'] },
+    { rx: /modular/i, tags: ['#legomodular'] },
+    { rx: /castello|castle|cavalier[ei]|knight|medieval[ei]?/i, tags: ['#legocastle'] },
+    { rx: /pirat[aei]/i, tags: ['#legopirates'] },
+    { rx: /tren[oi]|train/i, tags: ['#legotrains'] },
+    { rx: /friends/i, tags: ['#legofriends'] },
+    { rx: /creator/i, tags: ['#legocreator'] },
+    { rx: /\bucs\b/i, tags: ['#ucs'] },
+    { rx: /\bgwp\b|gift\s*with\s*purchase/i, tags: ['#legogwp'] },
+    { rx: /\bmoc\b/i, tags: ['#legomoc', '#moc'] },
+    { rx: /leak|rumor/i, tags: ['#legoleaks'] },
+];
+const THEME_TAG_FALLBACKS = ['#legonews', '#afol'];
+function themeHashtags(text) {
+    const out = [];
+    const taken = new Set(CAPTION_BASE_TAGS);
+    const add = t => { if (out.length < 2 && !taken.has(t)) { out.push(t); taken.add(t); } };
+    const matched = THEME_TAG_RULES.filter(r => r.rx.test(text || ''));
+    matched.forEach(r => add(r.tags[0]));                 // 1ª passata: tag principale di ogni tema trovato
+    matched.forEach(r => r.tags.slice(1).forEach(add));   // 2ª passata: tag secondari se c'è ancora spazio
+    THEME_TAG_FALLBACKS.forEach(add);                     // riempimento coi generici
+    return out;
+}
+function buildCaptionHashtags() {
+    const c = getCoverSlide();
+    const txt = c ? [c.title, c.body, c.source].filter(Boolean).join(' ') : '';
+    return [...CAPTION_BASE_TAGS, ...themeHashtags(txt)].join(' ');
+}
+
+// Compone SOLO il corpo dalla copertina: titolo + sottotitolo + fonte (senza footer)
+// + riga hashtag automatica (3 fissi + 2 tematici, si aggiorna finché la caption
+// non viene modificata a mano — stessa logica del resto del corpo).
 function buildCaptionFromCover() {
     const c = getCoverSlide();
     const parts = [];
@@ -1625,6 +1681,8 @@ function buildCaptionFromCover() {
         if (c.body && c.body.trim())     parts.push(c.body.trim());
         if (c.source && c.source.trim()) parts.push(decorateSource(c.source).trim());
     }
+    if (!parts.length) return '';           // copertina vuota → caption vuota (niente soli hashtag)
+    parts.push(buildCaptionHashtags());
     return parts.join('\n\n');
 }
 
