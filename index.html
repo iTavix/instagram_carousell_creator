@@ -342,6 +342,16 @@
                     </div>
                     <input type="range" id="news-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
                 </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <label for="input-accent-color" class="text-xs font-bold text-gray-500 uppercase">Colore Accento</label>
+                        <div class="flex items-center gap-3">
+                            <span id="accent-color-hex" class="text-xs font-mono text-gray-500">#F5B21A</span>
+                            <input type="color" id="input-accent-color" value="#f5b21a" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">Racchiudi il testo tra asterischi per colorarlo: <code class="bg-white px-1 rounded border border-gray-200">ENTERPRISE *NCC-1701-D*</code>. Vale per titoli, testi liberi, etichette e pill.</p>
+                </div>
             </div>
         </details>
 
@@ -349,6 +359,16 @@
             <summary><span>Testo sulla Slide</span></summary>
             <div class="accordion-body flex flex-col gap-4">
                 <p class="text-xs text-gray-500 -mt-2">Layout indipendenti, attivabili insieme o singolarmente</p>
+
+            <!-- Override colore accento per la slide attiva -->
+            <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <span class="text-xs font-bold text-gray-500 uppercase">Accento di questa slide</span>
+                <div class="flex items-center gap-2">
+                    <button id="btn-slide-accent-reset" class="text-[10px] text-[#E3000F] hover:underline font-medium hidden" type="button">Usa progetto</button>
+                    <span id="slide-accent-hex" class="text-xs font-mono text-gray-500">—</span>
+                    <input type="color" id="input-slide-accent" value="#f5b21a" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                </div>
+            </label>
 
             <div id="cover-layout-block" class="border border-gray-200 rounded-lg p-4 flex flex-col gap-3">
                 <div class="flex items-center justify-between">
@@ -483,6 +503,14 @@
             </div>
         </details>
 
+        <details class="accordion" id="accordion-blocks">
+            <summary><span>Blocchi Ricorrenti</span></summary>
+            <div class="accordion-body flex flex-col gap-3">
+                <p class="text-xs text-gray-500 -mt-1">Kicker, riga specifiche, pill, disclaimer, numerazione e fonte. Il testo tra *asterischi* usa il colore accento.</p>
+                <div id="blocks-panel-host" class="flex flex-col gap-3"></div>
+            </div>
+        </details>
+
         <details class="accordion" open data-keep-open id="slides-accordion">
             <summary>
                 <span id="slide-count-title">Slides (1/20)</span>
@@ -493,6 +521,7 @@
             </summary>
             <div class="accordion-body">
                 <div id="thumbnails-container" class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar" role="list" aria-label="Elenco slide"></div>
+                <button id="btn-batch-open" class="w-full py-2 rounded-lg border border-gray-300 bg-white text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all">⚡ Genera slide in serie da un elenco (usa la slide attiva come modello)</button>
             </div>
         </details>
 
@@ -617,6 +646,42 @@
             </div>
         </details>
 
+        <details class="accordion" id="accordion-grid">
+            <summary><span>Griglia Immagini</span></summary>
+            <div class="accordion-body flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-sm text-gray-900">Griglia sulla slide</h3>
+                        <p class="text-xs text-gray-500">Le immagini si dispongono da sole in celle regolari, con etichette e sfondo comune</p>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <span id="grid-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                        <div class="toggle-track" id="grid-toggle-track"><div class="toggle-thumb"></div></div>
+                        <input type="checkbox" id="toggle-grid" class="sr-only"/>
+                    </label>
+                </div>
+                <div id="grid-panel-host" class="flex flex-col gap-3" style="display:none;"></div>
+            </div>
+        </details>
+
+        <details class="accordion" id="accordion-mosaic">
+            <summary><span>Mosaico Copertina</span></summary>
+            <div class="accordion-body flex flex-col gap-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-sm text-gray-900">Mosaico di sfondo</h3>
+                        <p class="text-xs text-gray-500">Riempie tutta la slide con i soggetti ripetuti, scuriti dietro il titolo (stile copertina)</p>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <span id="mosaic-toggle-label" class="text-xs font-medium text-gray-500">Off</span>
+                        <div class="toggle-track" id="mosaic-toggle-track"><div class="toggle-thumb"></div></div>
+                        <input type="checkbox" id="toggle-mosaic" class="sr-only"/>
+                    </label>
+                </div>
+                <div id="mosaic-panel-host" class="flex flex-col gap-3" style="display:none;"></div>
+            </div>
+        </details>
+
         <details class="accordion" id="accordion-cutout">
             <summary><span>Scontorna Immagini (AI)</span></summary>
             <div class="accordion-body flex flex-col gap-3">
@@ -642,6 +707,11 @@
                 <div class="toggle-track" id="mockup-toggle-track"><div class="toggle-thumb"></div></div>
                 <span class="text-xs font-medium text-gray-500" id="mockup-toggle-label">Feed</span>
                 <input type="checkbox" id="toggle-mockup" class="sr-only"/>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer select-none" title="Mostra le zone coperte da Instagram (icona repost, username): solo anteprima, mai nell'export">
+                <div class="toggle-track" id="guides-toggle-track"><div class="toggle-thumb"></div></div>
+                <span class="text-xs font-medium text-gray-500" id="guides-toggle-label">Zone IG</span>
+                <input type="checkbox" id="toggle-guides" class="sr-only"/>
             </label>
         </div>
         <div class="flex gap-2 items-center">
@@ -844,6 +914,62 @@
     </div>
 </div>
 
+<!-- MODALE: SEPARA FILA DI SOGGETTI -->
+<div id="split-modal" class="modal fixed inset-0 z-[10001] bg-black/85 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col max-h-[95vh] overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+            <h3 class="font-bold text-lg">Separa fila di soggetti</h3>
+            <button id="btn-close-split" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi">×</button>
+        </div>
+        <div class="p-4 flex-1 overflow-auto flex flex-col gap-3">
+            <p class="text-xs text-gray-500">Le linee rosse sono i tagli rilevati negli spazi trasparenti. <b>Tocca una linea</b> per rimuoverla (soggetti da tenere uniti, es. Data col gatto), <b>tocca uno spazio</b> per aggiungerne una, <b>trascina</b> per spostarla.</p>
+            <div class="overflow-auto bg-[#0b1020] rounded-lg" style="max-height:55vh;">
+                <canvas id="split-canvas" style="display:block;touch-action:none;cursor:crosshair;"></canvas>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+                <span id="split-info" class="text-xs font-bold text-gray-600"></span>
+                <button id="split-auto" class="preset-btn">↻ Rileva di nuovo</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <label for="split-dest" class="text-xs font-bold text-gray-500 uppercase whitespace-nowrap">Aggiungi a</label>
+                <select id="split-dest" class="bg-[#F5F5F7] rounded p-2 text-sm outline-none flex-1">
+                    <option value="grid">Griglia di questa slide</option>
+                    <option value="mosaic">Mosaico di questa slide</option>
+                    <option value="fg">Immagini in primo piano</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-3 p-4 border-t border-gray-100">
+            <button id="split-cancel" class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
+            <button id="split-apply" class="flex-[2] bg-[#0071E3] text-white py-3 rounded-xl font-medium hover:bg-[#005bb5] transition-all">Dividi e aggiungi</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODALE: SLIDE IN SERIE DA ELENCO -->
+<div id="batch-modal" class="modal fixed inset-0 z-[10001] bg-black/85 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[95vh] overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b border-gray-100">
+            <h3 class="font-bold text-lg">Slide in serie da un elenco</h3>
+            <button id="btn-close-batch" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi">×</button>
+        </div>
+        <div class="p-4 flex-1 overflow-auto flex flex-col gap-3">
+            <p class="text-xs text-gray-500">La <b>slide attiva</b> è il modello: sfondo, testi e stile della griglia vengono copiati su ogni slide generata. Le <b>immagini</b> vengono prese dalla griglia del modello, in ordine (riga 1 → immagine 1, riga 2 → immagine 2…). Una riga per soggetto, colonne separate da <b>;</b> oppure incolla direttamente da un foglio di calcolo.</p>
+            <textarea id="batch-input" rows="7" placeholder="Jean-Luc Picard; Captain; #10356 · U.S.S. Enterprise NCC-1701-D; Encounter at Farpoint; 1987&#10;William Riker; Commander; #10356 · U.S.S. Enterprise NCC-1701-D; Encounter at Farpoint; 1987" class="w-full bg-[#F5F5F7] rounded-lg p-3 text-xs outline-none focus:ring-2 focus:ring-[#0071E3] font-mono resize-y"></textarea>
+            <div id="batch-mapping" class="flex flex-wrap gap-2 empty:hidden"></div>
+            <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <span class="text-xs font-bold text-gray-500 uppercase">2 soggetti per slide (spaiato → tutta larghezza)</span>
+                <div class="toggle-track on" id="batch-pair-track" role="switch"><div class="toggle-thumb"></div></div>
+            </label>
+            <p id="batch-summary" class="text-xs font-bold text-gray-600"></p>
+        </div>
+        <div class="flex gap-3 p-4 border-t border-gray-100">
+            <button id="batch-cancel" class="flex-1 bg-gray-200 py-3 rounded-xl font-medium hover:bg-gray-300 transition-all">Annulla</button>
+            <button id="batch-apply" class="flex-[2] bg-[#0071E3] text-white py-3 rounded-xl font-medium hover:bg-[#005bb5] transition-all">Genera slide</button>
+        </div>
+    </div>
+</div>
+
 <!-- MODALE: CONFERMA GENERICA -->
 <div id="confirm-modal" class="modal fixed inset-0 z-[10002] bg-black/70 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
     <div class="confirm-modal-body">
@@ -868,7 +994,8 @@ const LOGO_MARGIN_PX = 40;               // Margine laterale dei loghi (anche de
 const LOGO_MARGIN_PCT = LOGO_MARGIN_PX / 1080 * 100; // ≈ 3.70%
 const SNAP_TOLERANCE = 2;                // % di tolleranza per snap-to-guide
 const SNAP_TARGETS = [3.7, 10, 25, 33.33, 50, 66.66, 75, 90, 96.3];
-const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size' };
+const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size', accent:'icc_accent', pageNums:'icc_pagenums' };
+const DEFAULT_ACCENT = '#f5b21a';         // Colore accento di progetto (sintassi *testo*)
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;   // 50MB per i video in primo piano
 const videoBlobs = new Map();              // id media → Blob (tenuto fuori da `state` per non appesantire undo/clone)
@@ -893,6 +1020,16 @@ const FILTER_PRESETS = {
 
 // ════════ UTILITY GENERICHE ════════
 function escapeHtml(str) { const el = document.createElement('div'); el.appendChild(document.createTextNode(str || '')); return el.innerHTML; }
+// Testo bicolore: le porzioni tra *asterischi* prendono il colore accento.
+// L'escape HTML avviene PRIMA della sostituzione (gli asterischi non vengono
+// alterati dall'escape), quindi nessun HTML utente passa mai nel markup.
+function formatAccentText(str, accent) {
+    const esc = escapeHtml(str);
+    if (!accent) return esc;
+    return esc.replace(/\*([^*\n]+)\*/g, `<span style="color:${accent};">$1</span>`);
+}
+// Rimuove i marcatori *accento* dal testo semplice (caption, contatori, ecc.)
+function stripAccentMarks(str) { return (str || '').replace(/\*([^*\n]+)\*/g, '$1'); }
 function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
 function throttle(fn, ms = 100) { let last = 0, pending = null; return (...args) => { const now = Date.now(); if (now - last >= ms) { last = now; fn(...args); } else { clearTimeout(pending); pending = setTimeout(() => { last = Date.now(); fn(...args); }, ms - (now - last)); } }; }
 function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -903,6 +1040,7 @@ const ICONS = {
     restore:   '<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>',
     hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
     image:     '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+    grid:      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     type:      '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>',
     copy:      '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     tag:       '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
@@ -1083,9 +1221,226 @@ async function ensureFramedImages(slide) {
 }
 // Bake asincrono per la slide attiva + re-render quando pronto.
 async function refreshFrames() {
-    if (await ensureFramedImages(state.slides[state.activeIndex])) renderPreview();
+    const s = state.slides[state.activeIndex];
+    const a = await ensureFramedImages(s);
+    const b = await ensureGridCells(s);
+    const c = await ensureMosaic(s);
+    if (a || b || c) renderPreview();
 }
 const debouncedRefreshFrames = debounce(refreshFrames, 130);
+
+// ════════ GRIGLIA DI IMMAGINI (celle composte su canvas, stile make_figs.py) ════════
+// Ogni cella viene "cotta" in un'unica immagine raster (sfondo cella + aura +
+// soggetto centrato sul corpo): anteprima ed export usano lo stesso file, quindi
+// la parità pixel-per-pixel è garantita e html2canvas non deve gestire object-fit.
+const GRID_BAKE_SCALE = 2;            // le celle si cuociono a 2x (l'export cattura a scala 2)
+const gridCellCache = new Map();      // item.id → { key, url, warn }
+const _groundCache  = new Map();      // url soggetto → riga di appoggio (px)
+
+function makeDefaultGridLabels() {
+    return { show: true, position: 'overlay', nameSize: 29, subSize: 14, metaSize: 18,
+             pillOn: false, pillLab: 'FIRST APPEARED', pillLabSize: 13, pillValSize: 26, gradient: true };
+}
+function makeDefaultGrid() {
+    return {
+        enabled: true, cols: 3, gap: 16, rowGap: 16, marginX: 40, y: 30,
+        cellAspect: 0.84, radius: 14, borderOn: true, borderColor: '#7896DC', borderAlpha: 16,
+        cellBgOn: true, cellBg: '#050810', fit: 'contain', fill: 74, capband: 22,
+        groundCenter: true, behindOverlay: false, opacity: 100,
+        auraUrl: null, labels: makeDefaultGridLabels(), items: [],
+    };
+}
+function ensureGrid() {
+    const s = state.slides[state.activeIndex];
+    if (!s.grid) s.grid = makeDefaultGrid();
+    if (!s.grid.labels) s.grid.labels = makeDefaultGridLabels();
+    return s.grid;
+}
+function gridGeometry(grid) {
+    const cols = Math.max(1, grid.cols || 1);
+    const innerW = 1080 - 2 * (grid.marginX ?? 40);
+    const cellW = (innerW - (grid.gap ?? 16) * (cols - 1)) / cols;
+    const cellH = cellW * (grid.cellAspect ?? 0.84);
+    return { cols, innerW, cellW, cellH };
+}
+function hexToRgba(hex, a) {
+    const h = (hex || '#7896DC').replace('#', '');
+    const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+// "Ground line" (make_figs.ground_line): ultima riga con alpha pieno = i piedi.
+// Sotto c'è solo il riflesso sfumato, che deve proseguire oltre il centro.
+function computeGroundLine(img) {
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    if (!w || !h) return h || 1;
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    let data;
+    try { data = ctx.getImageData(0, 0, w, h).data; } catch (_) { return h; }
+    for (let y = h - 1; y >= 0; y--) {
+        const row = y * w * 4;
+        for (let x = 0; x < w; x++) if (data[row + x * 4 + 3] >= 200) return y + 1;
+    }
+    return h;
+}
+// Nucleo di make_figs.compose(): disegna in un ctx già pronto (offset ox,oy)
+// sfondo cella + aura (cover, centrata) + soggetto scalato in modo che il CORPO
+// (fino alla ground line) occupi `fill`% della zona utile. Ritorna warn.
+function drawComposedCell(ctx, ox, oy, W, H, img, imgKey, auraImg, opts) {
+    if (opts.cellBgOn !== false) { ctx.fillStyle = opts.cellBg || '#050810'; ctx.fillRect(ox, oy, W, H); }
+    if (auraImg) {
+        const s = Math.max(W / auraImg.naturalWidth, H / auraImg.naturalHeight);
+        const aw = auraImg.naturalWidth * s, ah = auraImg.naturalHeight * s;
+        ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, W, H); ctx.clip();
+        ctx.drawImage(auraImg, ox + (W - aw) / 2, oy + (H - ah) / 2, aw, ah);
+        ctx.restore();
+    }
+    const iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
+    let warn = false;
+    ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, W, H); ctx.clip();
+    if (opts.fit === 'cover') {
+        const s = Math.max(W / iw, H / ih);
+        ctx.drawImage(img, ox + (W - iw * s) / 2, oy + (H - ih * s) / 2, iw * s, ih * s);
+    } else {
+        // contain "sul corpo": mai tagliare il soggetto
+        const zoneH = H * (1 - (opts.capband || 0));
+        let g = ih;
+        if (opts.groundCenter !== false) {
+            let cached = _groundCache.get(imgKey);
+            if (cached == null) { cached = computeGroundLine(img); _groundCache.set(imgKey, cached); }
+            g = cached;
+        }
+        const s = Math.min(zoneH * ((opts.fill ?? 74) / 100) / g, W * 0.92 / iw);
+        const nw = iw * s, nh = ih * s, gs = g * s;
+        const x = (W - nw) / 2, y = (zoneH - gs) / 2;
+        ctx.drawImage(img, ox + x, oy + y, nw, nh);
+        // Avviso anteprima: soggetto che tocca i bordi laterali o esce sopra
+        warn = (nw >= W * 0.98) || (y < -0.5);
+    }
+    ctx.restore();
+    return warn;
+}
+// Cella singola della griglia → immagine raster propria
+async function composeGridCell(itemUrl, grid, cellW, cellH, auraImg) {
+    const img = await loadImageEl(itemUrl);
+    const W = Math.max(1, Math.round(cellW * GRID_BAKE_SCALE));
+    const H = Math.max(1, Math.round(cellH * GRID_BAKE_SCALE));
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    const capband = (grid.labels?.show && grid.labels.position === 'overlay') ? (grid.capband ?? 22) / 100 : 0;
+    const warn = drawComposedCell(ctx, 0, 0, W, H, img, itemUrl, auraImg, { ...grid, capband });
+    // Cella opaca (sfondo/aura) → JPEG leggero; altrimenti PNG con alpha
+    const opaque = grid.cellBgOn !== false || auraImg;
+    return { url: opaque ? cv.toDataURL('image/jpeg', 0.92) : cv.toDataURL('image/png'), warn };
+}
+
+// ════════ MOSAICO DI COPERTINA (full-bleed dietro i testi, stile slide 01) ════════
+const MOSAIC_BAKE_SCALE = 1.6;        // l'intero mosaico è un'unica immagine 1080xH
+const mosaicCache = new Map();        // slide.id → { key, url }
+function makeDefaultMosaic() {
+    return { enabled: true, cols: 4, cellAspect: 0.833, opacity: 55, tint: 100,
+             fill: 74, groundCenter: true, cellBg: '#050810', baseBg: '#03060f',
+             auraUrl: null, items: [] };
+}
+function ensureMosaicCfg() {
+    const s = state.slides[state.activeIndex];
+    if (!s.mosaic) s.mosaic = makeDefaultMosaic();
+    return s.mosaic;
+}
+// Compone l'intero mosaico: celle ripetute ciclicamente fino a riempire la slide,
+// opacità sulle celle, tinta radiale sopra (come .tint del post originale).
+async function composeMosaic(slide) {
+    const m = slide.mosaic;
+    const SLIDE_H = slide.isStory ? 1920 : 1350;
+    const W = Math.round(1080 * MOSAIC_BAKE_SCALE), H = Math.round(SLIDE_H * MOSAIC_BAKE_SCALE);
+    const cols = Math.max(1, m.cols || 4);
+    const cellW = W / cols, cellH = cellW * (m.cellAspect ?? 0.833);
+    const rows = Math.ceil(H / cellH);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = m.baseBg || '#03060f'; ctx.fillRect(0, 0, W, H);
+    const auraUrl = safeImageUrl(m.auraUrl);
+    let auraImg = null;
+    if (auraUrl) { try { auraImg = await loadImageEl(auraUrl); } catch (_) {} }
+    const imgs = [];
+    for (const it of m.items) {
+        const u = safeImageUrl(it.url);
+        if (!u) continue;
+        try { imgs.push({ img: await loadImageEl(u), key: u }); } catch (_) {}
+    }
+    if (imgs.length) {
+        ctx.globalAlpha = Math.max(0, Math.min(100, m.opacity ?? 55)) / 100;
+        const opts = { cellBgOn: true, cellBg: m.cellBg || '#050810', fit: 'contain',
+                       fill: m.fill ?? 74, capband: 0, groundCenter: m.groundCenter !== false };
+        let k = 0;
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+            const e = imgs[k % imgs.length]; k++;
+            drawComposedCell(ctx, c * cellW, r * cellH, cellW, cellH, e.img, e.key, auraImg, opts);
+        }
+        ctx.globalAlpha = 1;
+    }
+    // Tinta radiale (ellisse 120% x 80% centrata al 50%,55%): scurisce i bordi
+    const t = Math.max(0, Math.min(150, m.tint ?? 100)) / 100;
+    if (t > 0) {
+        ctx.save();
+        ctx.translate(W * 0.5, H * 0.55);
+        ctx.scale(1.2, 0.8);
+        const R = Math.max(W, H);
+        const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+        gr.addColorStop(0, `rgba(4,8,20,${Math.min(1, 0.35 * t)})`);
+        gr.addColorStop(1, `rgba(3,6,15,${Math.min(1, 0.82 * t)})`);
+        ctx.fillStyle = gr;
+        ctx.fillRect(-W * 2, -H * 2, W * 4, H * 4);
+        ctx.restore();
+    }
+    return cv.toDataURL('image/jpeg', 0.9);
+}
+async function ensureMosaic(slide) {
+    const m = slide && slide.mosaic;
+    if (!m || !m.enabled || !(m.items || []).length) {
+        if (slide && mosaicCache.delete(slide.id)) return true;
+        return false;
+    }
+    const key = [m.cols, m.cellAspect, m.opacity, m.tint, m.fill, m.groundCenter !== false ? 1 : 0,
+        m.cellBg, m.baseBg, (safeImageUrl(m.auraUrl) || '').length, slide.isStory ? 1 : 0,
+        m.items.map(it => (safeImageUrl(it.url) || '').length).join(',')].join('|');
+    const c = mosaicCache.get(slide.id);
+    if (c && c.key === key) return false;
+    try {
+        const url = await composeMosaic(slide);
+        mosaicCache.set(slide.id, { key, url });
+        return true;
+    } catch (_) { mosaicCache.delete(slide.id); return false; }
+}
+// Rigenera (se serve) le celle cotte della griglia. Ritorna true se qualcosa è cambiato.
+async function ensureGridCells(slide) {
+    const grid = slide && slide.grid;
+    if (!grid || !grid.enabled || !grid.items || !grid.items.length) return false;
+    const { cellW, cellH } = gridGeometry(grid);
+    const auraUrl = safeImageUrl(grid.auraUrl);
+    let auraImg = null;
+    if (auraUrl) { try { auraImg = await loadImageEl(auraUrl); } catch (_) {} }
+    const paramsKey = [Math.round(cellW * 10), Math.round(cellH * 10), grid.fit, grid.fill, grid.capband ?? 22,
+        grid.groundCenter !== false ? 1 : 0, grid.cellBgOn !== false ? 1 : 0, grid.cellBg,
+        (grid.labels?.show && grid.labels.position === 'overlay') ? 1 : 0, auraUrl.length].join('|');
+    let changed = false;
+    await Promise.all(grid.items.map(async it => {
+        const url = safeImageUrl(it.url);
+        if (!url) { if (gridCellCache.delete(it.id)) changed = true; return; }
+        const key = paramsKey + '|' + url.length;
+        const c = gridCellCache.get(it.id);
+        if (c && c.key === key) return;
+        try {
+            const out = await composeGridCell(url, grid, cellW, cellH, auraImg);
+            gridCellCache.set(it.id, { key, ...out });
+            changed = true;
+        } catch (_) { gridCellCache.delete(it.id); }
+    }));
+    return changed;
+}
 
 // ════════ RIMOZIONE SFONDO AI (in-browser, lazy da CDN) ════════
 // @imgly/background-removal caricata on-demand (stesso pattern di loadHtml2canvas).
@@ -1362,6 +1717,10 @@ const state = {
     logoSize:        parseFloat(lsGet(LS.logoSize))      || 1.0,
     themeLogoSize:   parseFloat(lsGet(LS.themeLogoSize)) || 1.0,
     newsSize:        parseFloat(lsGet(LS.newsSize))      || 1.0,
+    // Colore accento di progetto per la sintassi *testo* (override per-slide in slide.accentColor)
+    accentColor:     lsGet(LS.accent) || DEFAULT_ACCENT,
+    // Numerazione automatica "02 / 13" (Blocco 4)
+    pageNums:        (() => { try { return { enabled:false, hideOnCover:true, hideOnLast:false, ...(JSON.parse(lsGet(LS.pageNums) || '{}')) }; } catch(_) { return { enabled:false, hideOnCover:true, hideOnLast:false }; } })(),
     // Set di slide per il carosello (1080x1350)
     carouselSlides: [makeDefaultSlide('slide-0', {
         coverEnabled: true, coverUppercase: true, coverDarkOverlay: true, coverShowNews: true,
@@ -1373,6 +1732,8 @@ const state = {
     // Didascalia del post IG: si auto-genera dalla copertina finché l'utente
     // non la modifica a mano (manual=true → stop auto-sync).
     caption: { text: '', manual: false, footerLocked: true },
+    // Guide zone sicure IG (solo anteprima, mai salvate nell'export)
+    showGuides: false,
 };
 state.slides = state.carouselSlides;
 
@@ -1394,6 +1755,14 @@ function makeDefaultSlide(id, overrides = {}) {
         bgFilters: { ...DEFAULT_FILTERS }, // Feature#8: filtri sfondo
         textOverlay: null,
         fgImages: [], // Multi-immagini: [{id, url, x, y, size, filters}]
+        // ─── Funzioni post "LEGO Star Trek" (tutte spente di default = comportamento invariato) ───
+        accentColor: null,   // override del colore accento di progetto per questa slide
+        grid: null,          // griglia di immagini con etichette + aura
+        mosaic: null,        // mosaico di sfondo full-bleed (copertine)
+        kicker: null,        // riga sopra il titolo (es. "SET #10356")
+        specsRow: null,      // riga specifiche (9 minifigures · 3600 pieces · €379.99)
+        pill: null,          // etichetta arrotondata (FIRST APPEARED · ...)
+        disclaimer: null,    // testo piccolo ancorato in fondo
         ...overrides,
     };
 }
@@ -1569,11 +1938,31 @@ const DOM = {
     confirmCancel:         document.getElementById('confirm-cancel'),
     // Toast container
     toastContainer:        document.getElementById('toast-container'),
+    // Griglia immagini
+    toggleGrid:            document.getElementById('toggle-grid'),
+    gridToggleTrack:       document.getElementById('grid-toggle-track'),
+    gridToggleLabel:       document.getElementById('grid-toggle-label'),
+    gridPanelHost:         document.getElementById('grid-panel-host'),
+    // Blocchi ricorrenti
+    blocksPanelHost:       document.getElementById('blocks-panel-host'),
+    // Mosaico copertina
+    toggleMosaic:          document.getElementById('toggle-mosaic'),
+    mosaicToggleTrack:     document.getElementById('mosaic-toggle-track'),
+    mosaicToggleLabel:     document.getElementById('mosaic-toggle-label'),
+    mosaicPanelHost:       document.getElementById('mosaic-panel-host'),
+    // Colore accento (progetto + override slide)
+    inputAccentColor:      document.getElementById('input-accent-color'),
+    accentColorHex:        document.getElementById('accent-color-hex'),
+    inputSlideAccent:      document.getElementById('input-slide-accent'),
+    slideAccentHex:        document.getElementById('slide-accent-hex'),
+    btnSlideAccentReset:   document.getElementById('btn-slide-accent-reset'),
 };
 
 // UTILITY (specifiche del dominio)
 function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOverlay)s.textOverlay={enabled:true,font:'Bebas Neue',title:'',body:'',titleSize:80,bodySize:40,color:'#ffffff',align:'left',x:50,y:50}; return s.textOverlay; }
 function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
+// Colore accento effettivo di una slide: override per-slide, altrimenti quello di progetto.
+function slideAccent(slide) { return (slide && slide.accentColor) || state.accentColor || DEFAULT_ACCENT; }
 
 // ════════ CAPTION DEL POST IG (testo dalla copertina) ════════
 const CAPTION_MAX = 2200; // limite didascalia Instagram
@@ -1678,7 +2067,7 @@ function themeHashtags(text) {
 }
 function buildCaptionHashtags() {
     const c = getCoverSlide();
-    const txt = c ? [c.title, c.body, c.source].filter(Boolean).join(' ') : '';
+    const txt = c ? stripAccentMarks([c.title, c.body, c.source].filter(Boolean).join(' ')) : '';
     return [...CAPTION_BASE_TAGS, ...themeHashtags(txt)].join(' ');
 }
 
@@ -1689,8 +2078,9 @@ function buildCaptionFromCover() {
     const c = getCoverSlide();
     const parts = [];
     if (c) {
-        if (c.title && c.title.trim())   parts.push(decorateTitle(c.title));
-        if (c.body && c.body.trim())     parts.push(c.body.trim());
+        // stripAccentMarks: gli *asterischi* del testo bicolore non vanno nella caption
+        if (c.title && c.title.trim())   parts.push(decorateTitle(stripAccentMarks(c.title)));
+        if (c.body && c.body.trim())     parts.push(stripAccentMarks(c.body).trim());
         if (c.source && c.source.trim()) parts.push(decorateSource(c.source).trim());
     }
     return parts.join('\n\n');
@@ -1793,6 +2183,11 @@ function _serializeSlide(s) {
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
+        // Nuovi blocchi (Star Trek): metadati in localStorage, immagini in IndexedDB
+        accentColor: s.accentColor || null,
+        kicker: s.kicker, specsRow: s.specsRow, pill: s.pill, disclaimer: s.disclaimer,
+        grid:   s.grid   ? { ...s.grid,   auraUrl: null, items: (s.grid.items || []).map(it => ({ ...it, url: null })) } : null,
+        mosaic: s.mosaic ? { ...s.mosaic, auraUrl: null, images: (s.mosaic.images || []).map(im => ({ ...im, url: null })) } : null,
         // Rimuovi grandi base64/blob URL dal localStorage per non bloccarlo (restano in IndexedDB)
         fgImages: (s.fgImages || []).map(f => ({ id: f.id, type: f.type || 'image', url: null, x: f.x, y: f.y, size: f.size, filters: f.filters, frame: f.frame, frameW: f.frameW, behindOverlay: !!f.behindOverlay, bgRemoved: !!f.bgRemoved })),
         hasLegacyFg: (s.fgImages || []).some(f => f.id === 'fg-legacy')
@@ -1834,6 +2229,17 @@ function _rebuildSlide(s, idx, forceStory) {
     };
     // Aggiungi type + filters di default per FG che ne sono privi
     pSlide.fgImages = pSlide.fgImages.map(f => ({ ...f, type: f.type || 'image', filters: f.filters || { ...DEFAULT_FILTERS } }));
+    // Mosaico: completa con i default eventuali campi mancanti
+    if (pSlide.mosaic) {
+        pSlide.mosaic = { ...makeDefaultMosaic(), ...pSlide.mosaic,
+            items: (pSlide.mosaic.items || []).map(it => ({ ...it })) };
+    }
+    // Griglia: completa con i default eventuali campi mancanti (salvataggi di versioni precedenti)
+    if (pSlide.grid) {
+        pSlide.grid = { ...makeDefaultGrid(), ...pSlide.grid,
+            labels: { ...makeDefaultGridLabels(), ...(pSlide.grid.labels || {}) },
+            items: (pSlide.grid.items || []).map(it => ({ name:'', sub:'', meta:'', pill:'', ...it })) };
+    }
     // Retro-compatibilità vecchia immagine singola in localStorage
     if (s.fgImageX !== undefined && pSlide.fgImages.length === 0 && (s.hasLegacyFg || s.fgImageSize)) {
         pSlide.fgImages.push({ id: 'fg-legacy', type: 'image', url: null, x: s.fgImageX, y: s.fgImageY, size: s.fgImageSize||40, filters: { ...DEFAULT_FILTERS } });
@@ -1872,12 +2278,38 @@ async function loadImagesFromIDB() {
     const allSlides = [...state.carouselSlides, ...state.storySlides];
     await Promise.all(allSlides.map(async slide => {
         try {
-            const [bg, fgs, legacyFg, bgOrig] = await Promise.all([
+            const [bg, fgs, legacyFg, bgOrig, gridData, mosaicData] = await Promise.all([
                 idbGet(slide.id),
                 idbGet(slide.id + '_fgs'),
                 idbGet(slide.id + '_fg'),
                 idbGet(slide.id + '_bgorig'),
+                idbGet(slide.id + '_grid'),
+                idbGet(slide.id + '_mosaic'),
             ]);
+            // Mosaico: reidrata gli URL
+            if (slide.mosaic && mosaicData) {
+                if (mosaicData.auraUrl) slide.mosaic.auraUrl = mosaicData.auraUrl;
+                (mosaicData.items || []).forEach(saved => {
+                    const target = (slide.mosaic.items || []).find(it => it.id === saved.id);
+                    if (target && saved.url) target.url = saved.url;
+                });
+                slide.mosaic.items = (slide.mosaic.items || []).filter(it => it.url);
+            } else if (slide.mosaic) {
+                slide.mosaic.items = [];
+                slide.mosaic.auraUrl = null;
+            }
+            // Griglia: reidrata gli URL delle immagini (i metadati vivono in localStorage)
+            if (slide.grid && gridData) {
+                if (gridData.auraUrl) slide.grid.auraUrl = gridData.auraUrl;
+                (gridData.items || []).forEach(saved => {
+                    const target = (slide.grid.items || []).find(it => it.id === saved.id);
+                    if (target && saved.url) target.url = saved.url;
+                });
+                slide.grid.items = (slide.grid.items || []).filter(it => it.url);
+            } else if (slide.grid) {
+                slide.grid.items = [];
+                slide.grid.auraUrl = null;
+            }
             if (bg) slide.image = bg;
             // Originale pre-scontorno dello sfondo: se manca, il flag è stantio
             if (bgOrig) bgOriginals.set(slide.id, bgOrig);
@@ -1912,6 +2344,34 @@ async function loadImagesFromIDB() {
     }));
 }
 
+// ════════ Salvataggio immagini griglia (items + aura) in IndexedDB ════════
+async function saveGridToIDB(slide) {
+    try {
+        if (!slide.grid || !(slide.grid.items || []).length && !slide.grid.auraUrl) {
+            await idbDelete(slide.id + '_grid');
+            return;
+        }
+        await idbSet(slide.id + '_grid', {
+            auraUrl: slide.grid.auraUrl || null,
+            items: (slide.grid.items || []).map(it => ({ id: it.id, url: it.url })),
+        });
+    } catch (e) { toast('Errore salvataggio immagini griglia', 'warning'); }
+}
+
+// ════════ Salvataggio immagini mosaico (items + aura) in IndexedDB ════════
+async function saveMosaicToIDB(slide) {
+    try {
+        if (!slide.mosaic || (!(slide.mosaic.items || []).length && !slide.mosaic.auraUrl)) {
+            await idbDelete(slide.id + '_mosaic');
+            return;
+        }
+        await idbSet(slide.id + '_mosaic', {
+            auraUrl: slide.mosaic.auraUrl || null,
+            items: (slide.mosaic.items || []).map(it => ({ id: it.id, url: it.url })),
+        });
+    } catch (e) { toast('Errore salvataggio immagini mosaico', 'warning'); }
+}
+
 // ════════ Salvataggio media in primo piano (immagini + video) in IndexedDB ════════
 async function saveFgsToIDB(slide) {
     try {
@@ -1941,6 +2401,8 @@ function _rawState() {
         logoSize: state.logoSize,
         themeLogoSize: state.themeLogoSize,
         newsSize: state.newsSize,
+        accentColor: state.accentColor,
+        pageNums: state.pageNums,
     };
 }
 function _captureState() { return deepClone(_rawState()); }
@@ -1990,6 +2452,8 @@ function restoreFrom(snap) {
     if (snap.logoSize      !== undefined) state.logoSize      = snap.logoSize;
     if (snap.themeLogoSize !== undefined) state.themeLogoSize = snap.themeLogoSize;
     if (snap.newsSize      !== undefined) state.newsSize      = snap.newsSize;
+    if (snap.accentColor   !== undefined) { state.accentColor = snap.accentColor; lsSet(LS.accent, state.accentColor); }
+    if (snap.pageNums) { state.pageNums = { ...snap.pageNums }; lsSet(LS.pageNums, JSON.stringify(state.pageNums)); }
     // Persisti immediatamente anche le size
     lsSet(LS.logoSize,      String(state.logoSize));
     lsSet(LS.themeLogoSize, String(state.themeLogoSize));
@@ -2066,11 +2530,131 @@ function generateFgImagesHTML(slide, forPreview) {
     }).join('');
 }
 
-function generateOverlayHTML(overlay, forPreview) {
+// ════════ BLOCCHI RICORRENTI (kicker, specs, pill, disclaimer, numerazione) ════════
+function makeDefaultKicker()     { return { enabled: true, text: '', size: 23, x: 3.7, y: 13, align: 'left', opacity: 60 }; }
+function makeDefaultSpecsRow()   { return { enabled: true, text: '', size: 22, numSize: 34, gap: 34, x: 3.7, y: 24 }; }
+function makeDefaultPillBlock()  { return { enabled: true, lab: 'FIRST APPEARED', val: '', labSize: 13, valSize: 26, x: 50, y: 88 }; }
+function makeDefaultDisclaimer() { return { enabled: true, text: '', size: 14, opacity: 42 }; }
+
+// Riga sopra il titolo: "SET #10356" / "THE NEXT GENERATION · 1987–1994"
+function generateKickerHTML(slide, forPreview, accent) {
+    const k = slide.kicker;
+    if (!k || !k.enabled || !k.text) return '';
+    const center = k.align === 'center';
+    const style = `position:absolute;left:${k.x ?? 3.7}%;top:${k.y ?? 13}%;transform:translate(${center ? '-50%' : '0'},-50%);z-index:22;color:#fff;opacity:${(k.opacity ?? 60) / 100};font-family:'DM Sans',sans-serif;font-size:${k.size ?? 23}px;letter-spacing:.28em;text-transform:uppercase;font-weight:700;white-space:nowrap;`;
+    const attrs = forPreview ? `id="preview-kicker-drag" style="${style}cursor:grab;user-select:none;"` : `style="${style}"`;
+    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}${formatAccentText(k.text, accent)}</div>`;
+}
+// Riga specifiche: voci separate da ";", i numeri tra *asterischi* diventano
+// grandi, in Bebas e color accento (come "9 minifigures · 3600 pieces · €379.99")
+function generateSpecsHTML(slide, forPreview, accent) {
+    const sp = slide.specsRow;
+    if (!sp || !sp.enabled || !sp.text) return '';
+    const items = sp.text.split(';').map(t => t.trim()).filter(Boolean);
+    if (!items.length) return '';
+    const numStyle = `font-family:'Bebas Neue',sans-serif;font-size:${sp.numSize ?? 34}px;letter-spacing:.02em;color:${accent};margin-right:8px;font-weight:400;`;
+    const inner = items.map(t => {
+        const html = escapeHtml(t).replace(/\*([^*\n]+)\*/g, `<b style="${numStyle}">$1</b>`);
+        return `<div style="font-size:${sp.size ?? 22}px;font-weight:500;opacity:.85;font-family:'DM Sans',sans-serif;display:flex;align-items:baseline;white-space:nowrap;">${html}</div>`;
+    }).join('');
+    const style = `position:absolute;left:${sp.x ?? 3.7}%;top:${sp.y ?? 24}%;transform:translate(0,-50%);z-index:22;color:#fff;display:flex;gap:${sp.gap ?? 34}px;align-items:baseline;`;
+    const attrs = forPreview ? `id="preview-specs-drag" style="${style}cursor:grab;user-select:none;"` : `style="${style}"`;
+    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}${inner}</div>`;
+}
+// Pill singola della slide (etichetta piccola + valore grande, bordo arrotondato)
+function generatePillHTML(slide, forPreview, accent) {
+    const p = slide.pill;
+    if (!p || !p.enabled || !p.val) return '';
+    const style = `position:absolute;left:${p.x ?? 50}%;top:${p.y ?? 88}%;transform:translate(-50%,-50%);z-index:22;color:#fff;`;
+    const attrs = forPreview ? `id="preview-pill-drag" style="${style}cursor:grab;user-select:none;"` : `style="${style}"`;
+    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}<div style="display:inline-block;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;white-space:nowrap;">${p.lab ? `<span style="font-size:${p.labSize ?? 13}px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;margin-right:8px;font-family:'DM Sans',sans-serif;">${escapeHtml(p.lab)}</span>` : ''}<span style="font-family:'Bebas Neue',sans-serif;font-size:${p.valSize ?? 26}px;letter-spacing:.02em;">${formatAccentText(p.val, accent)}</span></div></div>`;
+}
+// Disclaimer: testo piccolo centrato ancorato in fondo
+function generateDisclaimerHTML(slide, forPreview, accent) {
+    const d = slide.disclaimer;
+    if (!d || !d.enabled || !d.text) return '';
+    return `<div style="position:absolute;bottom:26px;left:70px;right:70px;z-index:30;text-align:center;font-size:${d.size ?? 14}px;line-height:1.5;opacity:${(d.opacity ?? 42) / 100};color:#fff;font-family:'DM Sans',sans-serif;white-space:pre-wrap;${forPreview ? 'pointer-events:none;' : ''}">${formatAccentText(d.text, accent)}</div>`;
+}
+// Guide "zone sicure" Instagram: SOLO anteprima (mai in export: forPreview è false lì).
+// Mostra: margini laterali, area username/didascalia in basso, icona repost tonda
+// in basso a destra (quella che copriva il sottotitolo della copertina).
+function generateGuidesHTML(slide, forPreview) {
+    if (!forPreview || !state.showGuides) return '';
+    const H = slide.isStory ? 1920 : 1350;
+    const M = 40;                     // margine sicurezza laterale
+    const capH = 190;                 // fascia bassa: username + inizio didascalia
+    const D = 210;                    // diametro icona repost
+    const lbl = 'font-family:\'DM Sans\',sans-serif;font-size:20px;font-weight:700;color:#3bc9f5;';
+    return `<div style="position:absolute;inset:0;z-index:90;pointer-events:none;">
+        <div style="position:absolute;top:0;bottom:0;left:${M}px;border-left:2px dashed rgba(59,201,245,.65);"></div>
+        <div style="position:absolute;top:0;bottom:0;right:${M}px;border-right:2px dashed rgba(59,201,245,.65);"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:${capH}px;background:rgba(59,201,245,.14);border-top:2px dashed rgba(59,201,245,.65);"><div style="position:absolute;left:14px;top:8px;${lbl}">Area username / didascalia</div></div>
+        <div style="position:absolute;right:${M}px;bottom:${M}px;width:${D}px;height:${D}px;border-radius:50%;border:3px dashed rgba(245,110,110,.85);background:rgba(245,110,110,.15);"><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;${lbl}color:#f56e6e;">icona<br>repost</div></div>
+    </div>`;
+}
+
+// Numerazione automatica "02 / 13" (solo carosello)
+function generatePageNumHTML(slide, index, forPreview) {
+    const pn = state.pageNums;
+    if (!pn || !pn.enabled || slide.isStory) return '';
+    const total = state.carouselSlides.length;
+    if (total < 2) return '';
+    if (pn.hideOnCover && slide.coverEnabled) return '';
+    if (pn.hideOnLast && index === total - 1) return '';
+    const num = String(index + 1).padStart(2, '0');
+    return `<div style="position:absolute;bottom:34px;left:40px;z-index:30;font-family:'Bebas Neue',sans-serif;font-size:22px;opacity:.5;letter-spacing:.08em;color:#fff;${forPreview ? 'pointer-events:none;' : ''}">${num} / ${total}</div>`;
+}
+
+// HTML della griglia: celle posizionate in px assoluti (niente CSS grid → parità
+// garantita con html2canvas). Le immagini sono le celle già cotte da composeGridCell.
+function generateGridHTML(slide, forPreview, accent) {
+    const grid = slide.grid;
+    if (!grid || !grid.enabled || !grid.items || !grid.items.length) return '';
+    const { cols, innerW, cellW, cellH } = gridGeometry(grid);
+    const gap = grid.gap ?? 16, rowGap = grid.rowGap ?? gap;
+    const lb = grid.labels || makeDefaultGridLabels();
+    const rows = Math.ceil(grid.items.length / cols);
+    const lastRowCount = grid.items.length - cols * (rows - 1);
+    const borderCss = grid.borderOn !== false
+        ? `border:1px solid ${hexToRgba(grid.borderColor, Math.max(0, Math.min(100, grid.borderAlpha ?? 16)) / 100)};` : '';
+    const radius = grid.radius ?? 14;
+    const below = lb.position === 'below';
+    const cellsHtml = grid.items.map((it, i) => {
+        const row = Math.floor(i / cols), colInRow = i - row * cols;
+        const countInRow = row === rows - 1 ? lastRowCount : cols;
+        const rowOffset = row === rows - 1 ? (innerW - (countInRow * cellW + (countInRow - 1) * gap)) / 2 : 0;
+        const x = rowOffset + colInRow * (cellW + gap);
+        const y = row * (cellH + rowGap);
+        const baked = gridCellCache.get(it.id);
+        const imgSrc = baked ? baked.url : safeImageUrl(it.url);
+        const imgHtml = imgSrc ? `<img src="${imgSrc}" alt="" style="width:100%;height:100%;display:block;" draggable="false">` : '';
+        // Etichette
+        const nameHtml = (lb.show && it.name) ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:${lb.nameSize ?? 29}px;line-height:${below ? '0.95' : '1'};letter-spacing:.02em;">${formatAccentText(it.name, accent)}</div>` : '';
+        const subHtml  = (lb.show && it.sub)  ? (below
+            ? `<div style="color:${accent};font-weight:700;font-size:${lb.subSize ?? 14}px;margin-top:8px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent)}</div>`
+            : `<div style="font-size:${lb.subSize ?? 14}px;opacity:.6;margin-top:3px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent)}</div>`) : '';
+        const metaHtml = (lb.show && it.meta) ? `<div style="opacity:.62;font-size:${lb.metaSize ?? 18}px;margin-top:6px;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(it.meta, accent)}</div>` : '';
+        const pillHtml = (lb.show && lb.pillOn && it.pill)
+            ? `<div style="margin-top:16px;"><div style="display:inline-block;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;"><span style="font-size:${lb.pillLabSize ?? 13}px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;margin-right:8px;font-family:'DM Sans',sans-serif;">${escapeHtml(lb.pillLab || '')}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:${lb.pillValSize ?? 26}px;letter-spacing:.02em;">${formatAccentText(it.pill, accent)}</span></div></div>` : '';
+        const overlayLabel = (!below && (nameHtml || subHtml))
+            ? `<div style="position:absolute;bottom:0;left:0;right:0;padding:20px 6px 12px;text-align:center;color:#fff;${lb.gradient !== false ? 'background:linear-gradient(180deg,rgba(5,8,16,0) 0%,rgba(5,8,16,0.9) 60%);' : ''}">${nameHtml}${subHtml}${metaHtml}${pillHtml}</div>` : '';
+        const belowLabel = (below && (nameHtml || subHtml || metaHtml || pillHtml))
+            ? `<div style="text-align:center;color:#fff;margin-top:22px;">${nameHtml}${subHtml}${metaHtml}${pillHtml}</div>` : '';
+        const warnBadge = (forPreview && baked && baked.warn)
+            ? `<div style="position:absolute;top:6px;right:6px;background:rgba(180,83,9,.92);color:#fff;font-size:15px;font-weight:700;padding:2px 8px;border-radius:8px;font-family:'DM Sans',sans-serif;z-index:5;">⚠ soggetto al bordo</div>` : '';
+        return `<div ${forPreview ? `class="preview-grid-cell" data-grid-item-id="${it.id}"` : ''} style="position:absolute;left:${x.toFixed(2)}px;top:${y.toFixed(2)}px;width:${cellW.toFixed(2)}px;">`
+             + `<div style="position:relative;width:${cellW.toFixed(2)}px;height:${cellH.toFixed(2)}px;border-radius:${radius}px;overflow:hidden;box-sizing:border-box;${grid.cellBgOn !== false ? `background:${grid.cellBg || '#050810'};` : ''}${borderCss}">${imgHtml}${overlayLabel}${warnBadge}</div>${belowLabel}</div>`;
+    }).join('');
+    const contH = rows * cellH + (rows - 1) * rowGap;
+    const handle = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
+    return `<div ${forPreview ? 'id="preview-grid-drag"' : ''} style="position:absolute;left:${grid.marginX ?? 40}px;top:${grid.y ?? 30}%;width:${innerW}px;height:${contH.toFixed(2)}px;z-index:${grid.behindOverlay ? 5 : 15};opacity:${(grid.opacity ?? 100) / 100};${forPreview ? 'cursor:grab;' : ''}">${handle}${cellsHtml}</div>`;
+}
+
+function generateOverlayHTML(overlay, forPreview, accent) {
     if (!overlay || !overlay.enabled) return '';
     const tsz = overlay.titleSize || 80, bsz = overlay.bodySize || 40, align = overlay.align || 'left', fontFn = FONTS[overlay.font] || FONTS['Bebas Neue'];
-    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${escapeHtml(overlay.title)}</div>` : '';
-    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${escapeHtml(overlay.body)}</div>` : '';
+    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${formatAccentText(overlay.title, accent)}</div>` : '';
+    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${formatAccentText(overlay.body, accent)}</div>` : '';
     if (!titleHTML && !bodyHTML) return '';
 
     const txMap = { left:'0%', center:'-50%', right:'-100%' };
@@ -2081,6 +2665,7 @@ function generateOverlayHTML(overlay, forPreview) {
 }
 
 function generateSlideHTML(slide, index, forPreview = false) {
+    const accent = slideAccent(slide);
     const cE = !!slide.coverEnabled;
     const cUpper = !!slide.coverUppercase, cDark = !!slide.coverDarkOverlay, cNews = !!slide.coverShowNews;
     const zoom = slide.zoom || 1, bg = slideBg(slide);
@@ -2129,11 +2714,17 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${escapeHtml(slide.title)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${escapeHtml(slide.body)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${formatAccentText(slide.title, accent)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent)}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
-    const sourceHTML = (cE && slide.source) ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
-    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${darkOverlayHTML}${topLogosHTML}${textHTML}${sourceHTML}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview)}</div>`;
+    // Da Blocco 4: visibile su OGNI slide con il campo compilato (es. "Source: lego.com"),
+    // non più solo in copertina. Le slide esistenti non-cover hanno il campo vuoto → invariate.
+    const sourceHTML = slide.source ? `<div style="position:absolute;bottom:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;z-index:30;color:${slide.coverTextColor || '#ffffff'};opacity:0.8;font-size:18px;font-family:'DM Sans',sans-serif;text-shadow:${coverTextShadow(slide.coverTextColor, true)};${forPreview ? 'pointer-events:none;' : ''}">${escapeHtml(slide.source)}</div>` : '';
+    // Mosaico di copertina: strato full-bleed sopra lo sfondo, sotto tutto il resto
+    const mosaicBaked = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
+    const mosaicHTML = mosaicBaked
+        ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;"><img src="${mosaicBaked.url}" alt="" style="width:100%;height:100%;display:block;" draggable="false"></div>` : '';
+    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${mosaicHTML}${darkOverlayHTML}${generateGridHTML(slide, forPreview, accent)}${topLogosHTML}${textHTML}${sourceHTML}${generateKickerHTML(slide, forPreview, accent)}${generateSpecsHTML(slide, forPreview, accent)}${generatePillHTML(slide, forPreview, accent)}${generateDisclaimerHTML(slide, forPreview, accent)}${generatePageNumHTML(slide, index, forPreview)}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview, accent)}${generateGuidesHTML(slide, forPreview)}</div>`;
 }
 
 // DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
@@ -2258,7 +2849,46 @@ function bindAllDrags() {
         bindDragElement(el, 'x', 'y', findFg);
         bindFgPinch(el, findFg);
     });
+    bindGridDrag(document.getElementById('preview-grid-drag'), s);
+    // Blocchi ricorrenti trascinabili
+    bindDragElement(document.getElementById('preview-kicker-drag'), 'x', 'y', () => s.kicker?.enabled ? s.kicker : null, null, true);
+    bindDragElement(document.getElementById('preview-specs-drag'),  'x', 'y', () => s.specsRow?.enabled ? s.specsRow : null, null, true);
+    bindDragElement(document.getElementById('preview-pill-drag'),   'x', 'y', () => s.pill?.enabled ? s.pill : null, null, true);
     bindBgDrag();
+}
+
+// Drag SOLO verticale della griglia (la posizione orizzontale è data dai margini)
+function bindGridDrag(el, slide) {
+    if (!el) return;
+    const onStart = e => {
+        if (['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName)) return;
+        if (e.touches && e.touches.length >= 2) return;
+        e.preventDefault(); e.stopPropagation();
+        const grid = slide.grid; if (!grid || !grid.enabled) return;
+        el.classList.add('dragging');
+        const rect = DOM.previewWrapper.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        const startY = touch.clientY, startVal = grid.y ?? 30;
+        const onMove = ev => {
+            const t = ev.touches ? ev.touches[0] : ev;
+            let ny = startVal + (t.clientY - startY) / rect.height * 100;
+            ny = Math.max(0, Math.min(100, ny));
+            if (!ev.shiftKey) {
+                const sy = trySnap(ny);
+                ny = Math.max(0, Math.min(100, sy.snapped));
+                showSnapGuides(false, sy.hit, null, ny);
+            } else clearSnapGuides();
+            grid.y = Math.round(ny * 10) / 10;
+            el.style.top = grid.y + '%';
+        };
+        startPointerDrag(onMove, () => {
+            el.classList.remove('dragging');
+            clearSnapGuides();
+            trackChange(true);
+        });
+    };
+    el.addEventListener('mousedown', onStart);
+    el.addEventListener('touchstart', onStart, { passive: false });
 }
 
 // Pinch-to-zoom (due dita) sulle immagini in primo piano: aggiorna fg.size con
@@ -2622,6 +3252,15 @@ function renderEditor() {
     syncToggle(DOM.toggleCoverDarkOverlay, DOM.coverOverlayToggleTrack,   DOM.coverOverlayToggleLabel,   !!slide.coverDarkOverlay);
     syncToggle(DOM.toggleCoverShowNews,    DOM.coverNewsToggleTrack,      DOM.coverNewsToggleLabel,      !!slide.coverShowNews);
 
+    // Colore accento: progetto + eventuale override slide
+    if (DOM.inputAccentColor) { DOM.inputAccentColor.value = state.accentColor || DEFAULT_ACCENT; DOM.accentColorHex.textContent = (state.accentColor || DEFAULT_ACCENT).toUpperCase(); }
+    if (DOM.inputSlideAccent) {
+        const ov = slide.accentColor;
+        DOM.inputSlideAccent.value = ov || state.accentColor || DEFAULT_ACCENT;
+        DOM.slideAccentHex.textContent = ov ? ov.toUpperCase() : '—';
+        DOM.btnSlideAccentReset.classList.toggle('hidden', !ov);
+    }
+
     DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
     // Sync slider dimensione loghi
     const syncSize = (slider, valLabel, size) => { slider.value = size; valLabel.textContent = Math.round(size * 100) + '%'; };
@@ -2638,7 +3277,800 @@ function renderEditor() {
     const ov = slide.textOverlay, oOn = !!(ov && ov.enabled);
     DOM.toggleTextOverlay.checked=oOn; DOM.overlayToggleTrack.className='toggle-track'+(oOn?' on':''); DOM.overlayToggleLabel.textContent=oOn?'On':'Off'; DOM.overlayFields.style.display=oOn?'flex':'none';
     if(oOn&&ov){ DOM.overlayFont.value=ov.font||'Bebas Neue'; DOM.overlayTitleInput.value=ov.title||''; DOM.overlayBodyInput.value=ov.body||''; DOM.overlayTitleSize.value=ov.titleSize||80; DOM.overlayTitleSizeVal.textContent=(ov.titleSize||80)+'px'; DOM.overlayBodySize.value=ov.bodySize||40; DOM.overlayBodySizeVal.textContent=(ov.bodySize||40)+'px'; DOM.overlayColor.value=ov.color||'#ffffff'; DOM.overlayColorHex.textContent=(ov.color||'#ffffff').toUpperCase(); DOM.alignBtns.forEach(b=>b.classList.toggle('active',b.dataset.align===(ov.align||'left'))); }
+
+    renderGridEditor(slide);
+    renderMosaicEditor(slide);
+    renderBlocksEditor(slide);
 }
+
+// ════════ BLOCCHI RICORRENTI: pannello di modifica ════════
+function renderBlocksEditor(slide) {
+    if (!DOM.blocksPanelHost) return;
+    const k = slide.kicker, sp = slide.specsRow, p = slide.pill, d = slide.disclaimer;
+    const pn = state.pageNums || { enabled: false, hideOnCover: true, hideOnLast: false };
+
+    const section = (title, key, on, inner) => `
+        <div class="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-600 uppercase">${title}</span>
+                <div class="toggle-track ${on ? 'on' : ''}" data-block-toggle="${key}" role="switch" aria-label="${title}"><div class="toggle-thumb"></div></div>
+            </div>
+            ${on ? inner : ''}
+        </div>`;
+    const slider = (label, key, sub, min, max, step, val, suffix) =>
+        `<div class="flex flex-col gap-1"><div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><label>${label}</label><span data-bval="${key}.${sub}" class="text-[#0071E3]">${val}${suffix}</span></div><input type="range" data-bkey="${key}" data-bsub="${sub}" data-suffix="${suffix}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full"></div>`;
+    const textIn = (ph, key, sub, val) =>
+        `<input type="text" data-bkey="${key}" data-bsub="${sub}" value="${escapeAttr(val)}" placeholder="${escapeAttr(ph)}" class="w-full bg-[#F5F5F7] rounded p-2 text-xs outline-none focus:ring-2 focus:ring-[#0071E3]"/>`;
+    const miniToggle = (label, key, sub, on) =>
+        `<label class="flex items-center justify-between gap-2 cursor-pointer select-none"><span class="text-[10px] font-bold text-gray-500 uppercase">${label}</span><div class="toggle-track ${on ? 'on' : ''}" data-block-subtoggle="${key}.${sub}" role="switch" aria-label="${label}"><div class="toggle-thumb"></div></div></label>`;
+
+    DOM.blocksPanelHost.innerHTML = `
+        ${section('Kicker (riga sopra il titolo)', 'kicker', !!(k && k.enabled), k ? `
+            ${textIn('es. SET *#10356* oppure THE NEXT GENERATION · 1987–1994', 'kicker', 'text', k.text)}
+            <div class="flex gap-2 text-xs font-bold">
+                <button data-block-align="left" class="flex-1 py-1.5 rounded ${k.align !== 'center' ? 'bg-[#0071E3] text-white' : 'bg-white text-gray-600 border border-gray-200'}">A sinistra</button>
+                <button data-block-align="center" class="flex-1 py-1.5 rounded ${k.align === 'center' ? 'bg-[#0071E3] text-white' : 'bg-white text-gray-600 border border-gray-200'}">Centrato</button>
+            </div>
+            ${slider('Dimensione', 'kicker', 'size', 12, 44, 1, k.size ?? 23, 'px')}
+            ${slider('Opacità', 'kicker', 'opacity', 20, 100, 1, k.opacity ?? 60, '%')}` : '')}
+        ${section('Riga specifiche', 'specsRow', !!(sp && sp.enabled), sp ? `
+            ${textIn('es. *9* minifigures ; *3600* pieces ; *€379.99*', 'specsRow', 'text', sp.text)}
+            <p class="text-[10px] text-gray-400">Voci separate da ; — la parte tra *asterischi* diventa grande e color accento</p>
+            ${slider('Dimensione testo', 'specsRow', 'size', 14, 40, 1, sp.size ?? 22, 'px')}
+            ${slider('Dimensione numeri', 'specsRow', 'numSize', 18, 60, 1, sp.numSize ?? 34, 'px')}
+            ${slider('Spazio tra le voci', 'specsRow', 'gap', 10, 80, 1, sp.gap ?? 34, 'px')}` : '')}
+        ${section('Pill', 'pill', !!(p && p.enabled), p ? `
+            ${textIn('Etichetta piccola (es. FIRST APPEARED)', 'pill', 'lab', p.lab)}
+            ${textIn('Testo grande (es. Encounter at Farpoint *· 1987*)', 'pill', 'val', p.val)}
+            ${slider('Dimensione testo', 'pill', 'valSize', 14, 44, 1, p.valSize ?? 26, 'px')}
+            ${slider('Dimensione etichetta', 'pill', 'labSize', 8, 24, 1, p.labSize ?? 13, 'px')}` : '')}
+        ${section('Disclaimer (in fondo)', 'disclaimer', !!(d && d.enabled), d ? `
+            <textarea data-bkey="disclaimer" data-bsub="text" rows="2" placeholder="es. LEGO® and Star Trek™ are trademarks of their respective owners." class="w-full bg-[#F5F5F7] rounded p-2 text-xs outline-none focus:ring-2 focus:ring-[#0071E3] resize-none">${escapeHtml(d.text)}</textarea>
+            ${slider('Dimensione', 'disclaimer', 'size', 10, 24, 1, d.size ?? 14, 'px')}
+            ${slider('Opacità', 'disclaimer', 'opacity', 20, 100, 1, d.opacity ?? 42, '%')}` : '')}
+        <div class="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-600 uppercase">Numerazione (02 / ${state.carouselSlides.length})</span>
+                <div class="toggle-track ${pn.enabled ? 'on' : ''}" data-pn-toggle="enabled" role="switch" aria-label="Numerazione"><div class="toggle-thumb"></div></div>
+            </div>
+            ${pn.enabled ? `${miniToggle('Nascondi sulla copertina', 'pn', 'hideOnCover', pn.hideOnCover)}
+            ${miniToggle('Nascondi sull’ultima slide', 'pn', 'hideOnLast', pn.hideOnLast)}` : ''}
+            <p class="text-[10px] text-gray-400">Vale per tutto il carosello, in basso a sinistra</p>
+        </div>
+        <div class="border border-gray-200 rounded-lg p-3 flex flex-col gap-2 bg-white">
+            <span class="text-xs font-bold text-gray-600 uppercase">Fonte (in basso a destra)</span>
+            ${textIn('es. Source: lego.com', 'source', '', slide.source || '')}
+            <p class="text-[10px] text-gray-400">Visibile su questa slide; è lo stesso campo Fonte del layout copertina</p>
+        </div>
+        <p class="text-xs text-blue-700 font-medium">Kicker, specifiche e pill si trascinano nell'anteprima</p>`;
+}
+
+// Delega eventi del pannello Blocchi (bind una sola volta)
+const BLOCK_FACTORIES = { kicker: makeDefaultKicker, specsRow: makeDefaultSpecsRow, pill: makeDefaultPillBlock, disclaimer: makeDefaultDisclaimer };
+if (DOM.blocksPanelHost) {
+    DOM.blocksPanelHost.addEventListener('input', e => {
+        const t = e.target;
+        const s = state.slides[state.activeIndex];
+        if (!t.dataset.bkey) return;
+        const key = t.dataset.bkey, sub = t.dataset.bsub;
+        if (key === 'source') {
+            s.source = t.value;
+            if (DOM.inputSource) DOM.inputSource.value = t.value;
+            debouncedPreviewSave();
+            return;
+        }
+        const block = s[key]; if (!block) return;
+        if (t.type === 'range') {
+            const v = parseFloat(t.value);
+            block[sub] = v;
+            const sp = DOM.blocksPanelHost.querySelector(`[data-bval="${key}.${sub}"]`);
+            if (sp) sp.textContent = v + (t.dataset.suffix || '');
+            renderPreview(); trackChange();
+        } else {
+            block[sub] = t.value;
+            debouncedGridPreview();
+        }
+    });
+    DOM.blocksPanelHost.addEventListener('change', e => {
+        if (e.target.type === 'range') snapshot();
+    });
+    DOM.blocksPanelHost.addEventListener('click', e => {
+        const s = state.slides[state.activeIndex];
+        const bt = e.target.closest('[data-block-toggle]');
+        if (bt) {
+            const key = bt.dataset.blockToggle;
+            if (!s[key]) s[key] = BLOCK_FACTORIES[key]();
+            else s[key].enabled = !s[key].enabled;
+            trackChange(true); renderEditor(); renderPreview();
+            return;
+        }
+        const al = e.target.closest('[data-block-align]');
+        if (al && s.kicker) {
+            s.kicker.align = al.dataset.blockAlign;
+            trackChange(true); renderEditor(); renderPreview();
+            return;
+        }
+        const pt = e.target.closest('[data-pn-toggle]');
+        if (pt) {
+            state.pageNums.enabled = !state.pageNums.enabled;
+            lsSet(LS.pageNums, JSON.stringify(state.pageNums));
+            trackChange(true); renderEditor(); renderPreview();
+            return;
+        }
+        const st = e.target.closest('[data-block-subtoggle]');
+        if (st) {
+            const [key, sub] = st.dataset.blockSubtoggle.split('.');
+            if (key === 'pn') {
+                state.pageNums[sub] = !state.pageNums[sub];
+                lsSet(LS.pageNums, JSON.stringify(state.pageNums));
+                trackChange(true); renderEditor(); renderPreview();
+            }
+        }
+    });
+}
+
+// ════════ MOSAICO: pannello di modifica ════════
+function renderMosaicEditor(slide) {
+    if (!DOM.mosaicPanelHost) return;
+    const m = slide.mosaic;
+    const on = !!(m && m.enabled);
+    DOM.toggleMosaic.checked = on;
+    DOM.mosaicToggleTrack.className = 'toggle-track' + (on ? ' on' : '');
+    DOM.mosaicToggleLabel.textContent = on ? 'On' : 'Off';
+    DOM.mosaicPanelHost.style.display = on ? 'flex' : 'none';
+    if (!on) { DOM.mosaicPanelHost.innerHTML = ''; return; }
+
+    const sliderRow = (label, key, min, max, step, val, suffix) =>
+        `<div class="flex flex-col gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200"><div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><label>${label}</label><span data-mval="${key}" class="text-[#0071E3]">${val}${suffix}</span></div><input type="range" data-mkey="${key}" data-suffix="${suffix}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full"></div>`;
+
+    const thumbs = (m.items || []).map(it =>
+        `<div class="relative w-14 h-14 rounded border border-gray-200 bg-gray-100 bg-contain bg-no-repeat bg-center flex-shrink-0 mosaic-item-thumb" data-id="${it.id}"><button data-mosaic-del="${it.id}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center shadow" title="Rimuovi" aria-label="Rimuovi">✕</button></div>`).join('');
+
+    DOM.mosaicPanelHost.innerHTML = `
+        <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+            <input type="file" id="mosaic-image-upload" accept="image/*" multiple aria-label="Aggiungi immagini al mosaico" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+            <span class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi soggetti al mosaico (si ripetono da soli fino a riempire la slide)</span>
+        </div>
+        <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-3 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+            <input type="file" id="mosaic-split-upload" accept="image/png,image/webp" aria-label="Separa una fila di soggetti per il mosaico" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+            <span class="text-xs font-medium text-[#6E6E73] pointer-events-none">✂ Separa una fila di soggetti (PNG trasparente)</span>
+        </div>
+        <div class="flex flex-wrap gap-2 empty:hidden">${thumbs}</div>
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Aura dietro i soggetti</span>
+                ${m.auraUrl ? '<button id="mosaic-aura-remove" class="text-[10px] text-[#E3000F] hover:underline font-medium">Rimuovi</button>' : ''}
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="mosaic-aura-thumb" class="w-12 h-12 rounded border border-gray-200 bg-gray-100 bg-cover bg-center flex-shrink-0"></div>
+                <div class="relative flex-grow border-2 border-dashed border-[#AEAEB2] rounded p-2.5 text-center bg-white cursor-pointer">
+                    <input type="file" id="mosaic-aura-upload" accept="image/*" aria-label="Carica aura mosaico" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <span class="text-[11px] text-gray-500 pointer-events-none">${m.auraUrl ? 'Sostituisci aura' : 'Carica immagine aura'}</span>
+                </div>
+            </div>
+            <label class="flex items-center justify-between gap-2 cursor-pointer select-none pt-1">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Centra sul corpo (ignora il riflesso)</span>
+                <div class="toggle-track ${m.groundCenter !== false ? 'on' : ''}" data-mtoggle="groundCenter" role="switch" aria-label="Centra sul corpo"><div class="toggle-thumb"></div></div>
+            </label>
+        </div>
+        ${sliderRow('Colonne', 'cols', 2, 8, 1, m.cols ?? 4, '')}
+        ${sliderRow('Altezza cella (vs larghezza)', 'cellAspectPct', 40, 200, 2, Math.round((m.cellAspect ?? 0.833) * 100), '%')}
+        ${sliderRow('Riempimento soggetto', 'fill', 40, 110, 1, m.fill ?? 74, '%')}
+        ${sliderRow('Opacità soggetti', 'opacity', 10, 100, 1, m.opacity ?? 55, '%')}
+        ${sliderRow('Tinta scura (bordi)', 'tint', 0, 150, 5, m.tint ?? 100, '%')}
+        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <span class="text-[10px] font-bold text-gray-500 uppercase">Sfondo cella</span>
+            <input type="color" data-mcolor="cellBg" value="${m.cellBg || '#050810'}" class="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+        </div>
+        <p class="text-xs text-blue-700 font-medium">Consiglio: attiva anche "Overlay scuro inferiore" del layout copertina per la parte bassa.</p>`;
+
+    DOM.mosaicPanelHost.querySelectorAll('.mosaic-item-thumb').forEach(el => {
+        const it = (m.items || []).find(i => i.id === el.dataset.id);
+        const u = it && safeImageUrl(it.url);
+        if (u) el.style.backgroundImage = `url("${u}")`;
+    });
+    const auraThumb = DOM.mosaicPanelHost.querySelector('#mosaic-aura-thumb');
+    const auraUrl = safeImageUrl(m.auraUrl);
+    if (auraThumb && auraUrl) auraThumb.style.backgroundImage = `url("${auraUrl}")`;
+}
+
+async function handleMosaicImagesUpload(files) {
+    const s = state.slides[state.activeIndex];
+    const m = ensureMosaicCfg();
+    let added = 0;
+    for (const f of files) {
+        try { const url = await compressImage(f); m.items.push({ id: generateId(), url }); added++; }
+        catch (_) {}
+    }
+    if (added) { await saveMosaicToIDB(s); trackChange(true); render(); toast(`${added} soggett${added > 1 ? 'i' : 'o'} nel mosaico`, 'success', 2000); }
+}
+async function handleMosaicAuraUpload(file) {
+    if (!file) return;
+    const s = state.slides[state.activeIndex];
+    const m = ensureMosaicCfg();
+    try {
+        m.auraUrl = await compressImage(file);
+        await saveMosaicToIDB(s);
+        trackChange(true); render();
+    } catch (_) {}
+}
+
+if (DOM.mosaicPanelHost) {
+    DOM.mosaicPanelHost.addEventListener('input', e => {
+        const t = e.target;
+        const s = state.slides[state.activeIndex];
+        const m = s.mosaic; if (!m) return;
+        const setVal = (key, txt) => { const sp = DOM.mosaicPanelHost.querySelector(`[data-mval="${key}"]`); if (sp) sp.textContent = txt; };
+        if (t.matches('input[data-mkey]')) {
+            const k = t.dataset.mkey; const v = parseFloat(t.value);
+            if (k === 'cellAspectPct') m.cellAspect = v / 100; else m[k] = (k === 'cols') ? Math.round(v) : v;
+            setVal(k, v + (t.dataset.suffix || ''));
+            debouncedRefreshFrames(); trackChange();
+        } else if (t.matches('input[data-mcolor]')) {
+            m[t.dataset.mcolor] = t.value;
+            debouncedRefreshFrames(); trackChange();
+        }
+    });
+    DOM.mosaicPanelHost.addEventListener('change', e => {
+        const t = e.target;
+        if (t.id === 'mosaic-image-upload' && t.files?.length) { handleMosaicImagesUpload([...t.files]); t.value = ''; return; }
+        if (t.id === 'mosaic-split-upload' && t.files?.length) { openSplitModal(t.files[0], 'mosaic'); t.value = ''; return; }
+        if (t.id === 'mosaic-aura-upload' && t.files?.length) { handleMosaicAuraUpload(t.files[0]); t.value = ''; return; }
+        if (t.matches('input[data-mkey]')) snapshot();
+    });
+    DOM.mosaicPanelHost.addEventListener('click', async e => {
+        const s = state.slides[state.activeIndex];
+        const m = s.mosaic; if (!m) return;
+        const mt = e.target.closest('[data-mtoggle]');
+        if (mt) {
+            m[mt.dataset.mtoggle] = !mt.classList.contains('on');
+            mt.classList.toggle('on', m[mt.dataset.mtoggle]);
+            debouncedRefreshFrames(); trackChange(true);
+            return;
+        }
+        if (e.target.id === 'mosaic-aura-remove') {
+            m.auraUrl = null;
+            await saveMosaicToIDB(s);
+            debouncedRefreshFrames(); trackChange(true); render();
+            return;
+        }
+        const del = e.target.closest('[data-mosaic-del]');
+        if (del) {
+            m.items = (m.items || []).filter(i => i.id !== del.dataset.mosaicDel);
+            await saveMosaicToIDB(s);
+            debouncedRefreshFrames(); trackChange(true); render();
+        }
+    });
+}
+// ════════ SEPARA FILA DI SOGGETTI (import multiplo da PNG trasparente) ════════
+// LEGO pubblica le minifigure come un'unica immagine trasparente in fila: qui si
+// rilevano le colonne completamente trasparenti tra un soggetto e l'altro e si
+// propone un taglio al centro di ogni spazio, correggibile a mano.
+const splitState = { img: null, w: 0, h: 0, cuts: [], scale: 1, colMax: null, dest: 'grid' };
+
+function splitDetectCuts() {
+    const { w, h, colMax } = splitState;
+    // Soglia bassa: i render LEGO hanno spazi anche di pochi px tra le figure
+    const minRun = Math.max(3, Math.round(w * 0.002));
+    const cuts = [];
+    let runStart = -1;
+    for (let x = 0; x < w; x++) {
+        const empty = colMax[x] < 10;
+        if (empty && runStart < 0) runStart = x;
+        if (!empty && runStart >= 0) {
+            const runLen = x - runStart;
+            // solo gli spazi INTERNI (chiusi da una colonna piena): i margini
+            // vuoti ai bordi non sono spazi tra soggetti
+            if (runStart > 0 && runLen >= minRun) cuts.push(Math.round(runStart + runLen / 2));
+            runStart = -1;
+        }
+    }
+    splitState.cuts = cuts;
+}
+function splitRender() {
+    const cv = document.getElementById('split-canvas');
+    const ctx = cv.getContext('2d');
+    const { img, w, h, scale } = splitState;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = '#0b1020'; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, w * scale, h * scale);
+    splitState.cuts.forEach(x => {
+        const dx = Math.round(x * scale) + 0.5;
+        ctx.strokeStyle = '#ff5f56'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(dx, 0); ctx.lineTo(dx, h * scale); ctx.stroke();
+        ctx.fillStyle = '#ff5f56';
+        ctx.beginPath(); ctx.arc(dx, 12, 8, 0, Math.PI * 2); ctx.fill();
+    });
+    const n = splitState.cuts.length + 1;
+    document.getElementById('split-info').textContent = `${splitState.cuts.length} tagli → ${n} soggetti`;
+}
+function openSplitModal(file, dest) {
+    if (!file) return;
+    readImageAsBase64(file, dataUrl => {
+        const img = new Image();
+        img.onload = () => {
+            const w = img.naturalWidth, h = img.naturalHeight;
+            // profilo alpha per colonna (righe campionate a passo 2 per velocità)
+            const pc = document.createElement('canvas'); pc.width = w; pc.height = h;
+            const pctx = pc.getContext('2d', { willReadFrequently: true });
+            pctx.drawImage(img, 0, 0);
+            let data;
+            try { data = pctx.getImageData(0, 0, w, h).data; }
+            catch (_) { toast('Immagine non leggibile', 'error'); return; }
+            const colMax = new Uint8Array(w);
+            for (let y = 0; y < h; y += 2) {
+                const row = y * w * 4;
+                for (let x = 0; x < w; x++) { const a = data[row + x * 4 + 3]; if (a > colMax[x]) colMax[x] = a; }
+            }
+            Object.assign(splitState, { img, w, h, colMax, dest: dest || 'grid' });
+            splitDetectCuts();
+            const modal = document.getElementById('split-modal');
+            modal.classList.add('active');
+            const wrap = modal.querySelector('.overflow-auto');
+            const maxW = Math.max(300, wrap.clientWidth - 4);
+            splitState.scale = Math.min(1, maxW / w);
+            const cv = document.getElementById('split-canvas');
+            cv.width = Math.round(w * splitState.scale); cv.height = Math.round(h * splitState.scale);
+            document.getElementById('split-dest').value = splitState.dest;
+            splitRender();
+        };
+        img.onerror = () => toast('Immagine non valida', 'error');
+        img.src = dataUrl;
+    });
+}
+// Interazione sul canvas: tap su linea = rimuovi, tap su spazio = aggiungi, drag = sposta
+(() => {
+    const cv = document.getElementById('split-canvas');
+    if (!cv) return;
+    let dragIdx = -1, downX = 0, moved = false;
+    const evX = e => {
+        const r = cv.getBoundingClientRect();
+        const t = e.touches ? e.touches[0] : e;
+        return (t.clientX - r.left) / splitState.scale;
+    };
+    const near = x => {
+        let best = -1, bd = 14 / splitState.scale;
+        splitState.cuts.forEach((c, i) => { const d = Math.abs(c - x); if (d < bd) { bd = d; best = i; } });
+        return best;
+    };
+    const onDown = e => {
+        e.preventDefault();
+        downX = evX(e); moved = false;
+        dragIdx = near(downX);
+        const onMove = ev => {
+            const x = evX(ev);
+            if (Math.abs(x - downX) > 4 / splitState.scale) moved = true;
+            if (dragIdx >= 0 && moved) {
+                splitState.cuts[dragIdx] = Math.max(1, Math.min(splitState.w - 1, Math.round(x)));
+                splitRender();
+            }
+        };
+        const onUp = ev => {
+            document.removeEventListener('mousemove', onMove); document.removeEventListener('touchmove', onMove);
+            document.removeEventListener('mouseup', onUp); document.removeEventListener('touchend', onUp);
+            if (!moved) {
+                if (dragIdx >= 0) splitState.cuts.splice(dragIdx, 1);           // tap su linea → rimuovi
+                else splitState.cuts.push(Math.round(downX));                   // tap su spazio → aggiungi
+                splitState.cuts.sort((a, b) => a - b);
+            } else if (dragIdx >= 0) {
+                splitState.cuts.sort((a, b) => a - b);
+            }
+            splitRender();
+        };
+        document.addEventListener('mousemove', onMove); document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onUp); document.addEventListener('touchend', onUp);
+    };
+    cv.addEventListener('mousedown', onDown);
+    cv.addEventListener('touchstart', onDown, { passive: false });
+})();
+function closeSplitModal() {
+    document.getElementById('split-modal').classList.remove('active');
+    splitState.img = null; splitState.colMax = null;
+}
+// Ritaglia i segmenti, elimina i bordi completamente trasparenti, PNG per ognuno
+function splitExtractPieces() {
+    const { img, w, h, colMax } = splitState;
+    const bounds = [0, ...splitState.cuts, w];
+    const pieces = [];
+    for (let i = 0; i < bounds.length - 1; i++) {
+        let x0 = bounds[i], x1 = bounds[i + 1];
+        while (x0 < x1 && colMax[x0] < 10) x0++;                 // trim colonne vuote
+        while (x1 > x0 && colMax[x1 - 1] < 10) x1--;
+        const segW = x1 - x0;
+        if (segW < Math.max(6, w * 0.01)) continue;              // segmento vuoto
+        const pad = Math.round(segW * 0.02);
+        const sx = Math.max(0, x0 - pad), sw = Math.min(w, x1 + pad) - sx;
+        const c = document.createElement('canvas'); c.width = sw; c.height = h;
+        c.getContext('2d').drawImage(img, sx, 0, sw, h, 0, 0, sw, h);
+        pieces.push(c.toDataURL('image/png'));
+    }
+    return pieces;
+}
+async function splitApply() {
+    const s = state.slides[state.activeIndex];
+    const dest = document.getElementById('split-dest').value;
+    const pieces = splitExtractPieces();
+    if (!pieces.length) { toast('Nessun soggetto rilevato', 'warning'); return; }
+    if (dest === 'grid') {
+        const grid = ensureGrid();
+        pieces.forEach(url => grid.items.push({ id: generateId(), url, name: '', sub: '', meta: '', pill: '' }));
+        await saveGridToIDB(s);
+    } else if (dest === 'mosaic') {
+        const m = ensureMosaicCfg();
+        pieces.forEach(url => m.items.push({ id: generateId(), url }));
+        await saveMosaicToIDB(s);
+    } else {
+        pieces.forEach((url, i) => s.fgImages.push({ id: generateId(), type: 'image', url, x: 15 + (i % 5) * 17.5, y: 50, size: 18, filters: { ...DEFAULT_FILTERS } }));
+        await saveFgsToIDB(s);
+    }
+    closeSplitModal();
+    trackChange(true); render();
+    toast(`${pieces.length} soggetti separati e aggiunti`, 'success');
+}
+document.getElementById('btn-close-split')?.addEventListener('click', closeSplitModal);
+document.getElementById('split-cancel')?.addEventListener('click', closeSplitModal);
+document.getElementById('split-auto')?.addEventListener('click', () => { splitDetectCuts(); splitRender(); });
+document.getElementById('split-apply')?.addEventListener('click', splitApply);
+
+// ════════ SLIDE IN SERIE DA ELENCO (batch, la slide attiva fa da modello) ════════
+const BATCH_FIELDS = [
+    ['name', 'Nome'], ['sub', 'Ruolo/Sottotitolo'], ['meta', 'Riga info'],
+    ['pill', 'Pill'], ['year', 'Anno (in coda alla pill)'], ['skip', 'Ignora'],
+];
+function batchParseRows() {
+    const txt = document.getElementById('batch-input').value;
+    const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+    const sep = txt.includes('\t') ? '\t' : ';';
+    return lines.map(l => l.split(sep).map(c => c.trim()));
+}
+function batchRenderMapping() {
+    const rows = batchParseRows();
+    const nCols = rows.reduce((m, r) => Math.max(m, r.length), 0);
+    const host = document.getElementById('batch-mapping');
+    const prev = [...host.querySelectorAll('select')].map(s => s.value);
+    const defaults = ['name', 'sub', 'meta', 'pill', 'year'];
+    host.innerHTML = Array.from({ length: nCols }, (_, i) => `
+        <label class="flex flex-col gap-1 text-[10px] font-bold text-gray-500 uppercase">Colonna ${i + 1}
+            <select data-batch-col="${i}" class="bg-[#F5F5F7] rounded p-1.5 text-xs outline-none normal-case font-normal">
+                ${BATCH_FIELDS.map(([v, lab]) => `<option value="${v}" ${(prev[i] || defaults[i] || 'skip') === v ? 'selected' : ''}>${lab}</option>`).join('')}
+            </select>
+        </label>`).join('');
+    const pair = document.getElementById('batch-pair-track').classList.contains('on');
+    const nSlides = pair ? Math.ceil(rows.length / 2) : rows.length;
+    const tpl = state.slides[state.activeIndex];
+    const nImgs = (tpl.grid?.items || []).length;
+    document.getElementById('batch-summary').textContent = rows.length
+        ? `${rows.length} soggetti → ${nSlides} slide nuove · ${nImgs} immagini disponibili nella griglia del modello`
+        : '';
+}
+function batchOpen() {
+    const tpl = state.slides[state.activeIndex];
+    if (state.mode === 'story') { toast('Il batch funziona solo in modalità Carosello', 'warning'); return; }
+    if (!tpl.grid || !tpl.grid.enabled) { toast('Prima prepara la slide modello: attiva la Griglia (con stile ed etichette) e carica le immagini dei soggetti', 'warning', 5000); return; }
+    document.getElementById('batch-modal').classList.add('active');
+    batchRenderMapping();
+}
+async function batchApply() {
+    const tpl = state.slides[state.activeIndex];
+    const rows = batchParseRows();
+    if (!rows.length) { toast('Incolla prima l\'elenco dei soggetti', 'warning'); return; }
+    const maps = [...document.querySelectorAll('#batch-mapping select')].map(s => s.value);
+    const pair = document.getElementById('batch-pair-track').classList.contains('on');
+    const groups = [];
+    if (pair) { for (let i = 0; i < rows.length; i += 2) groups.push(rows.slice(i, i + 2)); }
+    else rows.forEach(r => groups.push([r]));
+    const room = MAX_SLIDES - state.carouselSlides.length;
+    if (room <= 0) { toast('Limite di 20 slide raggiunto', 'error'); return; }
+    if (groups.length > room) { toast(`Spazio per sole ${room} slide: le altre non verranno generate`, 'warning', 5000); groups.length = room; }
+    const imgs = (tpl.grid.items || []).map(it => it.url);
+    const geoPair = gridGeometry({ ...tpl.grid, cols: 2 });
+    let imgIdx = 0;
+    const newSlides = [];
+    for (let gi = 0; gi < groups.length; gi++) {
+        const group = groups[gi];
+        const newId = `slide-batch-${Date.now()}-${gi}`;
+        const copy = deepClone({ ...tpl, grid: { ...tpl.grid, items: [] }, mosaic: null });
+        copy.id = newId;
+        copy.fgImages = [];
+        copy.coverEnabled = false;
+        copy.grid.cols = group.length;
+        if (pair && group.length === 1) {
+            // spaiato → una colonna a tutta larghezza, stessa ALTEZZA di cella delle coppie
+            const soloW = geoPair.innerW;
+            copy.grid.cellAspect = (geoPair.cellW * (tpl.grid.cellAspect ?? 0.84)) / soloW;
+        }
+        copy.grid.items = group.map(row => {
+            const it = { id: generateId(), url: imgs[imgIdx++] || null, name: '', sub: '', meta: '', pill: '' };
+            let year = '';
+            row.forEach((cell, ci) => {
+                const f = maps[ci] || 'skip';
+                if (f === 'name') it.name = cell;
+                else if (f === 'sub') it.sub = cell;
+                else if (f === 'meta') it.meta = cell;
+                else if (f === 'pill') it.pill = cell;
+                else if (f === 'year') year = cell;
+            });
+            if (year) it.pill = it.pill ? `${it.pill} *· ${year}*` : `*${year}*`;
+            return it;
+        }).filter(it => it.url || it.name);
+        if (tpl.image) await idbSet(newId, tpl.image).catch(() => {});
+        newSlides.push(copy);
+        await saveGridToIDB(copy);
+    }
+    state.carouselSlides.splice(state.activeIndex + 1, 0, ...newSlides);
+    document.getElementById('batch-modal').classList.remove('active');
+    state.activeIndex = state.activeIndex + 1;
+    trackChange(true); render();
+    toast(`${newSlides.length} slide generate dal modello`, 'success');
+}
+document.getElementById('btn-batch-open')?.addEventListener('click', batchOpen);
+document.getElementById('btn-close-batch')?.addEventListener('click', () => document.getElementById('batch-modal').classList.remove('active'));
+document.getElementById('batch-cancel')?.addEventListener('click', () => document.getElementById('batch-modal').classList.remove('active'));
+document.getElementById('batch-input')?.addEventListener('input', debounce(batchRenderMapping, 200));
+document.getElementById('batch-pair-track')?.addEventListener('click', e => { e.currentTarget.classList.toggle('on'); batchRenderMapping(); });
+document.getElementById('batch-apply')?.addEventListener('click', () => { batchApply().catch(e => { console.error(e); toast('Errore nella generazione: ' + e.message, 'error'); }); });
+
+if (DOM.mosaicToggleTrack) DOM.mosaicToggleTrack.addEventListener('click', () => DOM.toggleMosaic.click());
+if (DOM.toggleMosaic) DOM.toggleMosaic.addEventListener('change', e => {
+    const s = state.slides[state.activeIndex];
+    if (e.target.checked) ensureMosaicCfg().enabled = true;
+    else if (s.mosaic) s.mosaic.enabled = false;
+    trackChange(true); refreshFrames(); render();
+});
+
+// ════════ GRIGLIA: pannello di modifica ════════
+function escapeAttr(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+// Parametri che cambiano la composizione delle celle → serve ri-cuocere
+const GRID_REBAKE_KEYS = new Set(['cols', 'gap', 'marginX', 'cellAspectPct', 'fill', 'capband']);
+
+function renderGridEditor(slide) {
+    if (!DOM.gridPanelHost) return;
+    const grid = slide.grid;
+    const on = !!(grid && grid.enabled);
+    DOM.toggleGrid.checked = on;
+    DOM.gridToggleTrack.className = 'toggle-track' + (on ? ' on' : '');
+    DOM.gridToggleLabel.textContent = on ? 'On' : 'Off';
+    DOM.gridPanelHost.style.display = on ? 'flex' : 'none';
+    if (!on) { DOM.gridPanelHost.innerHTML = ''; return; }
+    const lb = grid.labels || makeDefaultGridLabels();
+
+    const sliderRow = (label, key, min, max, step, val, suffix, attr = 'data-gkey') =>
+        `<div class="flex flex-col gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200"><div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><label>${label}</label><span data-gval="${key}" class="text-[#0071E3]">${val}${suffix}</span></div><input type="range" ${attr}="${key}" data-suffix="${suffix}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full"></div>`;
+    const tglRow = (label, key, val, attr = 'data-gtoggle') =>
+        `<label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2 bg-gray-50 rounded-lg border border-gray-200"><span class="text-[10px] font-bold text-gray-500 uppercase">${label}</span><div class="toggle-track ${val ? 'on' : ''}" ${attr}="${key}" role="switch" aria-label="${label}"><div class="toggle-thumb"></div></div></label>`;
+    const btnPair = (attr, opts, cur) => `<div class="flex gap-2 text-xs font-bold">${opts.map(([v, lab]) =>
+        `<button ${attr}="${v}" class="flex-1 py-1.5 rounded transition-all ${cur === v ? 'bg-[#0071E3] text-white' : 'bg-white text-gray-600 border border-gray-200'}">${lab}</button>`).join('')}</div>`;
+
+    const itemsHtml = (grid.items || []).map((it, idx) => `
+        <div class="border border-gray-200 rounded-lg bg-white p-2 flex flex-col gap-1.5">
+            <div class="flex items-center gap-1.5">
+                <div class="w-10 h-10 bg-gray-100 rounded border flex-shrink-0 bg-contain bg-no-repeat bg-center grid-item-thumb" data-id="${it.id}"></div>
+                <input type="text" data-item-field="name" data-id="${it.id}" value="${escapeAttr(it.name)}" placeholder="Nome (es. PICARD)" class="flex-grow bg-[#F5F5F7] rounded p-2 text-sm outline-none focus:ring-2 focus:ring-[#0071E3] min-w-0"/>
+                <button data-item-act="up" data-id="${it.id}" class="p-1.5 bg-gray-50 rounded hover:bg-gray-200 text-sm ${idx === 0 ? 'opacity-30 pointer-events-none' : ''}" title="Sposta su" aria-label="Sposta su">↑</button>
+                <button data-item-act="down" data-id="${it.id}" class="p-1.5 bg-gray-50 rounded hover:bg-gray-200 text-sm ${idx === grid.items.length - 1 ? 'opacity-30 pointer-events-none' : ''}" title="Sposta giù" aria-label="Sposta giù">↓</button>
+                <button data-item-act="del" data-id="${it.id}" class="p-1.5 bg-red-50 rounded hover:bg-red-100 text-red-500 text-sm" title="Rimuovi" aria-label="Rimuovi">✕</button>
+            </div>
+            <input type="text" data-item-field="sub" data-id="${it.id}" value="${escapeAttr(it.sub)}" placeholder="Sottotitolo (es. Captain)" class="w-full bg-[#F5F5F7] rounded p-2 text-xs outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+            <details>
+                <summary class="cursor-pointer text-[10px] font-bold text-gray-500 uppercase py-0.5 select-none">Altri campi (riga info, pill)</summary>
+                <div class="flex flex-col gap-1.5 pt-1">
+                    <input type="text" data-item-field="meta" data-id="${it.id}" value="${escapeAttr(it.meta)}" placeholder="Riga info (es. #10356 · U.S.S. Enterprise NCC-1701-D)" class="w-full bg-[#F5F5F7] rounded p-2 text-xs outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    <input type="text" data-item-field="pill" data-id="${it.id}" value="${escapeAttr(it.pill)}" placeholder="Pill (es. Encounter at Farpoint *· 1987*)" class="w-full bg-[#F5F5F7] rounded p-2 text-xs outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                </div>
+            </details>
+        </div>`).join('');
+
+    DOM.gridPanelHost.innerHTML = `
+        <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+            <input type="file" id="grid-image-upload" accept="image/*" multiple aria-label="Aggiungi immagini alla griglia" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+            <span class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi immagini alla griglia (puoi selezionarne più di una)</span>
+        </div>
+        <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-3 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+            <input type="file" id="grid-split-upload" accept="image/png,image/webp" aria-label="Separa una fila di soggetti" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+            <span class="text-xs font-medium text-[#6E6E73] pointer-events-none">✂ Separa una fila di soggetti (PNG trasparente con più minifigure)</span>
+        </div>
+        <div class="flex flex-col gap-2 empty:hidden">${itemsHtml}</div>
+
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Sfondo comune dietro i soggetti (aura)</span>
+                ${grid.auraUrl ? '<button id="grid-aura-remove" class="text-[10px] text-[#E3000F] hover:underline font-medium">Rimuovi</button>' : ''}
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="grid-aura-thumb" class="w-12 h-12 rounded border border-gray-200 bg-gray-100 bg-cover bg-center flex-shrink-0"></div>
+                <div class="relative flex-grow border-2 border-dashed border-[#AEAEB2] rounded p-2.5 text-center bg-white cursor-pointer">
+                    <input type="file" id="grid-aura-upload" accept="image/*" aria-label="Carica immagine aura" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                    <span class="text-[11px] text-gray-500 pointer-events-none">${grid.auraUrl ? 'Sostituisci aura' : 'Carica immagine aura'}</span>
+                </div>
+            </div>
+            ${tglRow('Centra sul corpo (ignora il riflesso)', 'groundCenter', grid.groundCenter !== false)}
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <span class="text-[10px] font-bold text-gray-500 uppercase">Adattamento soggetto nella cella</span>
+            ${btnPair('data-gfit', [['contain', 'Intero (mai tagliato)'], ['cover', 'Riempi (taglia)']], grid.fit || 'contain')}
+        </div>
+        ${sliderRow('Colonne', 'cols', 1, 6, 1, grid.cols ?? 3, '')}
+        ${sliderRow('Riempimento soggetto', 'fill', 40, 110, 1, grid.fill ?? 74, '%')}
+        ${sliderRow('Spazio orizzontale', 'gap', 0, 80, 1, grid.gap ?? 16, 'px')}
+        ${sliderRow('Spazio verticale', 'rowGap', 0, 400, 2, grid.rowGap ?? 16, 'px')}
+        ${sliderRow('Margine laterale', 'marginX', 0, 200, 2, grid.marginX ?? 40, 'px')}
+        ${sliderRow('Posizione verticale', 'y', 0, 100, 0.5, grid.y ?? 30, '%')}
+        ${sliderRow('Altezza cella (vs larghezza)', 'cellAspectPct', 40, 250, 2, Math.round((grid.cellAspect ?? 0.84) * 100), '%')}
+        ${sliderRow('Raggio angoli', 'radius', 0, 40, 1, grid.radius ?? 14, 'px')}
+        ${sliderRow('Opacità griglia', 'opacity', 20, 100, 1, grid.opacity ?? 100, '%')}
+        ${tglRow('Dietro l’overlay scuro', 'behindOverlay', !!grid.behindOverlay)}
+
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Bordo cella</span>
+                <div class="flex items-center gap-2">
+                    <input type="color" data-gcolor="borderColor" value="${grid.borderColor || '#7896DC'}" class="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    <div class="toggle-track ${grid.borderOn !== false ? 'on' : ''}" data-gtoggle="borderOn" role="switch" aria-label="Bordo cella"><div class="toggle-thumb"></div></div>
+                </div>
+            </div>
+            ${sliderRow('Trasparenza bordo', 'borderAlpha', 5, 100, 1, grid.borderAlpha ?? 16, '%')}
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Sfondo cella</span>
+                <div class="flex items-center gap-2">
+                    <input type="color" data-gcolor="cellBg" value="${grid.cellBg || '#050810'}" class="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                    <div class="toggle-track ${grid.cellBgOn !== false ? 'on' : ''}" data-gtoggle="cellBgOn" role="switch" aria-label="Sfondo cella"><div class="toggle-thumb"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Etichette</span>
+                <div class="toggle-track ${lb.show ? 'on' : ''}" data-ltoggle="show" role="switch" aria-label="Mostra etichette"><div class="toggle-thumb"></div></div>
+            </div>
+            ${btnPair('data-lpos', [['overlay', 'Sopra l’immagine'], ['below', 'Sotto l’immagine']], lb.position || 'overlay')}
+            ${tglRow('Sfumatura scura dietro il testo', 'gradient', lb.gradient !== false, 'data-ltoggle')}
+            ${sliderRow('Spazio etichetta in cella', 'capband', 0, 40, 1, grid.capband ?? 22, '%')}
+            ${sliderRow('Dimensione nome', 'nameSize', 12, 90, 1, lb.nameSize ?? 29, 'px', 'data-lkey')}
+            ${sliderRow('Dimensione sottotitolo', 'subSize', 10, 44, 1, lb.subSize ?? 14, 'px', 'data-lkey')}
+            ${sliderRow('Dimensione riga info', 'metaSize', 10, 44, 1, lb.metaSize ?? 18, 'px', 'data-lkey')}
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Pill sotto le etichette</span>
+                <div class="toggle-track ${lb.pillOn ? 'on' : ''}" data-ltoggle="pillOn" role="switch" aria-label="Pill"><div class="toggle-thumb"></div></div>
+            </div>
+            <input type="text" id="grid-pill-lab" value="${escapeAttr(lb.pillLab)}" placeholder="Etichetta pill (es. FIRST APPEARED)" class="w-full bg-white rounded p-2 text-xs outline-none border border-gray-200 focus:ring-2 focus:ring-[#0071E3]"/>
+            ${sliderRow('Dimensione testo pill', 'pillValSize', 14, 44, 1, lb.pillValSize ?? 26, 'px', 'data-lkey')}
+            ${sliderRow('Dimensione etichetta pill', 'pillLabSize', 8, 24, 1, lb.pillLabSize ?? 13, 'px', 'data-lkey')}
+        </div>
+        <p class="text-xs text-blue-700 font-medium">Trascina la griglia nell'anteprima per spostarla in verticale. Un badge ⚠ segnala i soggetti che toccano i bordi.</p>`;
+
+    // Miniature (setAttribute: nessuna injection nei template)
+    DOM.gridPanelHost.querySelectorAll('.grid-item-thumb').forEach(el => {
+        const it = grid.items.find(i => i.id === el.dataset.id);
+        const u = it && safeImageUrl(it.url);
+        if (u) el.style.backgroundImage = `url("${u}")`;
+    });
+    const auraThumb = DOM.gridPanelHost.querySelector('#grid-aura-thumb');
+    const auraUrl = safeImageUrl(grid.auraUrl);
+    if (auraThumb && auraUrl) auraThumb.style.backgroundImage = `url("${auraUrl}")`;
+}
+
+// Upload immagini griglia (multiple) + aura
+async function handleGridImagesUpload(files) {
+    const s = state.slides[state.activeIndex];
+    const grid = ensureGrid();
+    let added = 0;
+    for (const f of files) {
+        try { const url = await compressImage(f); grid.items.push({ id: generateId(), url, name: '', sub: '', meta: '', pill: '' }); added++; }
+        catch (_) {}
+    }
+    if (added) { await saveGridToIDB(s); trackChange(true); render(); toast(`${added} immagine${added > 1 ? 'i' : ''} aggiunt${added > 1 ? 'e' : 'a'} alla griglia`, 'success', 2000); }
+}
+async function handleGridAuraUpload(file) {
+    if (!file) return;
+    const s = state.slides[state.activeIndex];
+    const grid = ensureGrid();
+    try {
+        grid.auraUrl = await compressImage(file);
+        await saveGridToIDB(s);
+        trackChange(true); render();
+        toast('Aura applicata dietro ogni soggetto', 'success', 2000);
+    } catch (_) {}
+}
+
+// Delega eventi del pannello griglia (bind UNA volta: l'host persiste, l'innerHTML no)
+const debouncedGridPreview = debounce(() => { renderPreview(); trackChange(); }, 150);
+if (DOM.gridPanelHost) {
+    DOM.gridPanelHost.addEventListener('input', e => {
+        const t = e.target;
+        const s = state.slides[state.activeIndex];
+        const grid = s.grid; if (!grid) return;
+        const lb = grid.labels || (grid.labels = makeDefaultGridLabels());
+        const setVal = (key, txt) => { const sp = DOM.gridPanelHost.querySelector(`[data-gval="${key}"]`); if (sp) sp.textContent = txt; };
+        if (t.matches('input[data-gkey]')) {
+            const k = t.dataset.gkey; const v = parseFloat(t.value);
+            if (k === 'cellAspectPct') grid.cellAspect = v / 100; else grid[k] = (k === 'cols') ? Math.round(v) : v;
+            setVal(k, v + (t.dataset.suffix || ''));
+            renderPreview(); if (GRID_REBAKE_KEYS.has(k)) debouncedRefreshFrames();
+            trackChange();
+        } else if (t.matches('input[data-lkey]')) {
+            const k = t.dataset.lkey; const v = parseFloat(t.value);
+            lb[k] = v; setVal(k, v + (t.dataset.suffix || ''));
+            renderPreview(); trackChange();
+        } else if (t.matches('input[data-gcolor]')) {
+            grid[t.dataset.gcolor] = t.value;
+            renderPreview(); if (t.dataset.gcolor === 'cellBg') debouncedRefreshFrames();
+            trackChange();
+        } else if (t.matches('input[data-item-field]')) {
+            const it = (grid.items || []).find(i => i.id === t.dataset.id);
+            if (it) { it[t.dataset.itemField] = t.value; debouncedGridPreview(); }
+        } else if (t.id === 'grid-pill-lab') {
+            lb.pillLab = t.value; debouncedGridPreview();
+        }
+    });
+    DOM.gridPanelHost.addEventListener('change', e => {
+        const t = e.target;
+        if (t.id === 'grid-image-upload' && t.files?.length) { handleGridImagesUpload([...t.files]); t.value = ''; return; }
+        if (t.id === 'grid-split-upload' && t.files?.length) { openSplitModal(t.files[0], 'grid'); t.value = ''; return; }
+        if (t.id === 'grid-aura-upload' && t.files?.length) { handleGridAuraUpload(t.files[0]); t.value = ''; return; }
+        if (t.matches('input[data-gkey],input[data-lkey]')) snapshot();
+    });
+    DOM.gridPanelHost.addEventListener('click', async e => {
+        const s = state.slides[state.activeIndex];
+        const grid = s.grid; if (!grid) return;
+        const lb = grid.labels || (grid.labels = makeDefaultGridLabels());
+        const gt = e.target.closest('[data-gtoggle]');
+        if (gt) {
+            const k = gt.dataset.gtoggle;
+            // lo stato visivo del toggle è la fonte: on → spegni, off → accendi
+            grid[k] = !gt.classList.contains('on');
+            gt.classList.toggle('on', grid[k]);
+            renderPreview();
+            if (k === 'groundCenter' || k === 'cellBgOn') debouncedRefreshFrames();
+            trackChange(true);
+            return;
+        }
+        const lt = e.target.closest('[data-ltoggle]');
+        if (lt) {
+            const k = lt.dataset.ltoggle;
+            lb[k] = !lt.classList.contains('on');
+            lt.classList.toggle('on', lb[k]);
+            renderPreview();
+            if (k === 'show') debouncedRefreshFrames(); // il capband dipende da show+overlay
+            trackChange(true);
+            return;
+        }
+        const fitBtn = e.target.closest('[data-gfit]');
+        if (fitBtn) { grid.fit = fitBtn.dataset.gfit; renderEditor(); renderPreview(); debouncedRefreshFrames(); trackChange(true); return; }
+        const posBtn = e.target.closest('[data-lpos]');
+        if (posBtn) { lb.position = posBtn.dataset.lpos; renderEditor(); renderPreview(); debouncedRefreshFrames(); trackChange(true); return; }
+        if (e.target.id === 'grid-aura-remove') {
+            grid.auraUrl = null;
+            await saveGridToIDB(s);
+            debouncedRefreshFrames(); trackChange(true); render();
+            return;
+        }
+        const act = e.target.closest('[data-item-act]');
+        if (act) {
+            const id = act.dataset.id;
+            const idx = (grid.items || []).findIndex(i => i.id === id);
+            if (idx < 0) return;
+            if (act.dataset.itemAct === 'del') {
+                gridCellCache.delete(id);
+                grid.items.splice(idx, 1);
+                await saveGridToIDB(s);
+            } else if (act.dataset.itemAct === 'up' && idx > 0) {
+                [grid.items[idx - 1], grid.items[idx]] = [grid.items[idx], grid.items[idx - 1]];
+            } else if (act.dataset.itemAct === 'down' && idx < grid.items.length - 1) {
+                [grid.items[idx + 1], grid.items[idx]] = [grid.items[idx], grid.items[idx + 1]];
+            } else return;
+            trackChange(true); render();
+        }
+    });
+}
+if (DOM.gridToggleTrack) DOM.gridToggleTrack.addEventListener('click', () => DOM.toggleGrid.click());
+if (DOM.toggleGrid) DOM.toggleGrid.addEventListener('change', e => {
+    const s = state.slides[state.activeIndex];
+    if (e.target.checked) ensureGrid().enabled = true;
+    else if (s.grid) s.grid.enabled = false;
+    trackChange(true); render();
+});
 
 // ════════ FILTRI UI: rende slider + presets (Feature#8) ════════
 const FILTER_RANGES = {
@@ -2933,7 +4365,16 @@ async function renderSlideToFile(slide, index, fileName) {
     // FIX PERFORMANCE #2: assicura font + tutte le immagini pronti prima di catturare
     await preloadSlideAssets(slide);
     await ensureFramedImages(slide);
+    await ensureGridCells(slide);
+    await ensureMosaic(slide);
     await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
+    // Celle griglia + mosaico cotti: pronti prima della cattura
+    await Promise.all(((slide.grid && slide.grid.enabled && slide.grid.items) || []).map(it => {
+        const c = gridCellCache.get(it.id);
+        return preloadImage(c ? c.url : safeImageUrl(it.url));
+    }));
+    const mosaicBakedExp = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
+    if (mosaicBakedExp) await preloadImage(mosaicBakedExp.url);
     // Filtri (sfocatura ecc.) cotti nelle immagini: html2canvas ignora i filter CSS
     const exportSlide = await bakeSlideForExport(slide);
     const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(exportSlide, index, false);
@@ -3043,7 +4484,16 @@ async function renderSlideVideoToFile(slide, index, baseName) {
     const h2c = await loadHtml2canvas();
     await preloadSlideAssets(slide);
     await ensureFramedImages(slide);
+    await ensureGridCells(slide);
+    await ensureMosaic(slide);
     await Promise.all((slide.fgImages || []).map(f => getFramedUrl(f)).filter(Boolean).map(u => preloadImage(u)));
+    // Celle griglia + mosaico cotti: pronti prima della cattura
+    await Promise.all(((slide.grid && slide.grid.enabled && slide.grid.items) || []).map(it => {
+        const c = gridCellCache.get(it.id);
+        return preloadImage(c ? c.url : safeImageUrl(it.url));
+    }));
+    const mosaicBakedExp = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
+    if (mosaicBakedExp) await preloadImage(mosaicBakedExp.url);
     const SLIDE_H = slide.isStory ? 1920 : 1350;
     // Anche qui i filtri vanno cotti: il layer statico è catturato con html2canvas,
     // che ignora i filter CSS (i video mantengono il loro filtro via ctx.filter nel draw).
@@ -3242,7 +4692,8 @@ async function share() {
 // sono già nella strip sotto l'anteprima) ma resta utile in cima al pannello.
 const MOBILE_TABS = [
     { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sels: ['#slides-accordion', '#accordion-edit'], title: 'Modifica slide' },
-    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sels: ['#accordion-text'],                      title: 'Testo sulla slide' },
+    { key: 'griglia', label: 'Griglia', icon: ico('grid', 20),   sels: ['#accordion-grid', '#accordion-mosaic'], title: 'Griglia e mosaico' },
+    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sels: ['#accordion-text', '#accordion-blocks'], title: 'Testo sulla slide' },
     { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sels: ['#accordion-brand'],                     title: 'Impostazioni brand' },
     { key: 'cutout', label: 'Ritagli', icon: ico('scissors', 20), sels: ['#accordion-cutout'],                    title: 'Scontorna immagini' },
     { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sels: ['#caption-card'],                        title: 'Testo del post' },
@@ -3600,6 +5051,23 @@ DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].b
 DOM.inputSource.addEventListener('input', e => { state.slides[state.activeIndex].source=e.target.value; debouncedPreviewSave(); });
 bindColorInput(DOM.inputCoverColor, DOM.coverColorHex, v => { state.slides[state.activeIndex].coverTextColor=v; renderPreview(); trackChange(); });
 
+// ════════ COLORE ACCENTO (*testo*) ════════
+bindColorInput(DOM.inputAccentColor, DOM.accentColorHex, v => {
+    state.accentColor = v;
+    lsSet(LS.accent, v);
+    renderPreview(); trackChange();
+});
+bindColorInput(DOM.inputSlideAccent, DOM.slideAccentHex, v => {
+    state.slides[state.activeIndex].accentColor = v;
+    if (DOM.btnSlideAccentReset) DOM.btnSlideAccentReset.classList.remove('hidden');
+    renderPreview(); trackChange();
+});
+if (DOM.btnSlideAccentReset) DOM.btnSlideAccentReset.addEventListener('click', e => {
+    e.preventDefault();
+    state.slides[state.activeIndex].accentColor = null;
+    renderEditor(); renderPreview(); trackChange(true);
+});
+
 // ════════ CAPTION DEL POST IG ════════
 if (DOM.inputCaption) {
     // Modifica manuale → la caption smette di seguire il cover
@@ -3652,6 +5120,18 @@ DOM.overlayBodySize.addEventListener('input', e => { const v=parseInt(e.target.v
 bindColorInput(DOM.overlayColor, DOM.overlayColorHex, v => { ensureOverlay().color=v; renderPreview(); trackChange(); });
 DOM.alignBtns.forEach(btn => btn.addEventListener('click', () => { ensureOverlay().align=btn.dataset.align; DOM.alignBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); trackChange(true); renderPreview(); }));
 
+// ════════ Guide zone sicure IG ════════
+const guidesToggleTrack = document.getElementById('guides-toggle-track');
+const toggleGuidesInput = document.getElementById('toggle-guides');
+if (guidesToggleTrack && toggleGuidesInput) {
+    guidesToggleTrack.addEventListener('click', () => toggleGuidesInput.click());
+    toggleGuidesInput.addEventListener('change', e => {
+        state.showGuides = e.target.checked;
+        guidesToggleTrack.className = 'toggle-track' + (state.showGuides ? ' on' : '');
+        renderPreview();
+    });
+}
+
 DOM.mockupToggleTrack.addEventListener('click', () => DOM.toggleMockup.click());
 DOM.toggleMockup.addEventListener('change', e => { DOM.mockupToggleTrack.className='toggle-track'+(e.target.checked?' on':''); DOM.mockupToggleLabel.textContent=e.target.checked?'Feed On':'Feed'; DOM.mockupWrapper.classList.toggle('active', e.target.checked); if(e.target.checked) renderMockup(); });
 
@@ -3666,7 +5146,9 @@ DOM.btnDeleteSlide.addEventListener('click', () => {
     if (state.slides.length <= 1) return;
     openConfirm('Eliminare la slide?', 'L\'azione può essere annullata con Ctrl+Z.', async () => {
         const id = state.slides[state.activeIndex].id;
-        idbDelete(id).catch(()=>{}); idbDelete(id+'_fgs').catch(()=>{});
+        idbDelete(id).catch(()=>{}); idbDelete(id+'_fgs').catch(()=>{}); idbDelete(id+'_grid').catch(()=>{}); idbDelete(id+'_mosaic').catch(()=>{});
+        (state.slides[state.activeIndex].grid?.items || []).forEach(it => gridCellCache.delete(it.id));
+        mosaicCache.delete(id);
         state.slides.splice(state.activeIndex, 1); state.activeIndex = Math.max(0, state.activeIndex-1);
         trackChange(true); render();
     });
@@ -3683,9 +5165,18 @@ DOM.btnDuplicateSlide.addEventListener('click', async () => {
             if (f.type === 'video' && videoBlobs.has(f.id)) videoBlobs.set(nid, videoBlobs.get(f.id));
             return { ...f, id: nid, filters: { ...(f.filters || DEFAULT_FILTERS) } };
         }),
+        grid: src.grid ? deepClone({ ...src.grid, items: (src.grid.items || []).map(it => ({ ...it, id: generateId() })) }) : null,
+        mosaic: src.mosaic ? deepClone(src.mosaic) : null,
+        kicker: src.kicker ? { ...src.kicker } : null,
+        specsRow: src.specsRow ? { ...src.specsRow } : null,
+        pill: src.pill ? { ...src.pill } : null,
+        disclaimer: src.disclaimer ? { ...src.disclaimer } : null,
     };
+    if (copy.mosaic) copy.mosaic.items = (copy.mosaic.items || []).map(it => ({ ...it, id: generateId() }));
     if (src.image) await idbSet(newId, src.image).catch(()=>{});
     if (copy.fgImages.length) await saveFgsToIDB(copy);
+    if (copy.grid) await saveGridToIDB(copy);
+    if (copy.mosaic) await saveMosaicToIDB(copy);
     state.slides.splice(state.activeIndex+1, 0, copy); state.activeIndex++; trackChange(true); render();
 });
 
@@ -3766,10 +5257,12 @@ DOM.btnResetSlide.addEventListener('click', () => {
     openConfirm('Reset slide attiva?', 'Tutti i dati di questa slide verranno azzerati (immagini, testi, filtri).', async () => {
         const cur = state.slides[state.activeIndex];
         // Pulisci IDB della slide
-        try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); await idbDelete(cur.id + '_bgorig'); } catch (e) {}
-        // Libera eventuali video associati + cache scontorno/cornici
+        try { await idbDelete(cur.id); await idbDelete(cur.id + '_fgs'); await idbDelete(cur.id + '_bgorig'); await idbDelete(cur.id + '_grid'); await idbDelete(cur.id + '_mosaic'); } catch (e) {}
+        mosaicCache.delete(cur.id);
+        // Libera eventuali video associati + cache scontorno/cornici/griglia
         bgOriginals.delete(cur.id);
         (cur.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); bgOriginals.delete(f.id); framedCache.delete(f.id); });
+        (cur.grid?.items || []).forEach(it => gridCellCache.delete(it.id));
         // Sostituisci con default mantenendo l'id e il formato (storia o slide)
         state.slides[state.activeIndex] = makeDefaultSlide(cur.id, { isStory: cur.isStory });
         trackChange(true); render();
@@ -3786,7 +5279,9 @@ async function deleteAllImages() {
         bgOriginals.delete(sl.id);
         (sl.fgImages || []).forEach(f => { if (f.type === 'video') videoBlobs.delete(f.id); bgOriginals.delete(f.id); framedCache.delete(f.id); });
         sl.fgImages = [];
-        try { await idbDelete(sl.id); await idbDelete(sl.id + '_fgs'); await idbDelete(sl.id + '_bgorig'); } catch (e) {}
+        if (sl.grid) { (sl.grid.items || []).forEach(it => gridCellCache.delete(it.id)); sl.grid.items = []; sl.grid.auraUrl = null; }
+        if (sl.mosaic) { sl.mosaic.items = []; sl.mosaic.auraUrl = null; mosaicCache.delete(sl.id); }
+        try { await idbDelete(sl.id); await idbDelete(sl.id + '_fgs'); await idbDelete(sl.id + '_bgorig'); await idbDelete(sl.id + '_grid'); await idbDelete(sl.id + '_mosaic'); } catch (e) {}
     }
     trackChange(true); render();
     toast('Immagini cancellate da tutte le slide', 'success');
