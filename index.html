@@ -55,6 +55,27 @@
         /* RESPONSIVE — Ottimizzazioni mobile        */
         /* ═════════════════════════════════════════ */
 
+        /* ── Guida: chip indice + sezioni passo-passo ── */
+        .help-chip { font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: #F5F5F7; color: #374151; border: 1px solid rgba(0,0,0,0.06); transition: all .15s; }
+        .help-chip:hover { background: #0071E3; color: #fff; }
+        .help-chip-hot { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
+        .help-sec { border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; background: #fff; }
+        .help-sec > summary { cursor: pointer; list-style: none; padding: 10px 12px; font-weight: 700; color: #111827; user-select: none; }
+        .help-sec > summary::-webkit-details-marker { display: none; }
+        .help-sec > summary::before { content: '▸'; display: inline-block; margin-right: 6px; color: #9CA3AF; transition: transform .15s; }
+        .help-sec[open] > summary::before { transform: rotate(90deg); }
+        .help-sec[open] { background: #FAFAFB; }
+        .help-sec > p, .help-sec > ol { padding: 0 14px 10px 14px; margin: 0; }
+        .help-sec > p { color: #6B7280; font-size: 12px; }
+        .help-sec ol { list-style: decimal; padding-left: 30px; display: flex; flex-direction: column; gap: 7px; }
+        .help-sec ol li { line-height: 1.5; }
+        .help-sec code { background: #EEF2F7; border: 1px solid rgba(0,0,0,0.06); border-radius: 4px; padding: 0 4px; font-size: 12px; }
+        .help-sec-hot { border-color: #FCD34D; }
+        body.dark-mode .help-sec, body.dark-mode .help-sec[open] { background: #1C1C1E; border-color: rgba(255,255,255,0.12); }
+        body.dark-mode .help-sec > summary { color: #fff; }
+        body.dark-mode .help-sec code { background: #2C2C2E; border-color: rgba(255,255,255,0.12); }
+        body.dark-mode .help-chip { background: #2C2C2E; color: #E5E7EB; border-color: rgba(255,255,255,0.12); }
+
         details.accordion { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         details.accordion > summary {
             list-style: none; cursor: pointer; user-select: none;
@@ -842,23 +863,199 @@
 
 <!-- MODALE: GUIDA -->
 <div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-6 flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <h3 class="text-2xl font-bold mb-4">Guida all'uso</h3>
-        <div class="space-y-4 text-sm text-gray-700">
-            <p><strong>1. Brand:</strong> Carica Logo e badge News. Salvati automaticamente nel browser.</p>
-            <p><strong>2. Testo sulla Slide:</strong> Due layout indipendenti. Trascinali nell'anteprima per riposizionarli.</p>
-            <p><strong>3. Sfondo:</strong> Scegli tra colore piatto e gradiente (con 2 colori e direzione).</p>
-            <p><strong>4. Immagini in Primo Piano Multiple:</strong> Carica quante immagini vuoi sopra lo sfondo. Trascinale nell'anteprima per spostarle e regola la loro dimensione dal pannello "Modifica Slide".</p>
-            <p><strong>5. Su Mobile:</strong> L'anteprima occupa tutto lo schermo; i controlli si aprono dalla barra in basso (Slide, Testi, Slides, Brand, Post). Trascina la maniglia del pannello per allargarlo o chiuderlo, e usa due dita per zoomare lo sfondo o le immagini in primo piano (un dito sull'immagine, l'altro dove vuoi).</p>
-            <p><strong>6. Mockup Instagram:</strong> Attiva "Feed" per vedere la slide nel contesto di un post.</p>
-            <p><strong>7. Esporta Singola:</strong> Il tasto "↓ Singola" esporta solo la slide attiva. "Esporta" genera tutte le slide.</p>
-            <p><strong>8. Duplica:</strong> Il tasto "Duplica" (icona a due riquadri) copia la slide (immagini multiple, sfondo, testi) subito dopo.</p>
-            <p><strong>9. Persistenza:</strong> Tutte le immagini vengono salvate nel browser (IndexedDB) e ripristinate automaticamente.</p>
-            <p><strong>10. Annulla / Ripeti:</strong> Usa <code>Ctrl+Z</code> e <code>Ctrl+Shift+Z</code> (o ⌘ su Mac) per tornare indietro.</p>
-            <p><strong>11. Video:</strong> Nella sezione "Immagini in Primo Piano" puoi aggiungere anche un video. Le slide che contengono un video vengono esportate come file video vero e proprio (.mp4 o .webm a seconda del browser), con l'audio se presente.</p>
-            <p><strong>12. Storie:</strong> Usa il selettore in alto per passare alla modalità Storia: una singola slide in formato 1080×1920 (9:16), con gli stessi strumenti delle slide (esclusa la copertina).</p>
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[92vh] overflow-hidden">
+        <div class="flex justify-between items-start p-6 pb-3 border-b border-gray-100">
+            <div>
+                <h3 class="text-2xl font-bold">Guida all'uso</h3>
+                <p class="text-xs text-gray-500 mt-1">Tocca un argomento per aprirlo. Ogni sezione è una procedura passo-passo.</p>
+            </div>
+            <button id="btn-close-help-x" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi">×</button>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+        <div class="px-6 pt-3 pb-1 flex flex-wrap gap-1.5" id="help-chips">
+            <button data-help="help-start" class="help-chip">🚀 Primi passi</button>
+            <button data-help="help-brand" class="help-chip">🏷 Brand e accento</button>
+            <button data-help="help-bg" class="help-chip">🖼 Sfondo</button>
+            <button data-help="help-text" class="help-chip">✏️ Testi</button>
+            <button data-help="help-blocks" class="help-chip">🧩 Blocchi</button>
+            <button data-help="help-grid" class="help-chip">▦ Griglia</button>
+            <button data-help="help-split" class="help-chip">✂ Separa soggetti</button>
+            <button data-help="help-mosaic" class="help-chip">🧱 Mosaico</button>
+            <button data-help="help-batch" class="help-chip">⚡ Slide in serie</button>
+            <button data-help="help-fg" class="help-chip">📌 Primo piano e video</button>
+            <button data-help="help-zones" class="help-chip">📐 Zone IG</button>
+            <button data-help="help-export" class="help-chip">📤 Export e caption</button>
+            <button data-help="help-misc" class="help-chip">💾 Salvataggi e mobile</button>
+            <button data-help="help-tutorial" class="help-chip help-chip-hot">⭐ Tutorial completo</button>
+        </div>
+        <div class="p-6 pt-3 flex-1 overflow-y-auto custom-scrollbar space-y-2 text-sm text-gray-700" id="help-body">
+
+            <details id="help-start" class="help-sec" open>
+                <summary>🚀 Primi passi: il flusso tipico di un carosello</summary>
+                <ol>
+                    <li>Apri <b>Impostazioni Brand</b> e carica una volta sola i tuoi loghi: restano salvati nel browser per tutti i post futuri.</li>
+                    <li>La <b>Slide 1</b> è la copertina: in <b>Testo sulla Slide</b> accendi "Layout Titolo + Sottotitolo" e scrivi titolo, sottotitolo e fonte.</li>
+                    <li>Con <b>+</b> nella sezione <b>Slides</b> aggiungi le slide interne (max 20). Per ognuna scegli sfondo, testi, griglia o immagini.</li>
+                    <li>Controlla il risultato nell'anteprima a destra (o a schermo pieno su telefono). Quasi tutto si <b>trascina direttamente nell'anteprima</b>.</li>
+                    <li>Attiva <b>Zone IG</b> sopra l'anteprima per verificare che niente di importante cada dove Instagram sovrappone icone e didascalia.</li>
+                    <li>Premi <b>Esporta</b>: scarichi tutte le slide in PNG 1080×1350, pronte da pubblicare. La didascalia del post è già pronta nel riquadro "Testo del post Instagram" → <b>Copia</b>.</li>
+                </ol>
+            </details>
+
+            <details id="help-brand" class="help-sec">
+                <summary>🏷 Brand: loghi, badge e colore accento</summary>
+                <ol>
+                    <li><b>Logo (Alto Destra)</b> e <b>Logo Tema (Alto Sinistra)</b>: carica un PNG/JPG per ciascuno; compaiono su ogni slide. Regola la grandezza con lo slider <b>Dimensione</b> sotto ognuno.</li>
+                    <li><b>Badge News</b>: premi <b>News</b> o <b>MOC</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
+                    <li><b>Colore Accento</b>: è il colore delle parole evidenziate. Scrivi il testo tra asterischi in QUALSIASI campo di testo: <code>ENTERPRISE *NCC-1701-D*</code> → la parte tra asterischi diventa del colore accento (default giallo).</li>
+                    <li>Il colore accento vale per tutto il progetto; per cambiarlo su una sola slide usa <b>Accento di questa slide</b> in cima a "Testo sulla Slide" (il pulsante rosso "Usa progetto" lo riporta a quello globale).</li>
+                    <li>Gli asterischi sono solo un comando di colore: nella didascalia del post vengono rimossi automaticamente.</li>
+                </ol>
+            </details>
+
+            <details id="help-bg" class="help-sec">
+                <summary>🖼 Sfondo: colore, gradiente, immagine, filtri</summary>
+                <ol>
+                    <li>In <b>Modifica Slide</b> scegli <b>Colore Piatto</b> (un colore) o <b>Gradiente</b> (2 colori + direzione ↓ → ↘; la pipetta campiona un colore dallo schermo).</li>
+                    <li>Oppure premi <b>Carica Immagine Sfondo</b> per una foto a tutta slide: si adatta da sola a riempire il formato.</li>
+                    <li>Con l'immagine caricata: trascinala nell'anteprima per spostarla, usa lo slider <b>Livello Ingrandimento</b> (o i tasti − +) per lo zoom, <b>Centra</b> per ripartire dal centro.</li>
+                    <li><b>✂ Modifica immagine</b> apre ritaglio, rotazione e flip. <b>Filtri immagine sfondo</b> offre preset (B&N, Vintage, Vivid…) e regolazioni fini (luminosità, contrasto, saturazione, sfocatura, vignetta).</li>
+                    <li><b>Rimuovi sfondo dall'immagine (AI)</b> scontorna il soggetto direttamente sul tuo dispositivo (la prima volta scarica il modello, serve qualche secondo). Ripremi per ripristinare l'originale.</li>
+                </ol>
+            </details>
+
+            <details id="help-text" class="help-sec">
+                <summary>✏️ Testi: copertina e testo libero</summary>
+                <ol>
+                    <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande in Bebas, sottotitolo, fonte in basso a destra. Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
+                    <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans), dimensioni, colore e allineamento.</li>
+                    <li>Entrambi i blocchi si <b>trascinano nell'anteprima</b> con il dito o il mouse (la manina ✥). Tenendo premuto <b>Shift</b> disattivi lo snap alle guide.</li>
+                    <li>In tutti i campi funziona il testo bicolore: <code>*parola*</code> → colore accento.</li>
+                </ol>
+            </details>
+
+            <details id="help-blocks" class="help-sec">
+                <summary>🧩 Blocchi ricorrenti: kicker, specifiche, pill, disclaimer, numerazione</summary>
+                <p>Nel pannello <b>Blocchi Ricorrenti</b> accendi i cinque elementi tipici dei post "scheda prodotto". Kicker, specifiche e pill si trascinano nell'anteprima.</p>
+                <ol>
+                    <li><b>Kicker</b>: la riga piccola e spaziata sopra il titolo (es. <code>SET *#10356*</code>). Scegli "A sinistra" o "Centrato".</li>
+                    <li><b>Riga specifiche</b>: voci separate da <code>;</code> con il numero tra asterischi, es. <code>*9* minifigures ; *3600* pieces ; *€379.99*</code> → i numeri diventano grandi e color accento.</li>
+                    <li><b>Pill</b>: l'etichetta arrotondata con bordo, es. etichetta <code>FIRST APPEARED</code> + testo <code>Encounter at Farpoint *· 1987*</code>.</li>
+                    <li><b>Disclaimer</b>: testo piccolo semi-trasparente ancorato in fondo alla slide (per note legali/trademark).</li>
+                    <li><b>Numerazione</b>: attiva il contatore <code>02 / 13</code> in basso a sinistra su tutto il carosello; puoi nasconderlo sulla copertina e/o sull'ultima slide. Si aggiorna da solo quando aggiungi o togli slide.</li>
+                    <li><b>Fonte</b>: compare in basso a destra della slide attiva (es. <code>Source: lego.com</code>). È lo stesso campo Fonte del layout copertina.</li>
+                </ol>
+            </details>
+
+            <details id="help-grid" class="help-sec">
+                <summary>▦ Griglia immagini: soggetti allineati con etichette e aura</summary>
+                <p>La griglia dispone da sola N immagini in celle regolari: perfetta per "tutte le minifigure del set" (3×3, 4×2…) e per le schede personaggio.</p>
+                <ol>
+                    <li>Apri <b>Griglia Immagini</b> e accendi l'interruttore.</li>
+                    <li><b>Aggiungi immagini alla griglia</b>: puoi selezionarne più di una in un colpo solo. Compaiono in celle ordinate; con le frecce ↑ ↓ di ogni riga cambi l'ordine, con ✕ la elimini.</li>
+                    <li>Per ogni immagine compila <b>Nome</b> (es. PICARD) e <b>Sottotitolo</b> (es. Captain). Sotto "Altri campi" trovi <b>Riga info</b> e <b>Pill</b>, usati nelle schede personaggio.</li>
+                    <li><b>Sfondo comune (aura)</b>: carica UNA immagine (es. un bagliore) e viene composta identica dietro OGNI soggetto → celle coerenti anche con render di set diversi.</li>
+                    <li><b>Centra sul corpo</b>: i render LEGO hanno il riflesso sotto i piedi; con questo interruttore acceso l'app trova i piedi e centra il corpo, lasciando che il riflesso prosegua sotto. Spegnilo solo per immagini senza riflesso.</li>
+                    <li><b>Adattamento soggetto</b>: "Intero (mai tagliato)" garantisce che il soggetto non venga MAI ritagliato (accessori compresi); "Riempi (taglia)" riempie la cella come una foto. <b>Riempimento soggetto</b> regola quanto il soggetto occupa la cella.</li>
+                    <li>Geometria: <b>Colonne</b> (le celle si ridimensionano da sole), <b>Spazio orizzontale/verticale</b>, <b>Margine laterale</b>, <b>Altezza cella</b> (proporzione), <b>Raggio angoli</b>, <b>Bordo</b> e <b>Sfondo cella</b> con colori.</li>
+                    <li><b>Etichette</b>: "Sopra l'immagine" le mostra dentro la cella con una sfumatura scura che le rende leggibili; "Sotto l'immagine" le mette sotto la card (stile scheda personaggio: nome grande, ruolo color accento, riga info, pill). Se le etichette sotto si sovrappongono alla riga successiva, aumenta <b>Spazio verticale</b>.</li>
+                    <li>Trascina la griglia nell'anteprima per spostarla in alto/basso. Un badge <b>⚠ soggetto al bordo</b> (solo anteprima) segnala i soggetti che toccano i bordi: riduci "Riempimento soggetto" per rientrare.</li>
+                    <li>Ultima riga incompleta? Le celle restanti si centrano da sole.</li>
+                </ol>
+            </details>
+
+            <details id="help-split" class="help-sec">
+                <summary>✂ Separa una fila di soggetti (PNG con più minifigure)</summary>
+                <p>LEGO pubblica le minifigure come un'unica immagine trasparente con tutte in fila: qui la dividi in un tap.</p>
+                <ol>
+                    <li>Nel pannello <b>Griglia</b> (o Mosaico) premi <b>✂ Separa una fila di soggetti</b> e scegli il PNG trasparente.</li>
+                    <li>L'app rileva gli spazi vuoti tra i soggetti e disegna le <b>linee rosse di taglio</b>. Sotto leggi "N tagli → N+1 soggetti".</li>
+                    <li>Correzioni: <b>tocca una linea</b> per toglierla (es. per tenere Data insieme al suo gatto, o Riker e Troi uniti dalla tromba), <b>tocca uno spazio vuoto</b> per aggiungerne una, <b>trascina</b> una linea per spostarla. <b>↻ Rileva di nuovo</b> riparte da zero.</li>
+                    <li>Scegli la destinazione in <b>Aggiungi a</b> (griglia, mosaico o primo piano) e premi <b>Dividi e aggiungi</b>: ogni soggetto diventa un'immagine separata, già ripulita dai bordi vuoti.</li>
+                </ol>
+            </details>
+
+            <details id="help-mosaic" class="help-sec">
+                <summary>🧱 Mosaico copertina: soggetti a tutta slide dietro il titolo</summary>
+                <ol>
+                    <li>Apri <b>Mosaico Copertina</b> e accendi l'interruttore (di solito sulla Slide 1).</li>
+                    <li>Aggiungi i soggetti (upload multiplo o ✂ separatore): si <b>ripetono da soli</b> fino a riempire tutta la slide, riga dopo riga.</li>
+                    <li>Anche il mosaico supporta l'<b>aura</b> e <b>Centra sul corpo</b>, come la griglia.</li>
+                    <li>Regola <b>Colonne</b>, <b>Altezza cella</b> e <b>Riempimento</b> per la trama; <b>Opacità soggetti</b> (55% è quella giusta per non rubare scena al titolo) e <b>Tinta scura</b> che scurisce i bordi verso l'esterno.</li>
+                    <li>Completa la copertina accendendo <b>Overlay scuro inferiore</b> nel layout copertina: il titolo resta leggibilissimo sulla parte bassa.</li>
+                </ol>
+            </details>
+
+            <details id="help-batch" class="help-sec">
+                <summary>⚡ Slide in serie da un elenco (batch)</summary>
+                <p>Per quando devi fare la stessa slide N volte con dati diversi (es. una scheda per personaggio): la fai UNA volta e l'app genera le altre.</p>
+                <ol>
+                    <li><b>Prepara la slide modello</b>: una slide con sfondo, kicker, fonte e la <b>Griglia attiva</b> con lo stile che vuoi (di solito etichette "Sotto l'immagine", 2 colonne). Carica nella griglia le immagini dei soggetti <b>nell'ordine dell'elenco</b> (il ✂ separatore le mette già in fila giusta).</li>
+                    <li>Con la slide modello attiva, premi <b>⚡ Genera slide in serie da un elenco</b> (sotto le miniature delle slide).</li>
+                    <li>Incolla l'elenco: <b>una riga per soggetto</b>, colonne separate da <code>;</code> — oppure incolla direttamente da Excel/Fogli Google (le tabulazioni vengono riconosciute). Esempio:<br><code>Jean-Luc Picard; Captain; #10356 · U.S.S. Enterprise; Encounter at Farpoint; 1987</code></li>
+                    <li>Sotto compare un menu per ogni colonna: controlla che l'assegnazione sia giusta (Nome, Ruolo, Riga info, Pill, Anno). "Anno" viene aggiunto in coda alla pill in color accento (<code>· 1987</code>).</li>
+                    <li><b>2 soggetti per slide</b>: acceso, mette due schede affiancate per slide (9 soggetti → 5 slide). Il soggetto <b>spaiato</b> ottiene automaticamente una scheda a tutta larghezza.</li>
+                    <li>Premi <b>Genera slide</b>: le nuove slide vengono inserite dopo il modello e restano normalissime slide, modificabili una per una.</li>
+                </ol>
+            </details>
+
+            <details id="help-fg" class="help-sec">
+                <summary>📌 Immagini in primo piano e video</summary>
+                <ol>
+                    <li>In <b>Modifica Slide → Immagini in Primo Piano</b> aggiungi quante immagini vuoi sopra lo sfondo: si trascinano nell'anteprima, si ridimensionano con lo slider (o con due dita sul telefono).</li>
+                    <li>Per ogni immagine: <b>Riquadro bianco</b> (cornice adesiva che segue la sagoma), <b>Dietro l'overlay scuro</b> (per farla scurire dall'overlay copertina), <b>Rimuovi sfondo (AI)</b> e i <b>filtri</b> (icona imbuto).</li>
+                    <li><b>Video</b>: "Aggiungi un video sopra lo sfondo". Le slide con un video vengono esportate come file video (.mp4/.webm), con l'audio se presente.</li>
+                    <li>La sezione <b>Scontorna Immagini (AI)</b> è la variante in serie: carichi più foto, le scontorna tutte sul dispositivo e puoi scaricarle o mandarle alla slide.</li>
+                </ol>
+            </details>
+
+            <details id="help-zones" class="help-sec">
+                <summary>📐 Zone sicure Instagram</summary>
+                <ol>
+                    <li>Attiva l'interruttore <b>Zone IG</b> in alto, accanto ad "Anteprima".</li>
+                    <li>Vedrai: le due <b>linee tratteggiate laterali</b> (margine di sicurezza 40px), la <b>fascia azzurra in basso</b> (area dove finiscono username e inizio didascalia nel feed) e il <b>cerchio rosso in basso a destra</b> (l'icona tonda che Instagram sovrappone quando un account ripubblica il post nelle storie).</li>
+                    <li>Sposta titoli e sottotitoli fuori da queste aree — è l'errore che nel post reale aveva coperto il sottotitolo della copertina.</li>
+                    <li>Le guide esistono <b>solo in anteprima</b>: nell'export non compaiono mai, puoi lasciarle accese.</li>
+                    <li>Il toggle <b>Feed</b> accanto mostra invece la slide dentro un finto post Instagram completo.</li>
+                </ol>
+            </details>
+
+            <details id="help-export" class="help-sec">
+                <summary>📤 Esportazione e testo del post</summary>
+                <ol>
+                    <li><b>↓ Singola</b> esporta solo la slide attiva; <b>Esporta</b> genera tutte le slide del carosello in PNG 1080×1350. Anteprima ed export sono identici pixel per pixel.</li>
+                    <li>Su telefono, dal riquadro finale puoi salvare direttamente in <b>Foto</b> con il tasto di condivisione.</li>
+                    <li>Il riquadro <b>Testo del post Instagram</b> si compila da solo con titolo, sottotitolo e fonte della copertina + la riga follow fissa + gli hashtag automatici. Se lo modifichi a mano smette di auto-aggiornarsi (torni indietro con <b>Dal cover</b>). <b>Copia</b> mette tutto negli appunti.</li>
+                    <li><b>Sblocca</b> sulla riga fissa ti lascia modificare anche quella.</li>
+                </ol>
+            </details>
+
+            <details id="help-misc" class="help-sec">
+                <summary>💾 Salvataggi, annulla, storie, mobile</summary>
+                <ol>
+                    <li><b>Tutto si salva da solo</b> nel browser (testi in localStorage, immagini in IndexedDB): chiudi e riapri quando vuoi. Niente va online.</li>
+                    <li><b>Annulla/Ripeti</b>: Ctrl+Z e Ctrl+Shift+Z (⌘ su Mac), o le frecce in alto. Frecce ← → della tastiera per cambiare slide.</li>
+                    <li><b>Duplica</b> (icona doppio riquadro) copia la slide attiva con tutto: immagini, griglia, blocchi.</li>
+                    <li><b>Storie</b>: il selettore in alto passa al formato 1080×1920 (9:16), con gli stessi strumenti (senza copertina).</li>
+                    <li><b>Su telefono</b>: l'anteprima è a schermo pieno; i controlli si aprono dalla barra in basso (Slide, <b>Griglia</b>, Testi, Brand, Ritagli). Trascina la maniglia del pannello per allargarlo, due dita per zoomare sfondo e immagini.</li>
+                    <li><b>Reset slide</b> azzera la slide attiva; <b>Reset completo app</b> (qui sotto) riparte da zero.</li>
+                </ol>
+            </details>
+
+            <details id="help-tutorial" class="help-sec help-sec-hot">
+                <summary>⭐ Tutorial completo: un post "scheda set" in 13 slide (stile LEGO Star Trek)</summary>
+                <p>Il percorso completo che usa tutte le funzioni insieme. Servono: i PNG trasparenti delle minifigure (anche in fila), un'immagine "aura" per lo sfondo dei soggetti, le foto dei box.</p>
+                <ol>
+                    <li><b>Copertina (slide 1)</b>: sfondo scuro → <b>Mosaico Copertina</b> On → ✂ separa la fila di minifigure dentro al mosaico → carica l'aura → opacità 55%. In <b>Testo sulla Slide</b>: titolo <code>EVERY MINIFIGURE IN LEGO *STAR TREK*</code>, sottotitolo, fonte, <b>Overlay scuro inferiore</b> On, badge News On. Con <b>Zone IG</b> accese, controlla che il sottotitolo non tocchi il cerchio rosso.</li>
+                    <li><b>Slide griglia set (slide 2)</b>: nuova slide, gradiente scuro verticale → <b>Griglia</b> On → ✂ separa la fila del set nella griglia → aura → 3 colonne, etichette "Sopra l'immagine" → scrivi nome+ruolo in ogni cella. In <b>Blocchi Ricorrenti</b>: kicker <code>SET *#10356*</code>, specifiche <code>*9* minifigures ; *3600* pieces ; *€379.99*</code>, fonte <code>Source: lego.com</code>. In <b>Testo Libero</b> il titolo grande, es. <code>U.S.S. ENTERPRISE *NCC-1701-D*</code>.</li>
+                    <li><b>Seconda griglia (slide 3)</b>: <b>Duplica</b> la slide 2, sostituisci le immagini (✂ sull'altra fila), 4 colonne, aggiorna testi e specifiche.</li>
+                    <li><b>Slide modello personaggio (slide 4)</b>: nuova slide → Griglia On, 2 colonne, etichette <b>"Sotto l'immagine"</b> (nome 68, pill On con etichetta <code>FIRST APPEARED</code>), aura, "Intero (mai tagliato)". Kicker centrato: <code>THE NEXT GENERATION · 1987–1994</code>. Carica nella griglia le minifigure in ordine.</li>
+                    <li><b>Batch</b>: con la slide modello attiva → <b>⚡ Genera slide in serie</b> → incolla l'elenco <code>nome; ruolo; set; episodio; anno</code> → "2 soggetti per slide" On → <b>Genera</b>. 9 personaggi → 5 slide, lo spaiato a tutta larghezza.</li>
+                    <li><b>Slide finale</b>: griglia a 2 colonne con le foto dei box ("Riempi" o "Intero" a gusto), etichette sotto con nome set e riga info prezzo, <b>Disclaimer</b> per i trademark, Testo Libero per il titolo e la domanda al pubblico.</li>
+                    <li><b>Numerazione</b> On (nascosta sulla copertina) → controllo finale con <b>Zone IG</b> → <b>Esporta</b> → <b>Copia</b> la caption. Fatto: 13 slide senza uscire dall'app.</li>
+                </ol>
+            </details>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 p-6 pt-3 border-t border-gray-100">
             <button id="btn-reset-app" class="flex-1 bg-red-50 text-red-700 border border-red-200 font-medium py-3 rounded-xl hover:bg-red-100 transition-all">⚠ Reset completo app</button>
             <button id="btn-close-help" class="flex-[2] bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
         </div>
@@ -5183,6 +5380,17 @@ DOM.btnDuplicateSlide.addEventListener('click', async () => {
 DOM.btnExport.addEventListener('click', exportAllSlides); DOM.btnExportSingle.addEventListener('click', exportSingleSlide);
 DOM.btnNativeShare.addEventListener('click', share); DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
 DOM.btnHelp.addEventListener('click', () => DOM.helpModal.classList.add('active')); DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
+document.getElementById('btn-close-help-x')?.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
+// Indice della Guida: una chip apre la sua sezione e la porta in vista
+document.getElementById('help-chips')?.addEventListener('click', e => {
+    const chip = e.target.closest('[data-help]');
+    if (!chip) return;
+    const sec = document.getElementById(chip.dataset.help);
+    if (!sec) return;
+    document.querySelectorAll('#help-body .help-sec[open]').forEach(d => { if (d !== sec) d.removeAttribute('open'); });
+    sec.setAttribute('open', '');
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 DOM.btnRefresh.addEventListener('click', () => window.location.href=`${window.location.pathname}?v=${Date.now()}`);
 
 // Keyboard: arrow nav + undo/redo (UX#1)
