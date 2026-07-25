@@ -55,26 +55,667 @@
         /* RESPONSIVE — Ottimizzazioni mobile        */
         /* ═════════════════════════════════════════ */
 
-        /* ── Guida: chip indice + sezioni passo-passo ── */
-        .help-chip { font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: #F5F5F7; color: #374151; border: 1px solid rgba(0,0,0,0.06); transition: all .15s; }
-        .help-chip:hover { background: #0071E3; color: #fff; }
-        .help-chip-hot { background: #FEF3C7; border-color: #FCD34D; color: #92400E; }
-        .help-sec { border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; background: #fff; }
-        .help-sec > summary { cursor: pointer; list-style: none; padding: 10px 12px; font-weight: 700; color: #111827; user-select: none; }
+        /* ── Guida: linguaggio visivo minimale, ispirato a Apple ── */
+        #help-modal {
+            padding: 24px !important;
+            background: rgba(0, 0, 0, .38) !important;
+            backdrop-filter: blur(18px) saturate(140%);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
+        }
+        #help-modal > div {
+            max-width: 760px !important;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 28px !important;
+            background: rgba(250, 250, 252, .96) !important;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .24), 0 2px 10px rgba(0, 0, 0, .08) !important;
+            color: #1D1D1F;
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+        }
+        #help-modal > div > div:first-child {
+            align-items: center;
+            padding: 28px 30px 18px !important;
+            border-bottom: 0 !important;
+        }
+        #help-modal h3 {
+            margin: 0;
+            color: #1D1D1F;
+            font-size: 26px !important;
+            font-weight: 700 !important;
+            line-height: 1.12;
+            letter-spacing: -.035em;
+        }
+        #help-modal h3 + p {
+            max-width: 520px;
+            margin-top: 6px !important;
+            color: #86868B !important;
+            font-size: 13px !important;
+            line-height: 1.45;
+            letter-spacing: -.01em;
+        }
+        #btn-close-help-x {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            flex: 0 0 auto;
+            place-items: center;
+            padding: 0 !important;
+            border-radius: 50%;
+            background: #E8E8ED;
+            color: #6E6E73 !important;
+            font-size: 22px !important;
+            font-weight: 400;
+            line-height: 1 !important;
+            transition: background .18s ease, color .18s ease, transform .18s ease;
+        }
+        #btn-close-help-x:hover {
+            background: #DCDCE1;
+            color: #1D1D1F !important;
+            transform: scale(1.04);
+        }
+        #help-chips {
+            flex-wrap: nowrap !important;
+            gap: 8px !important;
+            overflow-x: auto;
+            padding: 2px 30px 18px !important;
+            scrollbar-width: none;
+        }
+        #help-chips::-webkit-scrollbar { display: none; }
+        .help-chip {
+            min-height: 34px;
+            flex: 0 0 auto;
+            padding: 0 13px;
+            border: 1px solid #E1E1E6;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .72);
+            color: #515154;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -.01em;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .025);
+            transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+        }
+        .help-chip:hover {
+            border-color: #C7C7CC;
+            background: #FFFFFF;
+            color: #1D1D1F;
+            transform: translateY(-1px);
+        }
+        .help-chip:focus-visible {
+            outline: 3px solid rgba(0, 113, 227, .24);
+            outline-offset: 2px;
+        }
+        .help-chip-hot {
+            border-color: rgba(0, 113, 227, .16);
+            background: rgba(0, 113, 227, .08);
+            color: #0066CC;
+        }
+        #help-body {
+            padding: 4px 30px 24px !important;
+            color: #424245 !important;
+            scrollbar-color: #C7C7CC transparent;
+            scrollbar-width: thin;
+        }
+        #help-body::-webkit-scrollbar { width: 6px; }
+        #help-body::-webkit-scrollbar-track { background: transparent; }
+        #help-body::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            background: #C7C7CC;
+        }
+        #help-body .help-sec + .help-sec { margin-top: 8px; }
+        .help-sec {
+            overflow: hidden;
+            border: 1px solid #E5E5EA;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, .78);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .02);
+            transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+        }
+        .help-sec:hover { border-color: #D2D2D7; }
+        .help-sec[open] {
+            border-color: #D2D2D7;
+            background: #FFFFFF;
+            box-shadow: 0 5px 18px rgba(0, 0, 0, .045);
+        }
+        .help-sec > summary {
+            position: relative;
+            cursor: pointer;
+            list-style: none;
+            padding: 17px 48px 17px 18px;
+            color: #1D1D1F;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.35;
+            letter-spacing: -.015em;
+            user-select: none;
+            transition: color .18s ease;
+        }
         .help-sec > summary::-webkit-details-marker { display: none; }
-        .help-sec > summary::before { content: '▸'; display: inline-block; margin-right: 6px; color: #9CA3AF; transition: transform .15s; }
-        .help-sec[open] > summary::before { transform: rotate(90deg); }
-        .help-sec[open] { background: #FAFAFB; }
-        .help-sec > p, .help-sec > ol { padding: 0 14px 10px 14px; margin: 0; }
-        .help-sec > p { color: #6B7280; font-size: 12px; }
-        .help-sec ol { list-style: decimal; padding-left: 30px; display: flex; flex-direction: column; gap: 7px; }
-        .help-sec ol li { line-height: 1.5; }
-        .help-sec code { background: #EEF2F7; border: 1px solid rgba(0,0,0,0.06); border-radius: 4px; padding: 0 4px; font-size: 12px; }
-        .help-sec-hot { border-color: #FCD34D; }
-        body.dark-mode .help-sec, body.dark-mode .help-sec[open] { background: #1C1C1E; border-color: rgba(255,255,255,0.12); }
-        body.dark-mode .help-sec > summary { color: #fff; }
-        body.dark-mode .help-sec code { background: #2C2C2E; border-color: rgba(255,255,255,0.12); }
-        body.dark-mode .help-chip { background: #2C2C2E; color: #E5E7EB; border-color: rgba(255,255,255,0.12); }
+        .help-sec > summary::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            width: 7px;
+            height: 7px;
+            margin-top: -5px;
+            border-right: 1.5px solid #86868B;
+            border-bottom: 1.5px solid #86868B;
+            transform: rotate(45deg);
+            transition: transform .22s ease, margin-top .22s ease;
+        }
+        .help-sec[open] > summary::before {
+            margin-top: -1px;
+            transform: rotate(225deg);
+        }
+        .help-sec > p,
+        .help-sec > ol {
+            margin: 0;
+            padding: 0 22px 20px 22px;
+        }
+        .help-sec > p {
+            color: #6E6E73;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .help-sec > p + ol { padding-top: 2px; }
+        .help-sec ol {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-left: 43px;
+            list-style: decimal;
+        }
+        .help-sec ol li {
+            padding-left: 3px;
+            color: #515154;
+            font-size: 13px;
+            line-height: 1.58;
+        }
+        .help-sec ol li::marker {
+            color: #86868B;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .help-sec b {
+            color: #1D1D1F;
+            font-weight: 600;
+        }
+        .help-sec code {
+            padding: 2px 5px;
+            border: 0;
+            border-radius: 5px;
+            background: #F2F2F7;
+            color: #3A3A3C;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11px;
+            letter-spacing: 0;
+        }
+        .help-sec-hot { border-color: #E5E5EA; }
+        .help-sec-hot[open] { border-color: rgba(0, 113, 227, .3); }
+        #help-modal > div > div:last-child {
+            gap: 10px !important;
+            padding: 18px 30px 26px !important;
+            border-top: 1px solid rgba(0, 0, 0, .07) !important;
+            background: rgba(250, 250, 252, .88);
+        }
+        #btn-reset-app,
+        #btn-close-help {
+            min-height: 46px;
+            border-radius: 999px !important;
+            font-size: 14px;
+            font-weight: 600 !important;
+            transition: background .18s ease, color .18s ease, transform .18s ease;
+        }
+        #btn-reset-app {
+            border: 0 !important;
+            background: transparent !important;
+            color: #FF3B30 !important;
+        }
+        #btn-reset-app:hover { background: rgba(255, 59, 48, .08) !important; }
+        #btn-close-help {
+            border: 0;
+            background: #1D1D1F !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+        }
+        #btn-close-help:hover {
+            background: #000000 !important;
+            transform: translateY(-1px);
+        }
+
+        body.dark-mode #help-modal > div {
+            border-color: rgba(255, 255, 255, .12) !important;
+            background: rgba(28, 28, 30, .96) !important;
+            color: #F5F5F7 !important;
+        }
+        body.dark-mode #help-modal h3,
+        body.dark-mode .help-sec > summary,
+        body.dark-mode .help-sec b { color: #F5F5F7 !important; }
+        body.dark-mode #help-modal h3 + p,
+        body.dark-mode .help-sec > p,
+        body.dark-mode .help-sec ol li { color: #AEAEB2 !important; }
+        body.dark-mode #btn-close-help-x {
+            background: #3A3A3C;
+            color: #AEAEB2 !important;
+        }
+        body.dark-mode #btn-close-help-x:hover {
+            background: #48484A;
+            color: #FFFFFF !important;
+        }
+        body.dark-mode .help-chip {
+            border-color: #3A3A3C;
+            background: rgba(44, 44, 46, .85);
+            color: #D1D1D6;
+        }
+        body.dark-mode .help-chip:hover {
+            border-color: #545456;
+            background: #3A3A3C;
+            color: #FFFFFF;
+        }
+        body.dark-mode .help-chip-hot {
+            border-color: rgba(10, 132, 255, .28);
+            background: rgba(10, 132, 255, .14);
+            color: #64D2FF;
+        }
+        body.dark-mode .help-sec,
+        body.dark-mode .help-sec[open] {
+            border-color: #38383A;
+            background: rgba(44, 44, 46, .72);
+            box-shadow: none;
+        }
+        body.dark-mode .help-sec:hover,
+        body.dark-mode .help-sec[open] { border-color: #545456; }
+        body.dark-mode .help-sec-hot[open] { border-color: rgba(10, 132, 255, .45); }
+        body.dark-mode .help-sec code {
+            border: 0;
+            background: #3A3A3C;
+            color: #E5E5EA;
+        }
+        body.dark-mode #help-modal > div > div:last-child {
+            border-top-color: rgba(255, 255, 255, .09) !important;
+            background: rgba(28, 28, 30, .9);
+        }
+        body.dark-mode #btn-close-help {
+            background: #F5F5F7 !important;
+            color: #1D1D1F !important;
+        }
+        body.dark-mode #btn-close-help:hover { background: #FFFFFF !important; }
+
+        @media (max-width: 640px) {
+            #help-modal {
+                align-items: flex-end !important;
+                padding: 0 !important;
+            }
+            #help-modal > div {
+                max-height: 94dvh !important;
+                border-width: 1px 0 0;
+                border-radius: 24px 24px 0 0 !important;
+            }
+            #help-modal > div > div:first-child { padding: 22px 20px 15px !important; }
+            #help-modal h3 { font-size: 23px !important; }
+            #help-modal h3 + p { padding-right: 10px; }
+            #help-chips { padding: 2px 20px 15px !important; }
+            #help-body { padding: 3px 16px 18px !important; }
+            .help-sec > summary { padding: 16px 45px 16px 16px; }
+            .help-sec > p,
+            .help-sec > ol { padding-right: 18px; padding-bottom: 18px; }
+            .help-sec > p { padding-left: 18px; }
+            .help-sec ol { padding-left: 38px; }
+            #help-modal > div > div:last-child { padding: 14px 16px calc(16px + env(safe-area-inset-bottom)) !important; }
+        }
+
+        /* ── Guida v2: navigazione tipo Impostazioni Apple ── */
+        #help-modal > .help-symbols {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #help-modal > div {
+            width: min(940px, calc(100vw - 40px)) !important;
+            max-width: 940px !important;
+            height: min(760px, calc(100dvh - 48px));
+            max-height: none !important;
+            display: grid !important;
+            grid-template-columns: 228px minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr) auto;
+            border-radius: 22px !important;
+            background: #F5F5F7 !important;
+            box-shadow: 0 28px 90px rgba(0, 0, 0, .3), 0 1px 2px rgba(0, 0, 0, .14) !important;
+        }
+        #help-modal > div > div:first-child {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            min-width: 0;
+            padding: 22px 24px 18px !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .08) !important;
+            background: rgba(255, 255, 255, .88);
+        }
+        #help-modal h3 {
+            font-size: 24px !important;
+            letter-spacing: -.04em;
+        }
+        #help-modal h3 + p {
+            margin-top: 4px !important;
+            font-size: 12px !important;
+        }
+        #btn-close-help-x {
+            width: 30px;
+            height: 30px;
+            background: #E5E5EA;
+            font-size: 19px !important;
+        }
+        #help-chips {
+            grid-column: 1;
+            grid-row: 2;
+            min-width: 0;
+            display: flex !important;
+            flex-direction: column;
+            flex-wrap: nowrap !important;
+            gap: 3px !important;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 14px 12px !important;
+            border-right: 1px solid rgba(0, 0, 0, .08);
+            background: rgba(246, 246, 248, .92);
+            scrollbar-width: thin;
+        }
+        .help-chip {
+            width: 100%;
+            min-height: 38px;
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            gap: 10px;
+            padding: 0 11px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+            color: #3A3A3C;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: left;
+            box-shadow: none;
+        }
+        .help-chip:hover {
+            border: 0;
+            background: rgba(0, 0, 0, .055);
+            color: #1D1D1F;
+            transform: none;
+        }
+        .help-chip.active,
+        .help-chip.active:hover {
+            background: #007AFF;
+            color: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 80, 180, .2);
+        }
+        .help-chip-hot {
+            border: 0;
+            background: transparent;
+            color: #3A3A3C;
+        }
+        .help-symbol {
+            width: 18px;
+            height: 18px;
+            display: block;
+            flex: 0 0 auto;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        #help-body {
+            grid-column: 2;
+            grid-row: 2;
+            min-width: 0;
+            padding: 18px 22px 24px !important;
+            background: #F5F5F7;
+            scroll-behavior: smooth;
+            overscroll-behavior: contain;
+        }
+        #help-body .help-sec + .help-sec { margin-top: 10px; }
+        .help-sec {
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 14px;
+            background: #FFFFFF;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .025);
+        }
+        .help-sec:hover { border-color: rgba(0, 0, 0, .13); }
+        .help-sec[open] {
+            border-color: rgba(0, 0, 0, .1);
+            background: #FFFFFF;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, .055);
+        }
+        .help-sec > summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 62px;
+            padding: 12px 48px 12px 14px;
+            color: #1D1D1F;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .help-sec > summary::before {
+            right: 20px;
+            width: 7px;
+            height: 7px;
+        }
+        .help-summary-icon {
+            width: 34px;
+            height: 34px;
+            display: grid;
+            flex: 0 0 auto;
+            place-items: center;
+            border-radius: 9px;
+            background: #EAF3FF;
+            color: #007AFF;
+        }
+        .help-summary-icon .help-symbol {
+            width: 19px;
+            height: 19px;
+        }
+        .help-summary-title {
+            min-width: 0;
+            line-height: 1.35;
+        }
+        .help-sec > p,
+        .help-sec > ol {
+            padding-right: 24px;
+            padding-bottom: 22px;
+        }
+        .help-sec > p {
+            padding-left: 60px;
+            color: #6E6E73;
+            font-size: 13px;
+        }
+        .help-sec ol {
+            counter-reset: help-step;
+            gap: 13px;
+            padding-left: 60px;
+            list-style: none;
+        }
+        .help-sec ol li {
+            position: relative;
+            padding-left: 32px;
+            color: #515154;
+            font-size: 13px;
+            line-height: 1.55;
+            counter-increment: help-step;
+        }
+        .help-sec ol li::before {
+            content: counter(help-step);
+            position: absolute;
+            top: 1px;
+            left: 0;
+            width: 21px;
+            height: 21px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: #F2F2F7;
+            color: #6E6E73;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .help-sec ol li::marker { content: ""; }
+        .help-sec code {
+            background: #F2F2F7;
+            color: #3A3A3C;
+        }
+        .help-sec-hot,
+        .help-sec-hot[open] { border-color: rgba(0, 122, 255, .2); }
+        #help-modal > div > div:last-child {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            padding: 14px 22px !important;
+            border-top: 1px solid rgba(0, 0, 0, .08) !important;
+            background: rgba(255, 255, 255, .9);
+        }
+        #btn-reset-app,
+        #btn-close-help {
+            min-height: 42px;
+            border-radius: 10px !important;
+        }
+        #btn-reset-app {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+        #btn-reset-app .help-symbol {
+            width: 17px;
+            height: 17px;
+        }
+        #btn-close-help {
+            background: #007AFF !important;
+            box-shadow: none;
+        }
+        #btn-close-help:hover { background: #0066D6 !important; }
+
+        body.dark-mode #help-modal > div {
+            border-color: #3A3A3C !important;
+            background: #1C1C1E !important;
+        }
+        body.dark-mode #help-modal > div > div:first-child,
+        body.dark-mode #help-modal > div > div:last-child {
+            border-color: #38383A !important;
+            background: rgba(44, 44, 46, .92);
+        }
+        body.dark-mode #help-chips {
+            border-color: #38383A;
+            background: #242426;
+        }
+        body.dark-mode .help-chip,
+        body.dark-mode .help-chip-hot {
+            border: 0;
+            background: transparent;
+            color: #D1D1D6;
+        }
+        body.dark-mode .help-chip:hover {
+            background: rgba(255, 255, 255, .08);
+            color: #FFFFFF;
+        }
+        body.dark-mode .help-chip.active,
+        body.dark-mode .help-chip.active:hover {
+            background: #0A84FF;
+            color: #FFFFFF;
+        }
+        body.dark-mode #help-body { background: #1C1C1E; }
+        body.dark-mode .help-sec,
+        body.dark-mode .help-sec[open] {
+            border-color: #38383A;
+            background: #2C2C2E;
+        }
+        body.dark-mode .help-sec:hover,
+        body.dark-mode .help-sec[open] { border-color: #48484A; }
+        body.dark-mode .help-summary-icon {
+            background: rgba(10, 132, 255, .16);
+            color: #64D2FF;
+        }
+        body.dark-mode .help-sec ol li::before {
+            background: #3A3A3C;
+            color: #D1D1D6;
+        }
+        body.dark-mode #btn-close-help {
+            background: #0A84FF !important;
+            color: #FFFFFF !important;
+        }
+
+        @media (max-width: 700px) {
+            #help-modal > div {
+                width: 100% !important;
+                height: min(94dvh, 820px);
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-rows: auto 122px minmax(0, 1fr) auto;
+                border-radius: 24px 24px 0 0 !important;
+            }
+            #help-modal > div > div:first-child {
+                grid-column: 1;
+                grid-row: 1;
+                padding: 19px 18px 14px !important;
+            }
+            #help-modal h3 { font-size: 22px !important; }
+            #help-modal h3 + p { display: none; }
+            #help-chips {
+                grid-column: 1;
+                grid-row: 2;
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-content: start;
+                gap: 4px !important;
+                overflow-y: auto;
+                padding: 8px 10px !important;
+                border-right: 0;
+                border-bottom: 1px solid rgba(0, 0, 0, .08);
+            }
+            .help-chip {
+                min-width: 0;
+                min-height: 36px;
+                overflow: hidden;
+                padding: 0 9px;
+                font-size: 11px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+            .help-chip .help-symbol {
+                width: 16px;
+                height: 16px;
+            }
+            #help-body {
+                grid-column: 1;
+                grid-row: 3;
+                padding: 12px 10px 16px !important;
+            }
+            .help-sec > summary {
+                min-height: 58px;
+                padding: 10px 42px 10px 11px;
+                font-size: 13px;
+            }
+            .help-summary-icon {
+                width: 32px;
+                height: 32px;
+            }
+            .help-sec > p { padding-left: 18px; }
+            .help-sec ol {
+                gap: 12px;
+                padding-left: 18px;
+            }
+            .help-sec > p,
+            .help-sec > ol {
+                padding-right: 18px;
+                padding-bottom: 19px;
+            }
+            #help-modal > div > div:last-child {
+                grid-column: 1;
+                grid-row: 4;
+                padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+            }
+        }
 
         details.accordion { background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         details.accordion > summary {
@@ -863,34 +1504,52 @@
 
 <!-- MODALE: GUIDA -->
 <div id="help-modal" class="modal fixed inset-0 z-[9999] bg-black/80 items-center justify-center p-4 flex-col" role="dialog" aria-modal="true">
+    <svg class="help-symbols" aria-hidden="true">
+        <symbol id="help-icon-start" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m10.5 8.8 4.8 3.2-4.8 3.2z"/></symbol>
+        <symbol id="help-icon-brand" viewBox="0 0 24 24"><path d="M4 11.2V5.5A1.5 1.5 0 0 1 5.5 4h5.7a2 2 0 0 1 1.4.6l6.8 6.8a2 2 0 0 1 0 2.8l-5.2 5.2a2 2 0 0 1-2.8 0l-6.8-6.8A2 2 0 0 1 4 11.2Z"/><circle cx="8.3" cy="8.3" r="1.2"/></symbol>
+        <symbol id="help-icon-bg" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="9.5" r="1.5"/><path d="m5.5 17 4.2-4.2 2.7 2.7 2.1-2.1 4 3.6"/></symbol>
+        <symbol id="help-icon-text" viewBox="0 0 24 24"><path d="M5 6.5V4.8h14v1.7M12 5v14.2M9.2 19.2h5.6"/></symbol>
+        <symbol id="help-icon-blocks" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><path d="M14.5 17h5M17 14.5v5"/></symbol>
+        <symbol id="help-icon-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.2" height="6.2" rx="1.3"/><rect x="13.8" y="4" width="6.2" height="6.2" rx="1.3"/><rect x="4" y="13.8" width="6.2" height="6.2" rx="1.3"/><rect x="13.8" y="13.8" width="6.2" height="6.2" rx="1.3"/></symbol>
+        <symbol id="help-icon-split" viewBox="0 0 24 24"><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="6.5" cy="6.5" r="2.5"/><path d="m8.6 7.9 11 7.1M8.6 16.1l11-7.1M13 12l-2.2 1.4"/></symbol>
+        <symbol id="help-icon-mosaic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="8" height="10" rx="1.7"/><rect x="14.5" y="3.5" width="6" height="6" rx="1.7"/><rect x="3.5" y="16.5" width="8" height="4" rx="1.5"/><rect x="14.5" y="12.5" width="6" height="8" rx="1.7"/></symbol>
+        <symbol id="help-icon-batch" viewBox="0 0 24 24"><path d="M13.4 2.8 5.8 13h5.8l-1 8.2L18.4 11h-5.8z"/></symbol>
+        <symbol id="help-icon-fg" viewBox="0 0 24 24"><path d="m12 3.5 8.5 4.8L12 13 3.5 8.3z"/><path d="m5.2 12.2-1.7 1L12 18l8.5-4.8-1.7-1M5.2 17l-1.7 1L12 22.5l8.5-4.5-1.7-1"/></symbol>
+        <symbol id="help-icon-zones" viewBox="0 0 24 24"><path d="M8 3.5H5.5a2 2 0 0 0-2 2V8M16 3.5h2.5a2 2 0 0 1 2 2V8M20.5 16v2.5a2 2 0 0 1-2 2H16M8 20.5H5.5a2 2 0 0 1-2-2V16"/><path d="M8 8h8v8H8z"/></symbol>
+        <symbol id="help-icon-export" viewBox="0 0 24 24"><path d="M12 15V3.5M8.2 7.3 12 3.5l3.8 3.8"/><path d="M6 10.5H4.8A1.8 1.8 0 0 0 3 12.3v6.4a1.8 1.8 0 0 0 1.8 1.8h14.4a1.8 1.8 0 0 0 1.8-1.8v-6.4a1.8 1.8 0 0 0-1.8-1.8H18"/></symbol>
+        <symbol id="help-icon-misc" viewBox="0 0 24 24"><rect x="3.5" y="5" width="12.5" height="10" rx="2"/><path d="M8 19h3.5M9.8 15v4"/><rect x="17.5" y="9" width="3.5" height="9" rx="1"/></symbol>
+        <symbol id="help-icon-tutorial" viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6 .9-4.4 4.2 1.1 6-5.4-2.8-5.4 2.8 1.1-6-4.4-4.2 6-.9z"/></symbol>
+        <symbol id="help-icon-close" viewBox="0 0 24 24"><path d="m7.5 7.5 9 9M16.5 7.5l-9 9"/></symbol>
+        <symbol id="help-icon-warning" viewBox="0 0 24 24"><path d="M10.4 4.7 3.2 17.2A1.9 1.9 0 0 0 4.9 20h14.2a1.9 1.9 0 0 0 1.7-2.8L13.6 4.7a1.85 1.85 0 0 0-3.2 0Z"/><path d="M12 9v4.5M12 17h.01"/></symbol>
+    </svg>
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl flex flex-col max-h-[92vh] overflow-hidden">
         <div class="flex justify-between items-start p-6 pb-3 border-b border-gray-100">
             <div>
                 <h3 class="text-2xl font-bold">Guida all'uso</h3>
                 <p class="text-xs text-gray-500 mt-1">Tocca un argomento per aprirlo. Ogni sezione è una procedura passo-passo.</p>
             </div>
-            <button id="btn-close-help-x" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi">×</button>
+            <button id="btn-close-help-x" class="text-gray-500 hover:text-black text-2xl leading-none px-2" aria-label="Chiudi"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-close"></use></svg></button>
         </div>
         <div class="px-6 pt-3 pb-1 flex flex-wrap gap-1.5" id="help-chips">
-            <button data-help="help-start" class="help-chip">🚀 Primi passi</button>
-            <button data-help="help-brand" class="help-chip">🏷 Brand e accento</button>
-            <button data-help="help-bg" class="help-chip">🖼 Sfondo</button>
-            <button data-help="help-text" class="help-chip">✏️ Testi</button>
-            <button data-help="help-blocks" class="help-chip">🧩 Blocchi</button>
-            <button data-help="help-grid" class="help-chip">▦ Griglia</button>
-            <button data-help="help-split" class="help-chip">✂ Separa soggetti</button>
-            <button data-help="help-mosaic" class="help-chip">🧱 Mosaico</button>
-            <button data-help="help-batch" class="help-chip">⚡ Slide in serie</button>
-            <button data-help="help-fg" class="help-chip">📌 Primo piano e video</button>
-            <button data-help="help-zones" class="help-chip">📐 Zone IG</button>
-            <button data-help="help-export" class="help-chip">📤 Export e caption</button>
-            <button data-help="help-misc" class="help-chip">💾 Salvataggi e mobile</button>
-            <button data-help="help-tutorial" class="help-chip help-chip-hot">⭐ Tutorial completo</button>
+            <button data-help="help-start" class="help-chip active" aria-pressed="true"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-start"></use></svg><span>Primi passi</span></button>
+            <button data-help="help-brand" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-brand"></use></svg><span>Brand e accento</span></button>
+            <button data-help="help-bg" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-bg"></use></svg><span>Sfondo</span></button>
+            <button data-help="help-text" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg><span>Testi</span></button>
+            <button data-help="help-blocks" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-blocks"></use></svg><span>Blocchi</span></button>
+            <button data-help="help-grid" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-grid"></use></svg><span>Griglia</span></button>
+            <button data-help="help-split" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-split"></use></svg><span>Separa soggetti</span></button>
+            <button data-help="help-mosaic" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-mosaic"></use></svg><span>Mosaico</span></button>
+            <button data-help="help-batch" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-batch"></use></svg><span>Slide in serie</span></button>
+            <button data-help="help-fg" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-fg"></use></svg><span>Primo piano e video</span></button>
+            <button data-help="help-zones" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-zones"></use></svg><span>Zone IG</span></button>
+            <button data-help="help-export" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-export"></use></svg><span>Export e caption</span></button>
+            <button data-help="help-misc" class="help-chip" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-misc"></use></svg><span>Salvataggi e mobile</span></button>
+            <button data-help="help-tutorial" class="help-chip help-chip-hot" aria-pressed="false"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-tutorial"></use></svg><span>Tutorial completo</span></button>
         </div>
         <div class="p-6 pt-3 flex-1 overflow-y-auto custom-scrollbar space-y-2 text-sm text-gray-700" id="help-body">
 
             <details id="help-start" class="help-sec" open>
-                <summary>🚀 Primi passi: il flusso tipico di un carosello</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-start"></use></svg></span><span class="help-summary-title">Primi passi: il flusso tipico di un carosello</span></summary>
                 <ol>
                     <li>Apri <b>Impostazioni Brand</b> e carica una volta sola i tuoi loghi: restano salvati nel browser per tutti i post futuri.</li>
                     <li>La <b>Slide 1</b> è la copertina: in <b>Testo sulla Slide</b> accendi "Layout Titolo + Sottotitolo" e scrivi titolo, sottotitolo e fonte.</li>
@@ -902,7 +1561,7 @@
             </details>
 
             <details id="help-brand" class="help-sec">
-                <summary>🏷 Brand: loghi, badge e colore accento</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-brand"></use></svg></span><span class="help-summary-title">Brand: loghi, badge e colore accento</span></summary>
                 <ol>
                     <li><b>Logo (Alto Destra)</b> e <b>Logo Tema (Alto Sinistra)</b>: carica un PNG/JPG per ciascuno; compaiono su ogni slide. Regola la grandezza con lo slider <b>Dimensione</b> sotto ognuno.</li>
                     <li><b>Badge News</b>: premi <b>News</b> o <b>MOC</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
@@ -913,7 +1572,7 @@
             </details>
 
             <details id="help-bg" class="help-sec">
-                <summary>🖼 Sfondo: colore, gradiente, immagine, filtri</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-bg"></use></svg></span><span class="help-summary-title">Sfondo: colore, gradiente, immagine, filtri</span></summary>
                 <ol>
                     <li>In <b>Modifica Slide</b> scegli <b>Colore Piatto</b> (un colore) o <b>Gradiente</b> (2 colori + direzione ↓ → ↘; la pipetta campiona un colore dallo schermo).</li>
                     <li>Oppure premi <b>Carica Immagine Sfondo</b> per una foto a tutta slide: si adatta da sola a riempire il formato.</li>
@@ -924,7 +1583,7 @@
             </details>
 
             <details id="help-text" class="help-sec">
-                <summary>✏️ Testi: copertina e testo libero</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg></span><span class="help-summary-title">Testi: copertina e testo libero</span></summary>
                 <ol>
                     <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande in Bebas, sottotitolo, fonte in basso a destra. Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
                     <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans), dimensioni, colore e allineamento.</li>
@@ -934,7 +1593,7 @@
             </details>
 
             <details id="help-blocks" class="help-sec">
-                <summary>🧩 Blocchi ricorrenti: kicker, specifiche, pill, disclaimer, numerazione</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-blocks"></use></svg></span><span class="help-summary-title">Blocchi ricorrenti: kicker, specifiche, pill, disclaimer, numerazione</span></summary>
                 <p>Nel pannello <b>Blocchi Ricorrenti</b> accendi i cinque elementi tipici dei post "scheda prodotto". Kicker, specifiche e pill si trascinano nell'anteprima.</p>
                 <ol>
                     <li><b>Kicker</b>: la riga piccola e spaziata sopra il titolo (es. <code>SET *#10356*</code>). Scegli "A sinistra" o "Centrato".</li>
@@ -947,7 +1606,7 @@
             </details>
 
             <details id="help-grid" class="help-sec">
-                <summary>▦ Griglia immagini: soggetti allineati con etichette e aura</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-grid"></use></svg></span><span class="help-summary-title">Griglia immagini: soggetti allineati con etichette e aura</span></summary>
                 <p>La griglia dispone da sola N immagini in celle regolari: perfetta per "tutte le minifigure del set" (3×3, 4×2…) e per le schede personaggio.</p>
                 <ol>
                     <li>Apri <b>Griglia Immagini</b> e accendi l'interruttore.</li>
@@ -964,7 +1623,7 @@
             </details>
 
             <details id="help-split" class="help-sec">
-                <summary>✂ Separa una fila di soggetti (PNG con più minifigure)</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-split"></use></svg></span><span class="help-summary-title">Separa una fila di soggetti (PNG con più minifigure)</span></summary>
                 <p>LEGO pubblica le minifigure come un'unica immagine trasparente con tutte in fila: qui la dividi in un tap.</p>
                 <ol>
                     <li>Nel pannello <b>Griglia</b> (o Mosaico) premi <b>✂ Separa una fila di soggetti</b> e scegli il PNG trasparente.</li>
@@ -975,7 +1634,7 @@
             </details>
 
             <details id="help-mosaic" class="help-sec">
-                <summary>🧱 Mosaico copertina: soggetti a tutta slide dietro il titolo</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-mosaic"></use></svg></span><span class="help-summary-title">Mosaico copertina: soggetti a tutta slide dietro il titolo</span></summary>
                 <ol>
                     <li>Apri <b>Mosaico Copertina</b> e accendi l'interruttore (di solito sulla Slide 1).</li>
                     <li>Aggiungi i soggetti (upload multiplo o ✂ separatore): si <b>ripetono da soli</b> fino a riempire tutta la slide, riga dopo riga.</li>
@@ -986,7 +1645,7 @@
             </details>
 
             <details id="help-batch" class="help-sec">
-                <summary>⚡ Slide in serie da un elenco (batch)</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-batch"></use></svg></span><span class="help-summary-title">Slide in serie da un elenco (batch)</span></summary>
                 <p>Per quando devi fare la stessa slide N volte con dati diversi (es. una scheda per personaggio): la fai UNA volta e l'app genera le altre.</p>
                 <ol>
                     <li><b>Prepara la slide modello</b>: una slide con sfondo, kicker, fonte e la <b>Griglia attiva</b> con lo stile che vuoi (di solito etichette "Sotto l'immagine", 2 colonne). Carica nella griglia le immagini dei soggetti <b>nell'ordine dell'elenco</b> (il ✂ separatore le mette già in fila giusta).</li>
@@ -999,7 +1658,7 @@
             </details>
 
             <details id="help-fg" class="help-sec">
-                <summary>📌 Immagini in primo piano e video</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-fg"></use></svg></span><span class="help-summary-title">Immagini in primo piano e video</span></summary>
                 <ol>
                     <li>In <b>Modifica Slide → Immagini in Primo Piano</b> aggiungi quante immagini vuoi sopra lo sfondo: si trascinano nell'anteprima, si ridimensionano con lo slider (o con due dita sul telefono).</li>
                     <li>Per ogni immagine: <b>Riquadro bianco</b> (cornice adesiva che segue la sagoma), <b>Dietro l'overlay scuro</b> (per farla scurire dall'overlay copertina), <b>Rimuovi sfondo (AI)</b> e i <b>filtri</b> (icona imbuto).</li>
@@ -1009,7 +1668,7 @@
             </details>
 
             <details id="help-zones" class="help-sec">
-                <summary>📐 Zone sicure Instagram</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-zones"></use></svg></span><span class="help-summary-title">Zone sicure Instagram</span></summary>
                 <ol>
                     <li>Attiva l'interruttore <b>Zone IG</b> in alto, accanto ad "Anteprima".</li>
                     <li>Vedrai: le due <b>linee tratteggiate laterali</b> (margine di sicurezza 40px), la <b>fascia azzurra in basso</b> (area dove finiscono username e inizio didascalia nel feed) e il <b>cerchio rosso in basso a destra</b> (l'icona tonda che Instagram sovrappone quando un account ripubblica il post nelle storie).</li>
@@ -1020,7 +1679,7 @@
             </details>
 
             <details id="help-export" class="help-sec">
-                <summary>📤 Esportazione e testo del post</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-export"></use></svg></span><span class="help-summary-title">Esportazione e testo del post</span></summary>
                 <ol>
                     <li><b>↓ Singola</b> esporta solo la slide attiva; <b>Esporta</b> genera tutte le slide del carosello in PNG 1080×1350. Anteprima ed export sono identici pixel per pixel.</li>
                     <li>Su telefono, dal riquadro finale puoi salvare direttamente in <b>Foto</b> con il tasto di condivisione.</li>
@@ -1030,7 +1689,7 @@
             </details>
 
             <details id="help-misc" class="help-sec">
-                <summary>💾 Salvataggi, annulla, storie, mobile</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-misc"></use></svg></span><span class="help-summary-title">Salvataggi, annulla, storie, mobile</span></summary>
                 <ol>
                     <li><b>Tutto si salva da solo</b> nel browser (testi in localStorage, immagini in IndexedDB): chiudi e riapri quando vuoi. Niente va online.</li>
                     <li><b>Annulla/Ripeti</b>: Ctrl+Z e Ctrl+Shift+Z (⌘ su Mac), o le frecce in alto. Frecce ← → della tastiera per cambiare slide.</li>
@@ -1042,7 +1701,7 @@
             </details>
 
             <details id="help-tutorial" class="help-sec help-sec-hot">
-                <summary>⭐ Tutorial completo: un post "scheda set" in 13 slide (stile LEGO Star Trek)</summary>
+                <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-tutorial"></use></svg></span><span class="help-summary-title">Tutorial completo: un post "scheda set" in 13 slide (stile LEGO Star Trek)</span></summary>
                 <p>Il percorso completo che usa tutte le funzioni insieme. Servono: i PNG trasparenti delle minifigure (anche in fila), un'immagine "aura" per lo sfondo dei soggetti, le foto dei box.</p>
                 <ol>
                     <li><b>Copertina (slide 1)</b>: sfondo scuro → <b>Mosaico Copertina</b> On → ✂ separa la fila di minifigure dentro al mosaico → carica l'aura → opacità 55%. In <b>Testo sulla Slide</b>: titolo <code>EVERY MINIFIGURE IN LEGO *STAR TREK*</code>, sottotitolo, fonte, <b>Overlay scuro inferiore</b> On, badge News On. Con <b>Zone IG</b> accese, controlla che il sottotitolo non tocchi il cerchio rosso.</li>
@@ -1056,7 +1715,7 @@
             </details>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 p-6 pt-3 border-t border-gray-100">
-            <button id="btn-reset-app" class="flex-1 bg-red-50 text-red-700 border border-red-200 font-medium py-3 rounded-xl hover:bg-red-100 transition-all">⚠ Reset completo app</button>
+            <button id="btn-reset-app" class="flex-1 bg-red-50 text-red-700 border border-red-200 font-medium py-3 rounded-xl hover:bg-red-100 transition-all"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-warning"></use></svg>Reset completo app</button>
             <button id="btn-close-help" class="flex-[2] bg-[#0071E3] text-white font-medium py-3 rounded-xl hover:bg-[#005bb5] transition-all">Perfetto, iniziamo!</button>
         </div>
     </div>
@@ -5381,15 +6040,41 @@ DOM.btnExport.addEventListener('click', exportAllSlides); DOM.btnExportSingle.ad
 DOM.btnNativeShare.addEventListener('click', share); DOM.btnCloseShare.addEventListener('click', () => DOM.shareModal.classList.remove('active'));
 DOM.btnHelp.addEventListener('click', () => DOM.helpModal.classList.add('active')); DOM.btnCloseHelp.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
 document.getElementById('btn-close-help-x')?.addEventListener('click', () => DOM.helpModal.classList.remove('active'));
-// Indice della Guida: una chip apre la sua sezione e la porta in vista
-document.getElementById('help-chips')?.addEventListener('click', e => {
-    const chip = e.target.closest('[data-help]');
-    if (!chip) return;
-    const sec = document.getElementById(chip.dataset.help);
-    if (!sec) return;
-    document.querySelectorAll('#help-body .help-sec[open]').forEach(d => { if (d !== sec) d.removeAttribute('open'); });
+// Navigazione interna della Guida: selezione, apertura e scroll confinato al modale
+const helpChips = document.getElementById('help-chips');
+const helpBody = document.getElementById('help-body');
+function selectHelpChip(sectionId) {
+    helpChips?.querySelectorAll('[data-help]').forEach(chip => {
+        const selected = chip.dataset.help === sectionId;
+        chip.classList.toggle('active', selected);
+        chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+}
+function openHelpSection(sectionId) {
+    const sec = document.getElementById(sectionId);
+    if (!sec || !helpBody) return;
+    helpBody.querySelectorAll('.help-sec[open]').forEach(item => {
+        if (item !== sec) item.removeAttribute('open');
+    });
     sec.setAttribute('open', '');
-    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    selectHelpChip(sectionId);
+    requestAnimationFrame(() => {
+        const bodyRect = helpBody.getBoundingClientRect();
+        const sectionRect = sec.getBoundingClientRect();
+        helpBody.scrollTo({
+            top: helpBody.scrollTop + sectionRect.top - bodyRect.top - 4,
+            behavior: 'smooth'
+        });
+    });
+}
+helpChips?.addEventListener('click', e => {
+    const chip = e.target.closest('[data-help]');
+    if (chip) openHelpSection(chip.dataset.help);
+});
+helpBody?.querySelectorAll('.help-sec').forEach(sec => {
+    sec.addEventListener('toggle', () => {
+        if (sec.open) selectHelpChip(sec.id);
+    });
 });
 DOM.btnRefresh.addEventListener('click', () => window.location.href=`${window.location.pathname}?v=${Date.now()}`);
 
