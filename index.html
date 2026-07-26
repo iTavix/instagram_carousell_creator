@@ -816,6 +816,42 @@
             /* Footer a tutta larghezza sotto entrambe le colonne (body è flex-row) */
             body { flex-wrap: wrap; }
             #app-footer { flex-basis: 100%; }
+            /* ANTEPRIMA SEMPRE A VISTA (desktop e iPad): la colonna destra resta ancorata
+               mentre si scorrono i controlli a sinistra. `!important` perché l'utility
+               Tailwind `relative` sulla colonna vincerebbe sul position:sticky. */
+            .right-panel {
+                position: sticky !important;
+                top: 8px;
+                align-self: flex-start;
+                max-height: calc(100dvh - 16px);
+                overflow-y: auto;
+                overflow-x: hidden;
+                scrollbar-width: thin;
+            }
+            /* Il pannello sinistro non deve stirarsi all'altezza della colonna sticky */
+            .left-col { align-self: flex-start; }
+            /* Ordine nella colonna destra: barra → ANTEPRIMA → didascalia → mockup.
+               Così la slide in lavorazione è sempre la prima cosa visibile mentre si
+               scorrono i controlli, e il testo del post resta raggiungibile sotto. */
+            .right-panel > .preview-header      { order: 1; }
+            .right-panel > #export-progress-container { order: 2; }
+            .right-panel > #original-preview-host { order: 3; }
+            .right-panel > #caption-card        { order: 4; }
+            .right-panel > #mockup-wrapper      { order: 5; }
+        }
+        /* TABLET (iPad verticale, 768–1100px): le due colonne devono restare AFFIANCATE,
+           altrimenti vanno a capo e l'anteprima finisce fuori schermo mentre si modifica.
+           Colonna controlli più stretta + anteprima elastica. */
+        @media (min-width: 768px) and (max-width: 1100px) {
+            body { flex-wrap: nowrap !important; padding-left: 14px !important; padding-right: 14px !important; gap: 14px !important; }
+            .left-col { width: 340px !important; flex-shrink: 0 !important; }
+            .right-panel { min-width: 0; }
+            .right-panel > * { max-width: 100% !important; }
+            #original-preview-host, #mockup-wrapper { width: 100%; }
+            /* Barra anteprima: a questa larghezza i controlli devono poter andare a capo */
+            .preview-header { flex-wrap: wrap; gap: 8px; padding: 12px !important; }
+            /* Il footer torna nel flusso della colonna destra (niente wrap disponibile) */
+            #app-footer { display: none; }
         }
 
         .align-btn { padding:6px 12px; border-radius:6px; border:1.5px solid #D1D1D6; background:white; cursor:pointer; font-size:14px; transition:all 0.15s; }
@@ -965,29 +1001,43 @@
         <details class="accordion" open id="accordion-brand">
             <summary><span>Impostazioni Brand</span></summary>
             <div class="accordion-body flex flex-col gap-4">
-                <div>
-                    <div class="flex justify-between mb-2">
-                        <label for="logo-upload" class="text-sm font-medium text-gray-900">Logo (Alto Destra)</label>
-                        <button id="btn-clear-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                <!-- Loghi: un unico inserimento per entrambi (si selezionano uno dopo l'altro) -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-medium text-gray-900">Loghi in alto</label>
+                        <button id="btn-brand-swap" class="text-xs text-[#0071E3] hover:underline font-medium hidden">⇄ Scambia posizioni</button>
                     </div>
-                    <input type="file" id="logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
-                    <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
-                        <label for="logo-size-slider">Dimensione</label>
-                        <span id="logo-size-value" class="text-[#0071E3]">100%</span>
+                    <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
+                        <input type="file" id="brand-logos-upload" accept="image/png,image/jpeg" multiple aria-label="Inserisci i loghi" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                        <span id="brand-logos-label" class="text-sm font-medium text-[#6E6E73] pointer-events-none">Inserisci i loghi</span>
+                        <span class="block text-[11px] text-gray-400 mt-1 pointer-events-none">Selezionali uno dopo l'altro: il 1° va in alto a sinistra, il 2° in alto a destra</span>
                     </div>
-                    <input type="range" id="logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
-                </div>
-                <div>
-                    <div class="flex justify-between mb-2">
-                        <label for="theme-logo-upload" class="text-sm font-medium text-gray-900">Logo Tema (Alto Sinistra)</label>
-                        <button id="btn-clear-theme-logo" class="text-xs text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">Alto sinistra</span>
+                                <button id="btn-clear-theme-logo" class="text-[10px] text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                            </div>
+                            <div id="brand-slot-left" class="w-full h-14 rounded border border-gray-200 bg-white bg-contain bg-no-repeat bg-center flex items-center justify-center text-[10px] text-gray-400">vuoto</div>
+                            <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase">
+                                <label for="theme-logo-size-slider">Dimensione</label>
+                                <span id="theme-logo-size-value" class="text-[#0071E3]">100%</span>
+                            </div>
+                            <input type="range" id="theme-logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
+                        </div>
+                        <div class="flex flex-col gap-1.5 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-gray-500 uppercase">Alto destra</span>
+                                <button id="btn-clear-logo" class="text-[10px] text-[#E3000F] hover:underline hidden">Rimuovi</button>
+                            </div>
+                            <div id="brand-slot-right" class="w-full h-14 rounded border border-gray-200 bg-white bg-contain bg-no-repeat bg-center flex items-center justify-center text-[10px] text-gray-400">vuoto</div>
+                            <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase">
+                                <label for="logo-size-slider">Dimensione</label>
+                                <span id="logo-size-value" class="text-[#0071E3]">100%</span>
+                            </div>
+                            <input type="range" id="logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
+                        </div>
                     </div>
-                    <input type="file" id="theme-logo-upload" accept="image/png,image/jpeg" class="text-sm w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#F5F5F7] file:text-black hover:file:bg-gray-200 cursor-pointer"/>
-                    <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
-                        <label for="theme-logo-size-slider">Dimensione</label>
-                        <span id="theme-logo-size-value" class="text-[#0071E3]">100%</span>
-                    </div>
-                    <input type="range" id="theme-logo-size-slider" min="0.5" max="2" step="0.05" value="1" class="w-full">
                 </div>
                 <div>
                     <div class="flex justify-between mb-2">
@@ -1045,7 +1095,7 @@
                     </label>
                 </div>
                 <div id="cover-fields" style="display:none;" class="flex flex-col gap-3">
-                    <input type="text" id="input-title" placeholder="Titolo (Es. LEGO STAR WARS)" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3]"/>
+                    <textarea id="input-title" rows="2" placeholder="Titolo (Es. LEGO STAR WARS) — vai a capo con Invio per decidere dove spezzarlo" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
                     <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
                             <label for="input-title-font-size">Dimensione Titolo</label>
@@ -1563,7 +1613,8 @@
             <details id="help-brand" class="help-sec">
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-brand"></use></svg></span><span class="help-summary-title">Brand: loghi, badge e colore accento</span></summary>
                 <ol>
-                    <li><b>Logo (Alto Destra)</b> e <b>Logo Tema (Alto Sinistra)</b>: carica un PNG/JPG per ciascuno; compaiono su ogni slide. Regola la grandezza con lo slider <b>Dimensione</b> sotto ognuno.</li>
+                    <li><b>Loghi in alto</b>: premi <b>Inserisci i loghi</b> e selezionali <b>uno dopo l'altro</b> nella stessa finestra: il 1° va in alto a sinistra, il 2° in alto a destra. Se ne carichi uno solo, riempie il primo posto libero.</li>
+                    <li>Sotto vedi i due riquadri <b>Alto sinistra</b> e <b>Alto destra</b> con l'anteprima del logo, lo slider <b>Dimensione</b> e <b>Rimuovi</b>. Se sono invertiti premi <b>⇄ Scambia posizioni</b>.</li>
                     <li><b>Badge News</b>: premi <b>News</b> o <b>MOC</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
                     <li><b>Colore Accento</b>: è il colore delle parole evidenziate. Scrivi il testo tra asterischi in QUALSIASI campo di testo: <code>ENTERPRISE *NCC-1701-D*</code> → la parte tra asterischi diventa del colore accento (default giallo).</li>
                     <li>Il colore accento vale per tutto il progetto; per cambiarlo su una sola slide usa <b>Accento di questa slide</b> in cima a "Testo sulla Slide" (il pulsante rosso "Usa progetto" lo riporta a quello globale).</li>
@@ -1586,6 +1637,7 @@
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg></span><span class="help-summary-title">Testi: copertina e testo libero</span></summary>
                 <ol>
                     <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande in Bebas, sottotitolo, fonte in basso a destra. Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
+                    <li><b>Titolo su più righe</b>: premi <b>Invio</b> nel campo Titolo per decidere tu dove va a capo (es. "EVERY MINIFIGURE" ⏎ "IN LEGO *STAR TREK*"). Senza Invio il testo va a capo da solo in base alla dimensione. Nella didascalia del post il titolo resta comunque su una riga sola.</li>
                     <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans), dimensioni, colore e allineamento.</li>
                     <li>Entrambi i blocchi si <b>trascinano nell'anteprima</b> con il dito o il mouse (la manina ✥). Tenendo premuto <b>Shift</b> disattivi lo snap alle guide.</li>
                     <li>In tutti i campi funziona il testo bicolore: <code>*parola*</code> → colore accento.</li>
@@ -1613,9 +1665,11 @@
                     <li><b>Aggiungi immagini alla griglia</b>: puoi selezionarne più di una in un colpo solo. Compaiono in celle ordinate; con le frecce ↑ ↓ di ogni riga cambi l'ordine, con ✕ la elimini.</li>
                     <li>Per ogni immagine compila <b>Nome</b> (es. PICARD) e <b>Sottotitolo</b> (es. Captain). Sotto "Altri campi" trovi <b>Riga info</b> e <b>Pill</b>, usati nelle schede personaggio.</li>
                     <li><b>Sfondo comune (aura)</b>: carica UNA immagine (es. un bagliore) e viene composta identica dietro OGNI soggetto → celle coerenti anche con render di set diversi.</li>
+                    <li><b>Posizione dell'aura</b> (compare dopo aver caricato l'aura): <b>Sposta orizzontale</b> e <b>Sposta verticale</b> spostano il bagliore nella cella, <b>Zoom aura</b> lo allarga o restringe; <b>Rimetti l'aura al centro</b> torna ai valori di partenza. Serve quando il bagliore non è centrato sul soggetto.</li>
                     <li><b>Centra sul corpo</b>: i render LEGO hanno il riflesso sotto i piedi; con questo interruttore acceso l'app trova i piedi e centra il corpo, lasciando che il riflesso prosegua sotto. Spegnilo solo per immagini senza riflesso.</li>
+                    <li>Scala e centratura si calcolano sul <b>contenuto reale</b> del PNG: anche i ritagli con molto spazio vuoto attorno (tipici dei soggetti separati da una fila) risultano grandi e allineati come gli altri, senza ritagliarli a mano.</li>
                     <li><b>Adattamento soggetto</b>: "Intero (mai tagliato)" garantisce che il soggetto non venga MAI ritagliato (accessori compresi); "Riempi (taglia)" riempie la cella come una foto. <b>Riempimento soggetto</b> regola quanto il soggetto occupa la cella.</li>
-                    <li>Geometria: <b>Colonne</b> (le celle si ridimensionano da sole), <b>Spazio orizzontale/verticale</b>, <b>Margine laterale</b>, <b>Altezza cella</b> (proporzione), <b>Raggio angoli</b>, <b>Bordo</b> e <b>Sfondo cella</b> con colori.</li>
+                    <li>Geometria: <b>Colonne</b> — selettore numerico con <b>−</b> e <b>+</b> (o scrivi il numero: 1–6), le celle si ridimensionano da sole — poi <b>Spazio orizzontale/verticale</b>, <b>Margine laterale</b>, <b>Altezza cella</b> (proporzione), <b>Raggio angoli</b>, <b>Bordo</b> e <b>Sfondo cella</b> con colori.</li>
                     <li><b>Etichette</b>: "Sopra l'immagine" le mostra dentro la cella con una sfumatura scura che le rende leggibili; "Sotto l'immagine" le mette sotto la card (stile scheda personaggio: nome grande, ruolo color accento, riga info, pill). Se le etichette sotto si sovrappongono alla riga successiva, aumenta <b>Spazio verticale</b>.</li>
                     <li>Trascina la griglia nell'anteprima per spostarla in alto/basso. Un badge <b>⚠ soggetto al bordo</b> (solo anteprima) segnala i soggetti che toccano i bordi: riduci "Riempimento soggetto" per rientrare.</li>
                     <li>Ultima riga incompleta? Le celle restanti si centrano da sole.</li>
@@ -1638,9 +1692,10 @@
                 <ol>
                     <li>Apri <b>Mosaico Copertina</b> e accendi l'interruttore (di solito sulla Slide 1).</li>
                     <li>Aggiungi i soggetti (upload multiplo o ✂ separatore): si <b>ripetono da soli</b> fino a riempire tutta la slide, riga dopo riga.</li>
-                    <li>Anche il mosaico supporta l'<b>aura</b> e <b>Centra sul corpo</b>, come la griglia.</li>
-                    <li>Regola <b>Colonne</b>, <b>Altezza cella</b> e <b>Riempimento</b> per la trama; <b>Opacità soggetti</b> (55% è quella giusta per non rubare scena al titolo) e <b>Tinta scura</b> che scurisce i bordi verso l'esterno.</li>
+                    <li>Anche il mosaico supporta l'<b>aura</b> con <b>Posizione</b> e <b>Zoom aura</b>, e <b>Centra sul corpo</b>, esattamente come la griglia.</li>
+                    <li>Regola <b>Colonne</b> (selettore numerico − / +, 2–8), <b>Altezza cella</b> e <b>Riempimento</b> per la trama; <b>Opacità soggetti</b> (55% è quella giusta per non rubare scena al titolo) e <b>Tinta scura</b> che scurisce i bordi verso l'esterno.</li>
                     <li>Completa la copertina accendendo <b>Overlay scuro inferiore</b> nel layout copertina: il titolo resta leggibilissimo sulla parte bassa.</li>
+                    <li>Attenzione: il mosaico è <b>decorativo</b> e non ha etichette. Per i <b>nomi sotto ogni minifigure</b> serve il blocco <b>Griglia Immagini</b> (etichette → "Sotto l'immagine"); il contatore <b>02 / 13</b> sta in <b>Blocchi Ricorrenti → Numerazione</b>.</li>
                 </ol>
             </details>
 
@@ -1695,6 +1750,7 @@
                     <li><b>Annulla/Ripeti</b>: Ctrl+Z e Ctrl+Shift+Z (⌘ su Mac), o le frecce in alto. Frecce ← → della tastiera per cambiare slide.</li>
                     <li><b>Duplica</b> (icona doppio riquadro) copia la slide attiva con tutto: immagini, griglia, blocchi.</li>
                     <li><b>Storie</b>: il selettore in alto passa al formato 1080×1920 (9:16), con gli stessi strumenti (senza copertina).</li>
+                    <li><b>Su computer e iPad</b>: l'anteprima resta <b>sempre a vista</b>, ancorata in alto a destra mentre scorri i controlli; il "Testo del post" è sotto l'anteprima. Su iPad in verticale le due colonne restano affiancate, così non devi più salire e scendere per vedere l'effetto delle modifiche.</li>
                     <li><b>Su telefono</b>: l'anteprima è a schermo pieno; i controlli si aprono dalla barra in basso (Slide, <b>Griglia</b>, Testi, Brand, Ritagli). Trascina la maniglia del pannello per allargarlo, due dita per zoomare sfondo e immagini.</li>
                     <li><b>Reset slide</b> azzera la slide attiva; <b>Reset completo app</b> (qui sotto) riparte da zero.</li>
                 </ol>
@@ -2091,7 +2147,7 @@ const debouncedRefreshFrames = debounce(refreshFrames, 130);
 // la parità pixel-per-pixel è garantita e html2canvas non deve gestire object-fit.
 const GRID_BAKE_SCALE = 2;            // le celle si cuociono a 2x (l'export cattura a scala 2)
 const gridCellCache = new Map();      // item.id → { key, url, warn }
-const _groundCache  = new Map();      // url soggetto → riga di appoggio (px)
+const _contentCache = new Map();      // url soggetto → { x0, x1, yTop, yBot, ground }
 
 function makeDefaultGridLabels() {
     return { show: true, position: 'overlay', nameSize: 29, subSize: 14, metaSize: 18,
@@ -2103,7 +2159,8 @@ function makeDefaultGrid() {
         cellAspect: 0.84, radius: 14, borderOn: true, borderColor: '#7896DC', borderAlpha: 16,
         cellBgOn: true, cellBg: '#050810', fit: 'contain', fill: 74, capband: 22,
         groundCenter: true, behindOverlay: false, opacity: 100,
-        auraUrl: null, labels: makeDefaultGridLabels(), items: [],
+        auraUrl: null, auraX: 0, auraY: 0, auraZoom: 100,
+        labels: makeDefaultGridLabels(), items: [],
     };
 }
 function ensureGrid() {
@@ -2124,21 +2181,42 @@ function hexToRgba(hex, a) {
     const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
-// "Ground line" (make_figs.ground_line): ultima riga con alpha pieno = i piedi.
-// Sotto c'è solo il riflesso sfumato, che deve proseguire oltre il centro.
-function computeGroundLine(img) {
+// Riquadro del contenuto reale del PNG + "ground line" (make_figs.ground_line):
+//  · x0/x1/yTop/yBot = bordi dei pixel non trasparenti (alpha ≥ 10)
+//  · ground          = ultima riga con alpha PIENO = i piedi (sotto c'è solo il riflesso)
+// Serve misurare il contenuto e non l'intera immagine: i ritagli presi da una fila di
+// soggetti hanno spazio vuoto sopra la testa e ai lati, e centrando/scalando sull'intera
+// immagine i soggetti risultavano piccoli e spostati in basso rispetto all'aura.
+function computeContentBox(img) {
     const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
-    if (!w || !h) return h || 1;
+    const full = { x0: 0, x1: Math.max(0, w - 1), yTop: 0, yBot: Math.max(0, h - 1), ground: h || 1 };
+    if (!w || !h) return full;
     const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
     const ctx = cv.getContext('2d', { willReadFrequently: true });
     ctx.drawImage(img, 0, 0);
     let data;
-    try { data = ctx.getImageData(0, 0, w, h).data; } catch (_) { return h; }
-    for (let y = h - 1; y >= 0; y--) {
+    try { data = ctx.getImageData(0, 0, w, h).data; } catch (_) { return full; }
+    let x0 = w, x1 = -1, yTop = -1, yBot = -1, ground = -1;
+    for (let y = 0; y < h; y++) {
         const row = y * w * 4;
-        for (let x = 0; x < w; x++) if (data[row + x * 4 + 3] >= 200) return y + 1;
+        for (let x = 0; x < w; x++) {
+            const a = data[row + x * 4 + 3];
+            if (a >= 10) {
+                if (x < x0) x0 = x;
+                if (x > x1) x1 = x;
+                if (yTop < 0) yTop = y;
+                yBot = y;
+            }
+            if (a >= 200 && y > ground) ground = y;
+        }
     }
-    return h;
+    if (x1 < 0) return full;                      // immagine completamente trasparente
+    return { x0, x1, yTop: Math.max(0, yTop), yBot, ground: (ground >= 0 ? ground : yBot) + 1 };
+}
+function getContentBox(img, key) {
+    let box = _contentCache.get(key);
+    if (!box) { box = computeContentBox(img); _contentCache.set(key, box); }
+    return box;
 }
 // Nucleo di make_figs.compose(): disegna in un ctx già pronto (offset ox,oy)
 // sfondo cella + aura (cover, centrata) + soggetto scalato in modo che il CORPO
@@ -2146,10 +2224,13 @@ function computeGroundLine(img) {
 function drawComposedCell(ctx, ox, oy, W, H, img, imgKey, auraImg, opts) {
     if (opts.cellBgOn !== false) { ctx.fillStyle = opts.cellBg || '#050810'; ctx.fillRect(ox, oy, W, H); }
     if (auraImg) {
-        const s = Math.max(W / auraImg.naturalWidth, H / auraImg.naturalHeight);
+        // Aura: "cover" della cella, con zoom e spostamento X/Y regolabili
+        const zoom = Math.max(10, opts.auraZoom ?? 100) / 100;
+        const s = Math.max(W / auraImg.naturalWidth, H / auraImg.naturalHeight) * zoom;
         const aw = auraImg.naturalWidth * s, ah = auraImg.naturalHeight * s;
+        const dx = ((opts.auraX ?? 0) / 100) * W, dy = ((opts.auraY ?? 0) / 100) * H;
         ctx.save(); ctx.beginPath(); ctx.rect(ox, oy, W, H); ctx.clip();
-        ctx.drawImage(auraImg, ox + (W - aw) / 2, oy + (H - ah) / 2, aw, ah);
+        ctx.drawImage(auraImg, ox + (W - aw) / 2 + dx, oy + (H - ah) / 2 + dy, aw, ah);
         ctx.restore();
     }
     const iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
@@ -2159,20 +2240,24 @@ function drawComposedCell(ctx, ox, oy, W, H, img, imgKey, auraImg, opts) {
         const s = Math.max(W / iw, H / ih);
         ctx.drawImage(img, ox + (W - iw * s) / 2, oy + (H - ih * s) / 2, iw * s, ih * s);
     } else {
-        // contain "sul corpo": mai tagliare il soggetto
+        // contain "sul corpo": mai tagliare il soggetto. Scala e centratura si calcolano
+        // sul CONTENUTO (riquadro dei pixel non trasparenti), non sull'intera immagine,
+        // così un ritaglio con margini vuoti resta grande e centrato come gli altri.
         const zoneH = H * (1 - (opts.capband || 0));
-        let g = ih;
-        if (opts.groundCenter !== false) {
-            let cached = _groundCache.get(imgKey);
-            if (cached == null) { cached = computeGroundLine(img); _groundCache.set(imgKey, cached); }
-            g = cached;
-        }
-        const s = Math.min(zoneH * ((opts.fill ?? 74) / 100) / g, W * 0.92 / iw);
-        const nw = iw * s, nh = ih * s, gs = g * s;
-        const x = (W - nw) / 2, y = (zoneH - gs) / 2;
-        ctx.drawImage(img, ox + x, oy + y, nw, nh);
+        const box = getContentBox(img, imgKey);
+        const contentW = Math.max(1, box.x1 - box.x0 + 1);
+        const bodyTop = box.yTop;
+        // corpo = fino ai piedi (ground) se la centratura sul corpo è attiva,
+        // altrimenti tutto il contenuto (riflesso incluso)
+        const bodyBot = (opts.groundCenter !== false) ? Math.max(bodyTop + 1, box.ground) : box.yBot + 1;
+        const bodyH = Math.max(1, bodyBot - bodyTop);
+        const s = Math.min(zoneH * ((opts.fill ?? 74) / 100) / bodyH, W * 0.92 / contentW);
+        // x: centro del contenuto al centro della cella · y: corpo centrato nella zona utile
+        const x = (W - contentW * s) / 2 - box.x0 * s;
+        const y = (zoneH - bodyH * s) / 2 - bodyTop * s;
+        ctx.drawImage(img, ox + x, oy + y, iw * s, ih * s);
         // Avviso anteprima: soggetto che tocca i bordi laterali o esce sopra
-        warn = (nw >= W * 0.98) || (y < -0.5);
+        warn = (contentW * s >= W * 0.98) || (y + bodyTop * s < -0.5);
     }
     ctx.restore();
     return warn;
@@ -2198,7 +2283,7 @@ const mosaicCache = new Map();        // slide.id → { key, url }
 function makeDefaultMosaic() {
     return { enabled: true, cols: 4, cellAspect: 0.833, opacity: 55, tint: 100,
              fill: 74, groundCenter: true, cellBg: '#050810', baseBg: '#03060f',
-             auraUrl: null, items: [] };
+             auraUrl: null, auraX: 0, auraY: 0, auraZoom: 100, items: [] };
 }
 function ensureMosaicCfg() {
     const s = state.slides[state.activeIndex];
@@ -2230,7 +2315,8 @@ async function composeMosaic(slide) {
     if (imgs.length) {
         ctx.globalAlpha = Math.max(0, Math.min(100, m.opacity ?? 55)) / 100;
         const opts = { cellBgOn: true, cellBg: m.cellBg || '#050810', fit: 'contain',
-                       fill: m.fill ?? 74, capband: 0, groundCenter: m.groundCenter !== false };
+                       fill: m.fill ?? 74, capband: 0, groundCenter: m.groundCenter !== false,
+                       auraX: m.auraX ?? 0, auraY: m.auraY ?? 0, auraZoom: m.auraZoom ?? 100 };
         let k = 0;
         for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
             const e = imgs[k % imgs.length]; k++;
@@ -2262,6 +2348,7 @@ async function ensureMosaic(slide) {
     }
     const key = [m.cols, m.cellAspect, m.opacity, m.tint, m.fill, m.groundCenter !== false ? 1 : 0,
         m.cellBg, m.baseBg, (safeImageUrl(m.auraUrl) || '').length, slide.isStory ? 1 : 0,
+        m.auraX ?? 0, m.auraY ?? 0, m.auraZoom ?? 100,
         m.items.map(it => (safeImageUrl(it.url) || '').length).join(',')].join('|');
     const c = mosaicCache.get(slide.id);
     if (c && c.key === key) return false;
@@ -2281,7 +2368,8 @@ async function ensureGridCells(slide) {
     if (auraUrl) { try { auraImg = await loadImageEl(auraUrl); } catch (_) {} }
     const paramsKey = [Math.round(cellW * 10), Math.round(cellH * 10), grid.fit, grid.fill, grid.capband ?? 22,
         grid.groundCenter !== false ? 1 : 0, grid.cellBgOn !== false ? 1 : 0, grid.cellBg,
-        (grid.labels?.show && grid.labels.position === 'overlay') ? 1 : 0, auraUrl.length].join('|');
+        (grid.labels?.show && grid.labels.position === 'overlay') ? 1 : 0, auraUrl.length,
+        grid.auraX ?? 0, grid.auraY ?? 0, grid.auraZoom ?? 100].join('|');
     let changed = false;
     await Promise.all(grid.items.map(async it => {
         const url = safeImageUrl(it.url);
@@ -2706,8 +2794,11 @@ const DOM = {
     exportProgressLabel:   document.getElementById('export-progress-label'),
     exportProgressPct:     document.getElementById('export-progress-pct'),
     
-    logoUpload:            document.getElementById('logo-upload'),
-    themeLogoUpload:       document.getElementById('theme-logo-upload'),
+    brandLogosUpload:      document.getElementById('brand-logos-upload'),
+    brandLogosLabel:       document.getElementById('brand-logos-label'),
+    brandSlotLeft:         document.getElementById('brand-slot-left'),
+    brandSlotRight:        document.getElementById('brand-slot-right'),
+    btnBrandSwap:          document.getElementById('btn-brand-swap'),
     btnNewsBadge:          document.getElementById('btn-news-badge'),
     btnMocBadge:           document.getElementById('btn-moc-badge'),
     btnClearLogo:          document.getElementById('btn-clear-logo'),
@@ -2934,8 +3025,9 @@ function buildCaptionFromCover() {
     const c = getCoverSlide();
     const parts = [];
     if (c) {
-        // stripAccentMarks: gli *asterischi* del testo bicolore non vanno nella caption
-        if (c.title && c.title.trim())   parts.push(decorateTitle(stripAccentMarks(c.title)));
+        // stripAccentMarks: gli *asterischi* del testo bicolore non vanno nella caption.
+        // Gli a capo del titolo (multiriga) diventano spazi: nella caption il titolo è una riga sola.
+        if (c.title && c.title.trim())   parts.push(decorateTitle(stripAccentMarks(c.title).replace(/\s*\n\s*/g, ' ')));
         if (c.body && c.body.trim())     parts.push(stripAccentMarks(c.body).trim());
         if (c.source && c.source.trim()) parts.push(decorateSource(c.source).trim());
     }
@@ -3570,7 +3662,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     // così il titolo torna allineato al badge esattamente come in anteprima.
     const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;${titleUppercase}">${formatAccentText(slide.title, accent)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent)}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
     // Da Blocco 4: visibile su OGNI slide con il campo compilato (es. "Source: lego.com"),
@@ -4118,6 +4210,19 @@ function renderEditor() {
     }
 
     DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
+    // Anteprime dei due loghi + stato del riquadro di inserimento unificato
+    const paintSlot = (el, url) => {
+        if (!el) return;
+        const u = safeImageUrl(url);
+        el.style.backgroundImage = u ? `url("${u}")` : '';
+        el.textContent = u ? '' : 'vuoto';
+    };
+    paintSlot(DOM.brandSlotLeft,  state.themeLogoBase64);
+    paintSlot(DOM.brandSlotRight, state.logoBase64);
+    const nLogos = (state.themeLogoBase64 ? 1 : 0) + (state.logoBase64 ? 1 : 0);
+    if (DOM.brandLogosLabel) DOM.brandLogosLabel.textContent = nLogos === 0 ? 'Inserisci i loghi'
+        : (nLogos === 1 ? 'Inserisci il secondo logo' : '✓ Loghi inseriti — clicca per sostituirli');
+    if (DOM.btnBrandSwap) DOM.btnBrandSwap.classList.toggle('hidden', nLogos < 2);
     // Sync slider dimensione loghi
     const syncSize = (slider, valLabel, size) => { slider.value = size; valLabel.textContent = Math.round(size * 100) + '%'; };
     syncSize(DOM.logoSizeSlider,      DOM.logoSizeValue,      state.logoSize);
@@ -4278,6 +4383,16 @@ function renderMosaicEditor(slide) {
 
     const sliderRow = (label, key, min, max, step, val, suffix) =>
         `<div class="flex flex-col gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200"><div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><label>${label}</label><span data-mval="${key}" class="text-[#0071E3]">${val}${suffix}</span></div><input type="range" data-mkey="${key}" data-suffix="${suffix}" min="${min}" max="${max}" step="${step}" value="${val}" class="w-full"></div>`;
+    // Selettore numerico (− valore +) per le colonne
+    const stepperRow = (label, key, min, max, val) =>
+        `<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <span class="text-[10px] font-bold text-gray-500 uppercase">${label}</span>
+            <div class="flex items-center gap-1.5">
+                <button type="button" data-mstep="${key}" data-delta="-1" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all" aria-label="${label}: diminuisci">−</button>
+                <input type="number" data-mnum="${key}" min="${min}" max="${max}" step="1" value="${val}" class="w-14 h-9 text-center bg-white border border-gray-300 rounded-lg text-sm font-bold text-[#0071E3] outline-none focus:ring-2 focus:ring-[#0071E3]" aria-label="${label}"/>
+                <button type="button" data-mstep="${key}" data-delta="1" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all" aria-label="${label}: aumenta">+</button>
+            </div>
+        </div>`;
 
     const thumbs = (m.items || []).map(it =>
         `<div class="relative w-14 h-14 rounded border border-gray-200 bg-gray-100 bg-contain bg-no-repeat bg-center flex-shrink-0 mosaic-item-thumb" data-id="${it.id}"><button data-mosaic-del="${it.id}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] leading-none flex items-center justify-center shadow" title="Rimuovi" aria-label="Rimuovi">✕</button></div>`).join('');
@@ -4308,8 +4423,16 @@ function renderMosaicEditor(slide) {
                 <span class="text-[10px] font-bold text-gray-500 uppercase">Centra sul corpo (ignora il riflesso)</span>
                 <div class="toggle-track ${m.groundCenter !== false ? 'on' : ''}" data-mtoggle="groundCenter" role="switch" aria-label="Centra sul corpo"><div class="toggle-thumb"></div></div>
             </label>
+            ${m.auraUrl ? `
+            <div class="pt-1 border-t border-gray-200 flex flex-col gap-1.5">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Posizione dell'aura nella cella</span>
+                ${sliderRow('Sposta ⟷ orizzontale', 'auraX', -50, 50, 1, m.auraX ?? 0, '%')}
+                ${sliderRow('Sposta ⟷ verticale', 'auraY', -50, 50, 1, m.auraY ?? 0, '%')}
+                ${sliderRow('Zoom aura', 'auraZoom', 50, 250, 1, m.auraZoom ?? 100, '%')}
+                <button id="mosaic-aura-reset" class="text-[10px] text-[#0071E3] hover:underline font-medium self-start">Rimetti l'aura al centro</button>
+            </div>` : ''}
         </div>
-        ${sliderRow('Colonne', 'cols', 2, 8, 1, m.cols ?? 4, '')}
+        ${stepperRow('Colonne', 'cols', 2, 8, m.cols ?? 4)}
         ${sliderRow('Altezza cella (vs larghezza)', 'cellAspectPct', 40, 200, 2, Math.round((m.cellAspect ?? 0.833) * 100), '%')}
         ${sliderRow('Riempimento soggetto', 'fill', 40, 110, 1, m.fill ?? 74, '%')}
         ${sliderRow('Opacità soggetti', 'opacity', 10, 100, 1, m.opacity ?? 55, '%')}
@@ -4318,7 +4441,8 @@ function renderMosaicEditor(slide) {
             <span class="text-[10px] font-bold text-gray-500 uppercase">Sfondo cella</span>
             <input type="color" data-mcolor="cellBg" value="${m.cellBg || '#050810'}" class="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"/>
         </div>
-        <p class="text-xs text-blue-700 font-medium">Consiglio: attiva anche "Overlay scuro inferiore" del layout copertina per la parte bassa.</p>`;
+        <p class="text-xs text-blue-700 font-medium">Consiglio: attiva anche "Overlay scuro inferiore" del layout copertina per la parte bassa.</p>
+        <p class="text-xs text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-lg p-2">Il mosaico è solo decorativo: ripete i soggetti e <b>non ha etichette</b>. Se ti servono i <b>nomi sotto ogni minifigure</b> usa il blocco <b>Griglia Immagini</b> (etichette → "Sotto l'immagine"). Il contatore <b>02 / 13</b> sta invece in <b>Blocchi Ricorrenti → Numerazione</b>.</p>`;
 
     DOM.mosaicPanelHost.querySelectorAll('.mosaic-item-thumb').forEach(el => {
         const it = (m.items || []).find(i => i.id === el.dataset.id);
@@ -4362,6 +4486,11 @@ if (DOM.mosaicPanelHost) {
             if (k === 'cellAspectPct') m.cellAspect = v / 100; else m[k] = (k === 'cols') ? Math.round(v) : v;
             setVal(k, v + (t.dataset.suffix || ''));
             debouncedRefreshFrames(); trackChange();
+        } else if (t.matches('input[data-mnum]')) {
+            const k = t.dataset.mnum;
+            const v = parseInt(t.value, 10);
+            const min = parseInt(t.min, 10), max = parseInt(t.max, 10);
+            if (!Number.isNaN(v) && v >= min && v <= max) { m[k] = v; debouncedRefreshFrames(); trackChange(); }
         } else if (t.matches('input[data-mcolor]')) {
             m[t.dataset.mcolor] = t.value;
             debouncedRefreshFrames(); trackChange();
@@ -4372,6 +4501,18 @@ if (DOM.mosaicPanelHost) {
         if (t.id === 'mosaic-image-upload' && t.files?.length) { handleMosaicImagesUpload([...t.files]); t.value = ''; return; }
         if (t.id === 'mosaic-split-upload' && t.files?.length) { openSplitModal(t.files[0], 'mosaic'); t.value = ''; return; }
         if (t.id === 'mosaic-aura-upload' && t.files?.length) { handleMosaicAuraUpload(t.files[0]); t.value = ''; return; }
+        if (t.matches('input[data-mnum]')) {
+            const k = t.dataset.mnum;
+            const min = parseInt(t.min, 10), max = parseInt(t.max, 10);
+            const m2 = state.slides[state.activeIndex].mosaic;
+            let v = parseInt(t.value, 10);
+            if (Number.isNaN(v)) v = m2?.[k] ?? min;
+            v = Math.max(min, Math.min(max, v));
+            t.value = v;
+            if (m2 && m2[k] !== v) { m2[k] = v; debouncedRefreshFrames(); }
+            snapshot();
+            return;
+        }
         if (t.matches('input[data-mkey]')) snapshot();
     });
     DOM.mosaicPanelHost.addEventListener('click', async e => {
@@ -4382,6 +4523,24 @@ if (DOM.mosaicPanelHost) {
             m[mt.dataset.mtoggle] = !mt.classList.contains('on');
             mt.classList.toggle('on', m[mt.dataset.mtoggle]);
             debouncedRefreshFrames(); trackChange(true);
+            return;
+        }
+        const mstep = e.target.closest('[data-mstep]');
+        if (mstep) {
+            const k = mstep.dataset.mstep;
+            const inp = DOM.mosaicPanelHost.querySelector(`input[data-mnum="${k}"]`);
+            const min = inp ? parseInt(inp.min, 10) : 2, max = inp ? parseInt(inp.max, 10) : 8;
+            const v = Math.max(min, Math.min(max, (m[k] ?? min) + parseInt(mstep.dataset.delta, 10)));
+            if (v !== m[k]) {
+                m[k] = v;
+                if (inp) inp.value = v;
+                debouncedRefreshFrames(); trackChange(true);
+            }
+            return;
+        }
+        if (e.target.id === 'mosaic-aura-reset') {
+            m.auraX = 0; m.auraY = 0; m.auraZoom = 100;
+            renderEditor(); debouncedRefreshFrames(); trackChange(true);
             return;
         }
         if (e.target.id === 'mosaic-aura-remove') {
@@ -4677,7 +4836,7 @@ if (DOM.toggleMosaic) DOM.toggleMosaic.addEventListener('change', e => {
 // ════════ GRIGLIA: pannello di modifica ════════
 function escapeAttr(s) { return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 // Parametri che cambiano la composizione delle celle → serve ri-cuocere
-const GRID_REBAKE_KEYS = new Set(['cols', 'gap', 'marginX', 'cellAspectPct', 'fill', 'capband']);
+const GRID_REBAKE_KEYS = new Set(['cols', 'gap', 'marginX', 'cellAspectPct', 'fill', 'capband', 'auraX', 'auraY', 'auraZoom']);
 
 function renderGridEditor(slide) {
     if (!DOM.gridPanelHost) return;
@@ -4696,6 +4855,17 @@ function renderGridEditor(slide) {
         `<label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2 bg-gray-50 rounded-lg border border-gray-200"><span class="text-[10px] font-bold text-gray-500 uppercase">${label}</span><div class="toggle-track ${val ? 'on' : ''}" ${attr}="${key}" role="switch" aria-label="${label}"><div class="toggle-thumb"></div></div></label>`;
     const btnPair = (attr, opts, cur) => `<div class="flex gap-2 text-xs font-bold">${opts.map(([v, lab]) =>
         `<button ${attr}="${v}" class="flex-1 py-1.5 rounded transition-all ${cur === v ? 'bg-[#0071E3] text-white' : 'bg-white text-gray-600 border border-gray-200'}">${lab}</button>`).join('')}</div>`;
+
+    // Selettore numerico (− valore +): più preciso dello slider su desktop e iPad
+    const stepperRow = (label, key, min, max, val, attrStep = 'data-gstep', attrNum = 'data-gnum') =>
+        `<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+            <span class="text-[10px] font-bold text-gray-500 uppercase">${label}</span>
+            <div class="flex items-center gap-1.5">
+                <button type="button" ${attrStep}="${key}" data-delta="-1" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all" aria-label="${label}: diminuisci">−</button>
+                <input type="number" ${attrNum}="${key}" min="${min}" max="${max}" step="1" value="${val}" class="w-14 h-9 text-center bg-white border border-gray-300 rounded-lg text-sm font-bold text-[#0071E3] outline-none focus:ring-2 focus:ring-[#0071E3]" aria-label="${label}"/>
+                <button type="button" ${attrStep}="${key}" data-delta="1" class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-700 text-lg leading-none font-bold hover:bg-gray-100 active:scale-95 transition-all" aria-label="${label}: aumenta">+</button>
+            </div>
+        </div>`;
 
     const itemsHtml = (grid.items || []).map((it, idx) => `
         <div class="border border-gray-200 rounded-lg bg-white p-2 flex flex-col gap-1.5">
@@ -4740,13 +4910,21 @@ function renderGridEditor(slide) {
                 </div>
             </div>
             ${tglRow('Centra sul corpo (ignora il riflesso)', 'groundCenter', grid.groundCenter !== false)}
+            ${grid.auraUrl ? `
+            <div class="pt-1 border-t border-gray-200 flex flex-col gap-1.5">
+                <span class="text-[10px] font-bold text-gray-500 uppercase">Posizione dell'aura nella cella</span>
+                ${sliderRow('Sposta ⟷ orizzontale', 'auraX', -50, 50, 1, grid.auraX ?? 0, '%')}
+                ${sliderRow('Sposta ⟷ verticale', 'auraY', -50, 50, 1, grid.auraY ?? 0, '%')}
+                ${sliderRow('Zoom aura', 'auraZoom', 50, 250, 1, grid.auraZoom ?? 100, '%')}
+                <button id="grid-aura-reset" class="text-[10px] text-[#0071E3] hover:underline font-medium self-start">Rimetti l'aura al centro</button>
+            </div>` : ''}
         </div>
 
         <div class="flex flex-col gap-1">
             <span class="text-[10px] font-bold text-gray-500 uppercase">Adattamento soggetto nella cella</span>
             ${btnPair('data-gfit', [['contain', 'Intero (mai tagliato)'], ['cover', 'Riempi (taglia)']], grid.fit || 'contain')}
         </div>
-        ${sliderRow('Colonne', 'cols', 1, 6, 1, grid.cols ?? 3, '')}
+        ${stepperRow('Colonne', 'cols', 1, 6, grid.cols ?? 3)}
         ${sliderRow('Riempimento soggetto', 'fill', 40, 110, 1, grid.fill ?? 74, '%')}
         ${sliderRow('Spazio orizzontale', 'gap', 0, 80, 1, grid.gap ?? 16, 'px')}
         ${sliderRow('Spazio verticale', 'rowGap', 0, 400, 2, grid.rowGap ?? 16, 'px')}
@@ -4849,6 +5027,16 @@ if (DOM.gridPanelHost) {
             const k = t.dataset.lkey; const v = parseFloat(t.value);
             lb[k] = v; setVal(k, v + (t.dataset.suffix || ''));
             renderPreview(); trackChange();
+        } else if (t.matches('input[data-gnum]')) {
+            // campo numerico (colonne): applica solo valori validi, senza forzare il testo
+            const k = t.dataset.gnum;
+            const v = parseInt(t.value, 10);
+            const min = parseInt(t.min, 10), max = parseInt(t.max, 10);
+            if (!Number.isNaN(v) && v >= min && v <= max) {
+                grid[k] = v;
+                renderPreview(); if (GRID_REBAKE_KEYS.has(k)) debouncedRefreshFrames();
+                trackChange();
+            }
         } else if (t.matches('input[data-gcolor]')) {
             grid[t.dataset.gcolor] = t.value;
             renderPreview(); if (t.dataset.gcolor === 'cellBg') debouncedRefreshFrames();
@@ -4865,6 +5053,19 @@ if (DOM.gridPanelHost) {
         if (t.id === 'grid-image-upload' && t.files?.length) { handleGridImagesUpload([...t.files]); t.value = ''; return; }
         if (t.id === 'grid-split-upload' && t.files?.length) { openSplitModal(t.files[0], 'grid'); t.value = ''; return; }
         if (t.id === 'grid-aura-upload' && t.files?.length) { handleGridAuraUpload(t.files[0]); t.value = ''; return; }
+        if (t.matches('input[data-gnum]')) {
+            // fuori fuoco/Invio: riporta il campo entro i limiti e allinea lo stato
+            const k = t.dataset.gnum;
+            const min = parseInt(t.min, 10), max = parseInt(t.max, 10);
+            let v = parseInt(t.value, 10);
+            if (Number.isNaN(v)) v = state.slides[state.activeIndex].grid?.[k] ?? min;
+            v = Math.max(min, Math.min(max, v));
+            t.value = v;
+            const g = state.slides[state.activeIndex].grid;
+            if (g && g[k] !== v) { g[k] = v; renderPreview(); debouncedRefreshFrames(); }
+            snapshot();
+            return;
+        }
         if (t.matches('input[data-gkey],input[data-lkey]')) snapshot();
     });
     DOM.gridPanelHost.addEventListener('click', async e => {
@@ -4896,6 +5097,25 @@ if (DOM.gridPanelHost) {
         if (fitBtn) { grid.fit = fitBtn.dataset.gfit; renderEditor(); renderPreview(); debouncedRefreshFrames(); trackChange(true); return; }
         const posBtn = e.target.closest('[data-lpos]');
         if (posBtn) { lb.position = posBtn.dataset.lpos; renderEditor(); renderPreview(); debouncedRefreshFrames(); trackChange(true); return; }
+        const gstep = e.target.closest('[data-gstep]');
+        if (gstep) {
+            const k = gstep.dataset.gstep;
+            const inp = DOM.gridPanelHost.querySelector(`input[data-gnum="${k}"]`);
+            const min = inp ? parseInt(inp.min, 10) : 1, max = inp ? parseInt(inp.max, 10) : 6;
+            const v = Math.max(min, Math.min(max, (grid[k] ?? min) + parseInt(gstep.dataset.delta, 10)));
+            if (v !== grid[k]) {
+                grid[k] = v;
+                if (inp) inp.value = v;
+                renderPreview(); if (GRID_REBAKE_KEYS.has(k)) debouncedRefreshFrames();
+                trackChange(true);
+            }
+            return;
+        }
+        if (e.target.id === 'grid-aura-reset') {
+            grid.auraX = 0; grid.auraY = 0; grid.auraZoom = 100;
+            renderEditor(); debouncedRefreshFrames(); trackChange(true);
+            return;
+        }
         if (e.target.id === 'grid-aura-remove') {
             grid.auraUrl = null;
             await saveGridToIDB(s);
@@ -5741,8 +5961,34 @@ async function handleBrandUpload(file, kind) {
         if (kind === 'themeLogo') { state.themeLogoBase64 = b; lsSet(LS.themeLogo, b); }
     });
 }
-DOM.logoUpload.addEventListener('change',      e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'logo'); });
-DOM.themeLogoUpload.addEventListener('change', e => { if (e.target.files[0]) handleBrandUpload(e.target.files[0], 'themeLogo'); });
+// Inserimento unificato: si aprono i file una volta e si scelgono entrambi i loghi.
+// Con 2+ file: 1° → alto sinistra, 2° → alto destra (poi "⇄ Scambia" se serve).
+// Con 1 file: riempie il primo posto libero (sinistra se sono entrambi vuoti).
+async function handleBrandLogosUpload(files) {
+    const arr = [...files].slice(0, 2);
+    if (!arr.length) return;
+    if (arr.length >= 2) {
+        await handleBrandUpload(arr[0], 'themeLogo');
+        await handleBrandUpload(arr[1], 'logo');
+        toast('Loghi inseriti: 1° in alto a sinistra, 2° in alto a destra — "⇄ Scambia" per invertirli', 'success', 4000);
+    } else {
+        const kind = !state.themeLogoBase64 ? 'themeLogo' : 'logo';
+        await handleBrandUpload(arr[0], kind);
+        toast(kind === 'themeLogo' ? 'Logo inserito in alto a sinistra' : 'Logo inserito in alto a destra', 'success', 2500);
+    }
+}
+if (DOM.brandLogosUpload) DOM.brandLogosUpload.addEventListener('change', e => {
+    if (e.target.files?.length) { handleBrandLogosUpload(e.target.files); e.target.value = ''; }
+});
+if (DOM.btnBrandSwap) DOM.btnBrandSwap.addEventListener('click', e => {
+    e.preventDefault();
+    const l = state.logoBase64, t = state.themeLogoBase64;
+    state.logoBase64 = t; state.themeLogoBase64 = l;
+    if (state.logoBase64) lsSet(LS.logo, state.logoBase64); else lsRemove(LS.logo);
+    if (state.themeLogoBase64) lsSet(LS.themeLogo, state.themeLogoBase64); else lsRemove(LS.themeLogo);
+    trackChange(true); render();
+    toast('Loghi scambiati', 'success', 1800);
+});
 
 // Inserimento Badge da file locali (news.png / moc.png nella stessa cartella).
 // Il badge viene mantenuto alla massima risoluzione originale (nessuna ricompressione/resize).
