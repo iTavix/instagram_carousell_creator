@@ -772,12 +772,17 @@
             #original-preview-host #preview-wrapper { max-width: min(100%, calc((100dvh - 300px) * 0.8)) !important; }
             body.story-mode #original-preview-host #preview-wrapper { max-width: min(100%, calc((100dvh - 300px) * 0.5625)) !important; }
 
-            /* Tab bar fissa in basso */
+            /* Tab bar fissa in basso: carosello ORIZZONTALE di categorie (stile CapCut/
+               Lightroom) — tante voci piccole e mirate invece di 5 giganti; scorre col dito */
             #mobile-tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 5000;
                 background: #ffffff; border-top: 1px solid rgba(0,0,0,0.08);
-                padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) 8px; gap: 4px; }
-            #mobile-tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
-                padding: 6px 2px; border-radius: 10px; font-size: 10px; font-weight: 600; color: #6E6E73; background: transparent; transition: all 0.15s; }
+                padding: 6px 8px calc(6px + env(safe-area-inset-bottom)) 8px; gap: 4px;
+                overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+                scroll-snap-type: x proximity; }
+            #mobile-tabbar::-webkit-scrollbar { display: none; }
+            #mobile-tabbar button { flex: 0 0 auto; min-width: 64px; scroll-snap-align: center;
+                display: flex; flex-direction: column; align-items: center; gap: 2px;
+                padding: 6px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; color: #6E6E73; background: transparent; transition: all 0.15s; white-space: nowrap; }
             #mobile-tabbar button .t-ico { line-height: 1; }
             #mobile-tabbar button .t-ico svg { display: block; }
             #mobile-tabbar button.active { color: #0071E3; background: #E8F0FE; }
@@ -1335,26 +1340,26 @@
                 <button id="btn-delete-all-images" class="text-xs text-[#E3000F] hover:underline font-medium self-start inline-flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Cancella tutte le immagini</button>
             </div>
 
-            <!-- Immagini in Primo Piano (Multiple) -->
-            <div class="flex flex-col gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-gray-500 uppercase">Immagini in Primo Piano</span>
-                </div>
-                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+            </div>
+        </details>
+
+        <!-- Immagini in Primo Piano: sezione autonoma (era dentro Modifica Slide) -->
+        <details class="accordion" open id="accordion-fg">
+            <summary><span>Immagini in Primo Piano</span></summary>
+            <div class="accordion-body flex flex-col gap-3">
+                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
                     <input type="file" id="fg-image-upload" accept="image/*" aria-label="Aggiungi immagine in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                     <span id="fg-image-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none">Aggiungi un'immagine sopra lo sfondo</span>
                 </div>
-                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-white relative hover:bg-gray-50 transition-all cursor-pointer">
+                <div class="border-2 border-dashed border-[#AEAEB2] rounded-[8px] p-4 text-center bg-[#F5F5F7] relative hover:bg-gray-200 transition-all cursor-pointer">
                     <input type="file" id="fg-video-upload" accept="video/*" aria-label="Aggiungi video in primo piano" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
                     <span id="fg-video-upload-label" class="text-xs font-medium text-[#6E6E73] pointer-events-none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Aggiungi un video sopra lo sfondo</span>
                 </div>
-                
+
                 <!-- Lista immagini in primo piano aggiunte -->
                 <div id="fg-images-list" class="flex flex-col gap-2 empty:hidden"></div>
-                
-                <p class="text-xs text-blue-700 font-medium mt-1">Trascina le immagini nell'anteprima per riposizionarle</p>
-            </div>
 
+                <p class="text-xs text-blue-700 font-medium mt-1">Trascina le immagini nell'anteprima per riposizionarle</p>
             </div>
         </details>
 
@@ -1716,7 +1721,7 @@
             <details id="help-fg" class="help-sec">
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-fg"></use></svg></span><span class="help-summary-title">Immagini in primo piano e video</span></summary>
                 <ol>
-                    <li>In <b>Modifica Slide → Immagini in Primo Piano</b> aggiungi quante immagini vuoi sopra lo sfondo: si trascinano nell'anteprima, si ridimensionano con lo slider (o con due dita sul telefono).</li>
+                    <li>Nella sezione <b>Immagini in Primo Piano</b> (accordion dedicato; su telefono tab <b>Primo piano</b>) aggiungi quante immagini vuoi sopra lo sfondo: si trascinano nell'anteprima, si ridimensionano con lo slider (o con due dita sul telefono).</li>
                     <li>Per ogni immagine: <b>Riquadro bianco</b> (cornice adesiva che segue la sagoma), <b>Dietro l'overlay scuro</b> (per farla scurire dall'overlay copertina), <b>Rimuovi sfondo (AI)</b> e i <b>filtri</b> (icona imbuto).</li>
                     <li><b>Video</b>: "Aggiungi un video sopra lo sfondo". Le slide con un video vengono esportate come file video (.mp4/.webm), con l'audio se presente.</li>
                     <li>La sezione <b>Scontorna Immagini (AI)</b> è la variante in serie: carichi più foto, le scontorna tutte sul dispositivo e puoi scaricarle o mandarle alla slide.</li>
@@ -1752,7 +1757,8 @@
                     <li><b>Duplica</b> (icona doppio riquadro) copia la slide attiva con tutto: immagini, griglia, blocchi.</li>
                     <li><b>Storie</b>: il selettore in alto passa al formato 1080×1920 (9:16), con gli stessi strumenti (senza copertina).</li>
                     <li><b>Su computer e iPad</b>: l'anteprima resta <b>sempre a vista</b>, ancorata in alto a destra mentre scorri i controlli; il "Testo del post" è sotto l'anteprima. Su iPad in verticale le due colonne restano affiancate, così non devi più salire e scendere per vedere l'effetto delle modifiche.</li>
-                    <li><b>Su telefono</b>: l'anteprima è a schermo pieno; i controlli si aprono dalla barra in basso (Slide, <b>Griglia</b>, Testi, Brand, Ritagli). Trascina la maniglia del pannello per allargarlo, due dita per zoomare sfondo e immagini.</li>
+                    <li><b>Su telefono</b>: l'anteprima è a schermo pieno; la barra in basso <b>scorre lateralmente</b> con tutte le categorie (Slide, Griglia, Mosaico, Testi, Blocchi, Primo piano, Brand, Ritagli, Post) — ogni tab apre un pannello corto e mirato. Trascina la maniglia del pannello per allargarlo, due dita per zoomare sfondo e immagini.</li>
+                    <li><b>Tocca per modificare</b>: un tocco secco su un elemento dell'anteprima apre direttamente i suoi strumenti — la griglia apre Griglia, un testo apre Testi, kicker/specifiche/pill aprono Blocchi, un'immagine in primo piano apre Primo piano, lo sfondo apre Slide. Vale anche su computer (l'app apre la sezione giusta e la porta in vista). Il trascinamento resta invariato: se muovi il dito, sposti; se tocchi e basta, apri.</li>
                     <li><b>Reset slide</b> azzera la slide attiva; <b>Reset completo app</b> (qui sotto) riparte da zero.</li>
                 </ol>
             </details>
@@ -1954,6 +1960,9 @@ const ICONS = {
     hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
     image:     '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
     grid:      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    mosaic:    '<rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/><rect x="17" y="3" width="4" height="5" rx="1"/><rect x="3" y="10" width="5" height="5" rx="1"/><rect x="10" y="10" width="5" height="5" rx="1"/><rect x="17" y="10" width="4" height="5" rx="1"/><rect x="3" y="17" width="5" height="4" rx="1"/><rect x="10" y="17" width="5" height="4" rx="1"/>',
+    layers:    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/>',
+    blocks:    '<line x1="4" y1="5" x2="20" y2="5"/><rect x="4" y="9" width="12" height="6" rx="3"/><line x1="4" y1="19" x2="14" y2="19"/>',
     type:      '<polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>',
     copy:      '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     tag:       '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/>',
@@ -5803,13 +5812,18 @@ async function share() {
 // Il tab "Slide" monta ENTRAMBI gli accordion (gestione slides + modifica):
 // la sezione Slides su mobile era ridondante come tab separato (miniature e "+"
 // sono già nella strip sotto l'anteprima) ma resta utile in cima al pannello.
+// Categorie fini a scorrimento orizzontale (pattern CapCut/Lightroom): ogni tab
+// apre una sheet corta e mirata invece di un pannellone da scorrere a lungo.
 const MOBILE_TABS = [
-    { key: 'slide',  label: 'Slide',  icon: ico('image', 20),    sels: ['#slides-accordion', '#accordion-edit'], title: 'Modifica slide' },
-    { key: 'griglia', label: 'Griglia', icon: ico('grid', 20),   sels: ['#accordion-grid', '#accordion-mosaic'], title: 'Griglia e mosaico' },
-    { key: 'testi',  label: 'Testi',  icon: ico('type', 20),     sels: ['#accordion-text', '#accordion-blocks'], title: 'Testo sulla slide' },
-    { key: 'brand',  label: 'Brand',  icon: ico('tag', 20),      sels: ['#accordion-brand'],                     title: 'Impostazioni brand' },
-    { key: 'cutout', label: 'Ritagli', icon: ico('scissors', 20), sels: ['#accordion-cutout'],                    title: 'Scontorna immagini' },
-    { key: 'post',   label: 'Post',   icon: ico('fileText', 20), sels: ['#caption-card'],                        title: 'Testo del post' },
+    { key: 'slide',   label: 'Slide',      icon: ico('image', 20),    sels: ['#slides-accordion', '#accordion-edit'], title: 'Slide e sfondo' },
+    { key: 'griglia', label: 'Griglia',    icon: ico('grid', 20),     sels: ['#accordion-grid'],                      title: 'Griglia immagini' },
+    { key: 'mosaico', label: 'Mosaico',    icon: ico('mosaic', 20),   sels: ['#accordion-mosaic'],                    title: 'Mosaico copertina' },
+    { key: 'testi',   label: 'Testi',      icon: ico('type', 20),     sels: ['#accordion-text'],                      title: 'Testo sulla slide' },
+    { key: 'blocchi', label: 'Blocchi',    icon: ico('blocks', 20),   sels: ['#accordion-blocks'],                    title: 'Blocchi ricorrenti' },
+    { key: 'fg',      label: 'Primo piano', icon: ico('layers', 20),  sels: ['#accordion-fg'],                        title: 'Immagini in primo piano' },
+    { key: 'brand',   label: 'Brand',      icon: ico('tag', 20),      sels: ['#accordion-brand'],                     title: 'Impostazioni brand' },
+    { key: 'cutout',  label: 'Ritagli',    icon: ico('scissors', 20), sels: ['#accordion-cutout'],                    title: 'Scontorna immagini' },
+    { key: 'post',    label: 'Post',       icon: ico('fileText', 20), sels: ['#caption-card'],                        title: 'Testo del post' },
 ];
 const mobileSheet     = document.getElementById('mobile-sheet');
 const mobileSheetHost = document.getElementById('mobile-sheet-host');
@@ -5841,6 +5855,9 @@ function openMobileSheet(key) {
     mobileSheet.setAttribute('aria-hidden', 'false');
     mobileSheetHost.scrollTop = 0;
     mobileTabbar.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.key === key));
+    // la barra è a scorrimento: porta in vista la tab attiva
+    const ab = mobileTabbar.querySelector('#mtab-' + key);
+    if (ab && ab.scrollIntoView) ab.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 function closeMobileSheet() {
     returnSheetContent();
@@ -5877,6 +5894,60 @@ function bindSheetDrag() {
     head.addEventListener('mousedown', onStart);
     head.addEventListener('touchstart', onStart, { passive: false });
 }
+// ════════ TAP-TO-EDIT (pattern Canva): un tocco su un elemento dell'anteprima
+// apre direttamente i SUOI strumenti. Su mobile apre la sheet del tab giusto;
+// su desktop/iPad apre l'accordion corrispondente e lo porta in vista.
+function openToolsFor(key) {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        openMobileSheet(key);
+        return;
+    }
+    const t = MOBILE_TABS.find(x => x.key === key);
+    if (!t) return;
+    const node = document.querySelector(t.sels[t.sels.length - 1]);
+    if (!node) return;
+    if (node.tagName === 'DETAILS') node.setAttribute('open', '');
+    node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+(function initTapToEdit() {
+    const wrap = DOM.previewWrapper;
+    if (!wrap) return;
+    let sx = 0, sy = 0, moved = true, multi = false, sheetOpenAtDown = false;
+    // Lo stato della sheet va letto PRIMA del handler "tocco fuori → chiudi" di
+    // initMobileUI (stesso nodo document, capture: vince l'ordine di registrazione,
+    // e questo listener viene registrato prima).
+    document.addEventListener('pointerdown', () => {
+        sheetOpenAtDown = mobileSheet.classList.contains('open');
+    }, true);
+    const down = e => {
+        const t = e.touches ? e.touches[0] : e;
+        sx = t.clientX; sy = t.clientY; moved = false;
+        multi = !!(e.touches && e.touches.length > 1);
+    };
+    const move = e => {
+        if (e.touches && e.touches.length > 1) { multi = true; return; }
+        const t = e.touches ? e.touches[0] : e;
+        if (Math.hypot(t.clientX - sx, t.clientY - sy) > 8) moved = true;
+    };
+    wrap.addEventListener('mousedown', down, true);
+    wrap.addEventListener('touchstart', down, { capture: true, passive: true });
+    wrap.addEventListener('mousemove', move, true);
+    wrap.addEventListener('touchmove', move, { capture: true, passive: true });
+    wrap.addEventListener('click', e => {
+        if (moved || multi) return;                    // era un drag/pinch, non un tap
+        const el = e.target;
+        const key =
+            el.closest('.preview-fg-drag') ? 'fg' :
+            el.closest('#preview-grid-drag') ? 'griglia' :
+            el.closest('#preview-overlay-drag, #preview-cover-text-drag') ? 'testi' :
+            el.closest('#preview-kicker-drag, #preview-specs-drag, #preview-pill-drag') ? 'blocchi' :
+            'slide';
+        // tap sul vuoto mentre la sheet era aperta = gesto di chiusura: non riaprire
+        if (key === 'slide' && sheetOpenAtDown) return;
+        openToolsFor(key);
+    });
+})();
+
 function initMobileUI() {
     mobileTabbar.innerHTML = MOBILE_TABS.map(t =>
         `<button id="mtab-${t.key}" data-key="${t.key}" type="button"><span class="t-ico">${t.icon}</span>${t.label}</button>`).join('');
