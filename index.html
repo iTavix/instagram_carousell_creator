@@ -1177,6 +1177,13 @@
                             <input type="checkbox" id="toggle-cover-overlay" class="sr-only"/>
                         </div>
                     </label>
+                    <div id="cover-overlay-height-block" class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                            <label for="input-cover-overlay-height">Altezza Overlay</label>
+                            <span id="cover-overlay-height-value" class="text-[#0071E3]">60%</span>
+                        </div>
+                        <input type="range" id="input-cover-overlay-height" min="10" max="100" step="5" value="60" class="w-full mt-2"/>
+                    </div>
                     <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
                         <span class="text-sm font-medium text-blue-900">Badge News visibile</span>
                         <div class="flex items-center gap-2">
@@ -2751,6 +2758,7 @@ function makeDefaultSlide(id, overrides = {}) {
         titleFontSize: 110,
         bodyFontSize: 36,            // dimensione del sottotitolo copertina
         coverTextColor: '#ffffff',   // colore del testo copertina (titolo+sottotitolo+fonte)
+        coverOverlayHeight: 60,      // altezza % dell'overlay scuro inferiore
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
         coverTextY: 60,
         zoom: 1, bgX: 0, bgY: 0, bgColor: '#333333', bgMode: 'solid',
@@ -2970,6 +2978,9 @@ const DOM = {
     slideAccent2Hex:       document.getElementById('slide-accent2-hex'),
     btnSlideAccent2Reset:  document.getElementById('btn-slide-accent2-reset'),
     inputTitleFont:        document.getElementById('input-title-font'),
+    inputCoverOverlayHeight: document.getElementById('input-cover-overlay-height'),
+    coverOverlayHeightValue: document.getElementById('cover-overlay-height-value'),
+    coverOverlayHeightBlock: document.getElementById('cover-overlay-height-block'),
 };
 
 // UTILITY (specifiche del dominio)
@@ -3193,7 +3204,7 @@ function syncCaptionFromCover(force = false) {
 function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
-        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
+        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews, coverOverlayHeight: s.coverOverlayHeight,
         title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, titleFont: s.titleFont || 'Bebas Neue', bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
@@ -3799,7 +3810,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;${forPreview ? 'pointer-events:none;' : ''}"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
 
     // Cover scorporato (UX#5)
-    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;${forPreview ? 'pointer-events:none;' : ''}"></div>` : '';
+    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:${slide.coverOverlayHeight ?? 60}%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;${forPreview ? 'pointer-events:none;' : ''}"></div>` : '';
     // Badge: dimensionamento con height esplicito + width:auto (niente object-fit).
     // html2canvas non gestisce correttamente object-fit: era questa la causa del badge
     // pixelato e di dimensione diversa nell'export rispetto all'anteprima.
@@ -4357,7 +4368,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; if(DOM.inputCoverOverlayHeight){ const oh=slide.coverOverlayHeight??60; DOM.inputCoverOverlayHeight.value=oh; DOM.coverOverlayHeightValue.textContent=oh+'%'; DOM.coverOverlayHeightBlock.style.display=slide.coverDarkOverlay?'':'none'; } DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -6418,6 +6429,7 @@ function bindCoverFlagToggle(track, input, label, key) {
         state.slides[state.activeIndex][key] = e.target.checked;
         track.className = 'toggle-track' + (e.target.checked ? ' on' : '');
         label.textContent = e.target.checked ? 'On' : 'Off';
+        if (key === 'coverDarkOverlay' && DOM.coverOverlayHeightBlock) DOM.coverOverlayHeightBlock.style.display = e.target.checked ? '' : 'none';
         trackChange(true); renderPreview();
     });
 }
@@ -6428,6 +6440,10 @@ bindCoverFlagToggle(DOM.coverNewsToggleTrack,      DOM.toggleCoverShowNews,    D
 DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
 DOM.inputBodyFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].bodyFontSize=v; DOM.bodyFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
 if (DOM.inputTitleFont) DOM.inputTitleFont.addEventListener('change', e => { state.slides[state.activeIndex].titleFont=e.target.value; renderPreview(); trackChange(true); });
+if (DOM.inputCoverOverlayHeight) {
+    DOM.inputCoverOverlayHeight.addEventListener('input', e => { const v=parseInt(e.target.value,10); state.slides[state.activeIndex].coverOverlayHeight=v; DOM.coverOverlayHeightValue.textContent=v+'%'; renderPreview(); trackChange(); });
+    DOM.inputCoverOverlayHeight.addEventListener('change', () => snapshot());
+}
 const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
