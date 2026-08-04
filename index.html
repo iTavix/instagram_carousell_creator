@@ -3683,20 +3683,25 @@ function generateDisclaimerHTML(slide, forPreview, accent, accent2) {
     return `<div style="position:absolute;bottom:26px;left:70px;right:70px;z-index:30;text-align:center;font-size:${d.size ?? 14}px;line-height:1.5;opacity:${(d.opacity ?? 42) / 100};color:#fff;font-family:'DM Sans',sans-serif;white-space:pre-wrap;${forPreview ? 'pointer-events:none;' : ''}">${formatAccentText(d.text, accent, accent2)}</div>`;
 }
 // Guide "zone sicure" Instagram: SOLO anteprima (mai in export: forPreview è false lì).
-// Mostra: margini laterali, area username/didascalia in basso, icona repost tonda
-// in basso a destra (quella che copriva il sottotitolo della copertina).
+// Ricalibrate sullo screenshot reale IMG_7857 (post visto su IG, 2026-08-04):
+// - la bolla "Condividi un'emoji…" + avatar col badge repost stanno in basso a SINISTRA
+// - in basso a DESTRA ci sono solo l'icona audio e la riga "From …"
+// (prima il cerchio repost era disegnato grande in basso a destra: posizione sbagliata).
 function generateGuidesHTML(slide, forPreview) {
     if (!forPreview || !state.showGuides) return '';
     const H = slide.isStory ? 1920 : 1350;
     const M = 40;                     // margine sicurezza laterale
     const capH = 190;                 // fascia bassa: username + inizio didascalia
-    const D = 210;                    // diametro icona repost
     const lbl = 'font-family:\'DM Sans\',sans-serif;font-size:20px;font-weight:700;color:#3bc9f5;';
+    // Misure da IMG_7857 riportate a 1080px di larghezza
+    const eW = 230, eH = 250, eB = 20;   // zona emoji+avatar (basso sinistra)
+    const aD = 90,  aB = 35;             // icona audio (basso destra)
     return `<div style="position:absolute;inset:0;z-index:90;pointer-events:none;">
         <div style="position:absolute;top:0;bottom:0;left:${M}px;border-left:2px dashed rgba(59,201,245,.65);"></div>
         <div style="position:absolute;top:0;bottom:0;right:${M}px;border-right:2px dashed rgba(59,201,245,.65);"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;height:${capH}px;background:rgba(59,201,245,.14);border-top:2px dashed rgba(59,201,245,.65);"><div style="position:absolute;left:14px;top:8px;${lbl}">Area username / didascalia</div></div>
-        <div style="position:absolute;right:${M}px;bottom:${M}px;width:${D}px;height:${D}px;border-radius:50%;border:3px dashed rgba(245,110,110,.85);background:rgba(245,110,110,.15);"><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;${lbl}color:#f56e6e;">icona<br>repost</div></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:${capH}px;background:rgba(59,201,245,.14);border-top:2px dashed rgba(59,201,245,.65);"><div style="position:absolute;right:14px;top:8px;${lbl}">Area username / didascalia</div></div>
+        <div style="position:absolute;left:${M}px;bottom:${eB}px;width:${eW}px;height:${eH}px;border-radius:24px;border:3px dashed rgba(245,110,110,.85);background:rgba(245,110,110,.15);"><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;${lbl}color:#f56e6e;">emoji +<br>repost</div></div>
+        <div style="position:absolute;right:${M}px;bottom:${aB}px;width:${aD}px;height:${aD}px;border-radius:50%;border:3px dashed rgba(245,110,110,.85);background:rgba(245,110,110,.15);"><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);${lbl}color:#f56e6e;">audio</div></div>
     </div>`;
 }
 
