@@ -1223,12 +1223,16 @@
                             </div>
                             <div>
                                 <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                                    <label for="input-glass-margin">Margine Bolla</label>
-                                    <span id="glass-margin-value" class="text-[#0071E3]">40px</span>
+                                    <label for="input-glass-width">Larghezza Bolla</label>
+                                    <span id="glass-width-value" class="text-[#0071E3]">93%</span>
                                 </div>
-                                <input type="range" id="input-glass-margin" min="0" max="160" step="4" value="40" class="w-full mt-2"/>
+                                <input type="range" id="input-glass-width" min="20" max="100" step="1" value="93" class="w-full mt-2"/>
                             </div>
-                            <p class="text-xs text-gray-500">Con la tinta chiara serve un testo scuro, o passa alla tinta scura per far risaltare il titolo bianco. Il margine stacca la bolla dai bordi della slide.</p>
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-xs text-blue-700 font-medium">Trascina la bolla nell'anteprima per spostarla</p>
+                                <button id="btn-glass-reset-pos" type="button" class="text-[10px] text-[#E3000F] hover:underline font-medium whitespace-nowrap">Rimetti in basso</button>
+                            </div>
+                            <p class="text-xs text-gray-500">Con la tinta chiara serve un testo scuro, o passa alla tinta scura per far risaltare il titolo bianco.</p>
                         </div>
                     </div>
                     <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
@@ -1733,7 +1737,8 @@
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg></span><span class="help-summary-title">Testi: copertina e testo libero</span></summary>
                 <ol>
                     <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande, sottotitolo, fonte in basso a destra. Il menu <b>Font Titolo</b> cambia il carattere del titolo (Bebas di default, c'è anche DaggerSquare). Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
-                    <li><b>Stile Overlay</b>: <b>Scuro</b> è la sfumatura di sempre a tutta larghezza; <b>Liquid Glass</b> la sostituisce con una bolla di vetro smerigliato con contorno chiaro, che sfoca la foto sotto (stile iOS). Con il vetro compaiono <b>Sfocatura</b>, <b>Tinta</b> (chiara o scura), <b>Intensità</b>, <b>Angoli</b> e <b>Margine</b> della bolla; <b>Altezza Overlay</b> vale per entrambi gli stili.</li>
+                    <li><b>Stile Overlay</b>: <b>Scuro</b> è la sfumatura di sempre a tutta larghezza; <b>Liquid Glass</b> la sostituisce con una bolla di vetro smerigliato con contorno chiaro, che sfoca la foto sotto (stile iOS). Con il vetro compaiono <b>Sfocatura</b>, <b>Tinta</b> (chiara o scura), <b>Intensità</b>, <b>Angoli</b> e <b>Larghezza</b> della bolla; <b>Altezza Overlay</b> vale per entrambi gli stili.</li>
+                    <li>La bolla di vetro si <b>trascina nell'anteprima</b> come i blocchi di testo: mettila dove vuoi, anche a filo del bordo. Se la perdi di vista, <b>Rimetti in basso</b> la riporta nella posizione di partenza.</li>
                     <li><b>Titolo su più righe</b>: premi <b>Invio</b> nel campo Titolo per decidere tu dove va a capo (es. "EVERY MINIFIGURE" ⏎ "IN LEGO *STAR TREK*"). Senza Invio il testo va a capo da solo in base alla dimensione. Nella didascalia del post il titolo resta comunque su una riga sola.</li>
                     <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans, DaggerSquare), dimensioni, colore e allineamento.</li>
                     <li>Entrambi i blocchi si <b>trascinano nell'anteprima</b> con il dito o il mouse (la manina ✥). Tenendo premuto <b>Shift</b> disattivi lo snap alle guide.</li>
@@ -3040,8 +3045,9 @@ const DOM = {
     glassIntensityValue:   document.getElementById('glass-intensity-value'),
     inputGlassRadius:      document.getElementById('input-glass-radius'),
     glassRadiusValue:      document.getElementById('glass-radius-value'),
-    inputGlassMargin:      document.getElementById('input-glass-margin'),
-    glassMarginValue:      document.getElementById('glass-margin-value'),
+    inputGlassWidth:       document.getElementById('input-glass-width'),
+    glassWidthValue:       document.getElementById('glass-width-value'),
+    btnGlassResetPos:      document.getElementById('btn-glass-reset-pos'),
 };
 
 // UTILITY (specifiche del dominio)
@@ -3857,22 +3863,41 @@ function usesGlass(slide) {
 }
 function glassCfg(slide) {
     const g = (slide && slide.coverGlass) || {};
+    // Migrazione: nella prima versione la bolla era ancorata in basso e `margin`
+    // ne definiva indirettamente la larghezza. Ora la larghezza è esplicita e la
+    // posizione è libera (x/y in %, come gli altri blocchi trascinabili).
+    const widthPct = g.widthPct ?? (g.margin != null ? (1080 - g.margin * 2) / 1080 * 100 : 92.6);
     return {
         blur:      g.blur ?? 34,
         tint:      g.tint === 'dark' ? 'dark' : 'light',
         intensity: (g.intensity ?? 100) / 100,
         radius:    g.radius ?? 56,
-        margin:    g.margin ?? 40,
+        widthPct,
+        x: g.x, y: g.y,                  // undefined = mai trascinata → ancoraggio storico
+        legacyMargin: g.margin ?? 40,
     };
 }
-// Geometria della bolla in px slide (1080 × H): flottante, non ancorata ai bordi
+// Geometria della bolla in px slide (1080 × H). x/y sono il CENTRO in %, come
+// per gli altri blocchi trascinabili; senza x/y si usa l'ancoraggio in basso.
 function glassBubbleGeom(slide) {
     const cfg = glassCfg(slide);
     const H = slide.isStory ? 1920 : 1350;
     const h = Math.max(1, Math.round(H * (slide.coverOverlayHeight ?? 60) / 100));
-    const m = cfg.margin;
-    const w = Math.max(1, 1080 - m * 2);
-    return { cfg, H, h, m, w, x: m, y: Math.max(0, H - m - h), r: Math.min(cfg.radius, Math.floor(Math.min(w, h) / 2)) };
+    const w = Math.max(1, Math.round(1080 * cfg.widthPct / 100));
+    const cxPct = cfg.x ?? 50;
+    const cyPct = cfg.y ?? ((H - cfg.legacyMargin - h / 2) / H * 100);
+    return {
+        cfg, H, h, w, cxPct, cyPct,
+        x: Math.round(1080 * cxPct / 100 - w / 2),
+        y: Math.round(H * cyPct / 100 - h / 2),
+        r: Math.min(cfg.radius, Math.floor(Math.min(w, h) / 2)),
+    };
+}
+// Posizione di default esplicita: serve quando si inizia a trascinare, così il
+// primo movimento parte esattamente da dove la bolla si trova già.
+function glassEnsureXY(slide) {
+    const g = slide.coverGlass; if (!g) return;
+    if (g.x == null || g.y == null) { const gb = glassBubbleGeom(slide); g.x = gb.cxPct; g.y = gb.cyPct; }
 }
 function glassTintStops(cfg) {
     const t = GLASS_TINTS[cfg.tint];
@@ -4033,7 +4058,7 @@ function generateSlideHTML(slide, index, forPreview = false, backdropOnly = fals
             const gb = glassBubbleGeom(slide);
             darkOverlayHTML = (!forPreview && slide._glassUrl)
                 ? `<img src="${slide._glassUrl}" alt="" style="position:absolute;top:0;left:0;width:1080px;height:${SLIDE_H}px;z-index:10;display:block;">`
-                : `<div style="position:absolute;left:${gb.x}px;top:${gb.y}px;width:${gb.w}px;height:${gb.h}px;border-radius:${gb.r}px;z-index:10;box-sizing:border-box;${forPreview ? 'pointer-events:none;' : ''}${glassBubbleCss(gb.cfg)}"></div>`;
+                : `<div ${forPreview ? 'id="preview-glass-drag"' : ''} style="position:absolute;left:${gb.cxPct}%;top:${gb.cyPct}%;transform:translate(-50%,-50%);width:${gb.w}px;height:${gb.h}px;border-radius:${gb.r}px;z-index:10;box-sizing:border-box;${forPreview ? 'cursor:grab;user-select:none;' : ''}${glassBubbleCss(gb.cfg)}">${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}</div>`;
         } else {
             darkOverlayHTML = `<div style="${overlayBase}background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);"></div>`;
         }
@@ -4201,6 +4226,12 @@ function bindAllDrags() {
     bindDragElement(document.getElementById('preview-kicker-drag'), 'x', 'y', () => s.kicker?.enabled ? s.kicker : null, null, true);
     bindDragElement(document.getElementById('preview-specs-drag'),  'x', 'y', () => s.specsRow?.enabled ? s.specsRow : null, null, true);
     bindDragElement(document.getElementById('preview-pill-drag'),   'x', 'y', () => s.pill?.enabled ? s.pill : null, null, true);
+    // Bolla di vetro: le coordinate esplicite si fissano al primo trascinamento
+    // keepInside=false come per le immagini in primo piano: la bolla può sbordare
+    // (vetro a filo del bordo è una scelta grafica valida), ma il suo centro resta
+    // nella slide, quindi non si può "perdere" trascinandola fuori.
+    bindDragElement(document.getElementById('preview-glass-drag'), 'x', 'y',
+        () => { if (!usesGlass(s)) return null; glassEnsureXY(s); return s.coverGlass; });
     bindBgDrag();
 }
 
@@ -6366,7 +6397,7 @@ function openToolsFor(key) {
         const key =
             el.closest('.preview-fg-drag') ? 'fg' :
             el.closest('#preview-grid-drag') ? 'griglia' :
-            el.closest('#preview-overlay-drag, #preview-cover-text-drag') ? 'testi' :
+            el.closest('#preview-overlay-drag, #preview-cover-text-drag, #preview-glass-drag') ? 'testi' :
             el.closest('#preview-kicker-drag, #preview-specs-drag, #preview-pill-drag') ? 'blocchi' :
             'slide';
         // tap sul vuoto mentre la sheet era aperta = gesto di chiusura: non riaprire
@@ -6701,9 +6732,10 @@ function syncGlassUI(slide) {
     const inten = Math.round(g.intensity * 100);
     DOM.inputGlassIntensity.value = inten;        DOM.glassIntensityValue.textContent = inten + '%';
     DOM.inputGlassRadius.value = g.radius;        DOM.glassRadiusValue.textContent = g.radius + 'px';
-    DOM.inputGlassMargin.value = g.margin;        DOM.glassMarginValue.textContent = g.margin + 'px';
+    const wp = Math.round(g.widthPct);
+    DOM.inputGlassWidth.value = wp;               DOM.glassWidthValue.textContent = wp + '%';
 }
-function ensureGlass(slide) { if (!slide.coverGlass) slide.coverGlass = { blur: 34, tint: 'light', intensity: 100, radius: 56, margin: 40 }; return slide.coverGlass; }
+function ensureGlass(slide) { if (!slide.coverGlass) slide.coverGlass = { blur: 34, tint: 'light', intensity: 100, radius: 56, widthPct: 93 }; return slide.coverGlass; }
 if (DOM.inputCoverOverlayStyle) {
     DOM.inputCoverOverlayStyle.addEventListener('change', e => {
         const s = state.slides[state.activeIndex];
@@ -6733,12 +6765,20 @@ if (DOM.inputCoverOverlayStyle) {
         DOM.glassRadiusValue.textContent = v + 'px'; renderPreview(); trackChange();
     });
     DOM.inputGlassRadius.addEventListener('change', () => snapshot());
-    DOM.inputGlassMargin.addEventListener('input', e => {
+    DOM.inputGlassWidth.addEventListener('input', e => {
         const v = parseInt(e.target.value, 10);
-        ensureGlass(state.slides[state.activeIndex]).margin = v;
-        DOM.glassMarginValue.textContent = v + 'px'; renderPreview(); trackChange();
+        const g = ensureGlass(state.slides[state.activeIndex]);
+        g.widthPct = v; delete g.margin;   // la larghezza è ora esplicita: il vecchio margine non serve più
+        DOM.glassWidthValue.textContent = v + '%'; renderPreview(); trackChange();
     });
-    DOM.inputGlassMargin.addEventListener('change', () => snapshot());
+    DOM.inputGlassWidth.addEventListener('change', () => snapshot());
+    if (DOM.btnGlassResetPos) DOM.btnGlassResetPos.addEventListener('click', e => {
+        e.preventDefault();
+        const s = state.slides[state.activeIndex], g = ensureGlass(s);
+        g.x = null; g.y = null; delete g.margin;   // torna all'ancoraggio in basso
+        glassEnsureXY(s);
+        renderPreview(); trackChange(true);
+    });
 }
 const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
