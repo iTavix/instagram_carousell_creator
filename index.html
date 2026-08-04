@@ -18,6 +18,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=Oswald:wght@400;700&family=Montserrat:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <!-- DaggerSquare (Pixel Sagas, freeware): incorporato in base64 — l'app resta un file unico e il font c'è anche offline/su iPad -->
+    <style>
+        @font-face { font-family:'DaggerSquare'; src:url(data:font/otf;base64,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) format('opentype'); font-display:swap; }
+    </style>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; letter-spacing: -0.02em; }
         .custom-scrollbar::-webkit-scrollbar { height:8px; width:8px; }
@@ -1069,6 +1073,16 @@
                     </div>
                     <p class="text-xs text-gray-500">Racchiudi il testo tra asterischi per colorarlo: <code class="bg-white px-1 rounded border border-gray-200">ENTERPRISE *NCC-1701-D*</code>. Vale per titoli, testi liberi, etichette e pill.</p>
                 </div>
+                <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <label for="input-accent-color2" class="text-xs font-bold text-gray-500 uppercase">Colore Accento 2</label>
+                        <div class="flex items-center gap-3">
+                            <span id="accent-color2-hex" class="text-xs font-mono text-gray-500">#3BC9F5</span>
+                            <input type="color" id="input-accent-color2" value="#3bc9f5" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">Doppi asterischi per il secondo colore: <code class="bg-white px-1 rounded border border-gray-200">*STAR* **TREK**</code>. Si può usare insieme al primo nello stesso titolo.</p>
+                </div>
             </div>
         </details>
 
@@ -1084,6 +1098,16 @@
                     <button id="btn-slide-accent-reset" class="text-[10px] text-[#E3000F] hover:underline font-medium hidden" type="button">Usa progetto</button>
                     <span id="slide-accent-hex" class="text-xs font-mono text-gray-500">—</span>
                     <input type="color" id="input-slide-accent" value="#f5b21a" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
+                </div>
+            </label>
+
+            <!-- Override secondo colore accento (**testo**) per la slide attiva -->
+            <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-gray-50 rounded-lg border border-gray-200">
+                <span class="text-xs font-bold text-gray-500 uppercase">Accento 2 di questa slide</span>
+                <div class="flex items-center gap-2">
+                    <button id="btn-slide-accent2-reset" class="text-[10px] text-[#E3000F] hover:underline font-medium hidden" type="button">Usa progetto</button>
+                    <span id="slide-accent2-hex" class="text-xs font-mono text-gray-500">—</span>
+                    <input type="color" id="input-slide-accent2" value="#3bc9f5" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent"/>
                 </div>
             </label>
 
@@ -1107,6 +1131,17 @@
                             <span id="title-font-size-value" class="text-[#0071E3]">110px</span>
                         </div>
                         <input type="range" id="input-title-font-size" min="40" max="200" step="2" value="110" class="w-full mt-2"/>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label for="input-title-font" class="text-xs font-bold text-gray-500 uppercase">Font Titolo</label>
+                        <select id="input-title-font" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm">
+                            <option value="Bebas Neue">Bebas Neue</option>
+                            <option value="Oswald">Oswald</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Playfair Display">Playfair Display</option>
+                            <option value="DM Sans">DM Sans</option>
+                            <option value="DaggerSquare">DaggerSquare</option>
+                        </select>
                     </div>
                     <textarea id="input-body" placeholder="Sottotitolo" rows="2" class="w-full bg-[#F5F5F7] rounded-[8px] p-3 outline-none focus:ring-2 focus:ring-[#0071E3] resize-none"></textarea>
                     <div class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -1175,6 +1210,7 @@
                             <option value="Montserrat">Montserrat</option>
                             <option value="Playfair Display">Playfair Display</option>
                             <option value="DM Sans">DM Sans</option>
+                            <option value="DaggerSquare">DaggerSquare</option>
                         </select>
                     </div>
                     <div class="flex flex-col gap-1">
@@ -1623,7 +1659,8 @@
                     <li><b>Badge News</b>: premi <b>News</b> o <b>MOC</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
                     <li><b>Colore Accento</b>: è il colore delle parole evidenziate. Scrivi il testo tra asterischi in QUALSIASI campo di testo: <code>ENTERPRISE *NCC-1701-D*</code> → la parte tra asterischi diventa del colore accento (default giallo).</li>
                     <li>Il colore accento vale per tutto il progetto; per cambiarlo su una sola slide usa <b>Accento di questa slide</b> in cima a "Testo sulla Slide" (il pulsante rosso "Usa progetto" lo riporta a quello globale).</li>
-                    <li>Gli asterischi sono solo un comando di colore: nella didascalia del post vengono rimossi automaticamente.</li>
+                    <li><b>Colore Accento 2</b>: un secondo colore con i <b>doppi asterischi</b>: <code>*STAR* **TREK**</code> → "STAR" col primo colore, "TREK" col secondo. Funziona ovunque funziona il primo, anche insieme nello stesso titolo, e ha il suo override <b>Accento 2 di questa slide</b>.</li>
+                    <li>Gli asterischi (singoli e doppi) sono solo un comando di colore: nella didascalia del post vengono rimossi automaticamente.</li>
                 </ol>
             </details>
 
@@ -1641,11 +1678,11 @@
             <details id="help-text" class="help-sec">
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg></span><span class="help-summary-title">Testi: copertina e testo libero</span></summary>
                 <ol>
-                    <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande in Bebas, sottotitolo, fonte in basso a destra. Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
+                    <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande, sottotitolo, fonte in basso a destra. Il menu <b>Font Titolo</b> cambia il carattere del titolo (Bebas di default, c'è anche DaggerSquare). Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
                     <li><b>Titolo su più righe</b>: premi <b>Invio</b> nel campo Titolo per decidere tu dove va a capo (es. "EVERY MINIFIGURE" ⏎ "IN LEGO *STAR TREK*"). Senza Invio il testo va a capo da solo in base alla dimensione. Nella didascalia del post il titolo resta comunque su una riga sola.</li>
-                    <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans), dimensioni, colore e allineamento.</li>
+                    <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans, DaggerSquare), dimensioni, colore e allineamento.</li>
                     <li>Entrambi i blocchi si <b>trascinano nell'anteprima</b> con il dito o il mouse (la manina ✥). Tenendo premuto <b>Shift</b> disattivi lo snap alle guide.</li>
-                    <li>In tutti i campi funziona il testo bicolore: <code>*parola*</code> → colore accento.</li>
+                    <li>In tutti i campi funziona il testo bicolore: <code>*parola*</code> → colore accento, <code>**parola**</code> → colore accento 2.</li>
                 </ol>
             </details>
 
@@ -1913,8 +1950,9 @@ const LOGO_MARGIN_PX = 40;               // Margine laterale dei loghi (anche de
 const LOGO_MARGIN_PCT = LOGO_MARGIN_PX / 1080 * 100; // ≈ 3.70%
 const SNAP_TOLERANCE = 2;                // % di tolleranza per snap-to-guide
 const SNAP_TARGETS = [3.7, 10, 25, 33.33, 50, 66.66, 75, 90, 96.3];
-const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size', accent:'icc_accent', pageNums:'icc_pagenums' };
+const LS = { logo:'icc_logo', themeLogo:'icc_theme_logo', news:'icc_news', state:'icc_state', theme:'icc_theme', logoSize:'icc_logo_size', themeLogoSize:'icc_theme_logo_size', newsSize:'icc_news_size', accent:'icc_accent', accent2:'icc_accent2', pageNums:'icc_pagenums' };
 const DEFAULT_ACCENT = '#f5b21a';         // Colore accento di progetto (sintassi *testo*)
+const DEFAULT_ACCENT2 = '#3bc9f5';        // Secondo colore accento (sintassi **testo**)
 const IDB_NAME = 'icc_images', IDB_STORE = 'images', IDB_VER = 1;
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024;   // 50MB per i video in primo piano
 const videoBlobs = new Map();              // id media → Blob (tenuto fuori da `state` per non appesantire undo/clone)
@@ -1925,6 +1963,7 @@ const FONTS = {
     'Montserrat':      "'Montserrat',sans-serif",
     'Playfair Display':"'Playfair Display',serif",
     'DM Sans':         "'DM Sans',sans-serif",
+    'DaggerSquare':    "'DaggerSquare',sans-serif",
 };
 
 const DEFAULT_FILTERS = { brightness:100, contrast:100, saturation:100, blur:0, vignette:0 };
@@ -1939,16 +1978,19 @@ const FILTER_PRESETS = {
 
 // ════════ UTILITY GENERICHE ════════
 function escapeHtml(str) { const el = document.createElement('div'); el.appendChild(document.createTextNode(str || '')); return el.innerHTML; }
-// Testo bicolore: le porzioni tra *asterischi* prendono il colore accento.
+// Testo bicolore: le porzioni tra *asterischi* prendono il colore accento,
+// quelle tra **doppi asterischi** il secondo colore accento (processate prima,
+// così i doppi marcatori non vengono "mangiati" dalla regex singola).
 // L'escape HTML avviene PRIMA della sostituzione (gli asterischi non vengono
 // alterati dall'escape), quindi nessun HTML utente passa mai nel markup.
-function formatAccentText(str, accent) {
-    const esc = escapeHtml(str);
-    if (!accent) return esc;
-    return esc.replace(/\*([^*\n]+)\*/g, `<span style="color:${accent};">$1</span>`);
+function formatAccentText(str, accent, accent2) {
+    let esc = escapeHtml(str);
+    if (accent2) esc = esc.replace(/\*\*([^*\n]+)\*\*/g, `<span style="color:${accent2};">$1</span>`);
+    if (accent)  esc = esc.replace(/\*([^*\n]+)\*/g, `<span style="color:${accent};">$1</span>`);
+    return esc;
 }
-// Rimuove i marcatori *accento* dal testo semplice (caption, contatori, ecc.)
-function stripAccentMarks(str) { return (str || '').replace(/\*([^*\n]+)\*/g, '$1'); }
+// Rimuove i marcatori *accento* e **accento2** dal testo semplice (caption, contatori, ecc.)
+function stripAccentMarks(str) { return (str || '').replace(/\*\*([^*\n]+)\*\*/g, '$1').replace(/\*([^*\n]+)\*/g, '$1'); }
 function debounce(fn, ms = 150) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
 function throttle(fn, ms = 100) { let last = 0, pending = null; return (...args) => { const now = Date.now(); if (now - last >= ms) { last = now; fn(...args); } else { clearTimeout(pending); pending = setTimeout(() => { last = Date.now(); fn(...args); }, ms - (now - last)); } }; }
 function generateId() { return Math.random().toString(36).substr(2, 9); }
@@ -2057,6 +2099,7 @@ function compressImage(file) {
                 const keepPng = hasAlpha || (file.type === 'image/png' && file.size < 500_000);
                 const mime = keepPng ? 'image/png' : 'image/jpeg';
                 const out = canvas.toDataURL(mime, COMPRESSION_QUALITY);
+                canvas.width = canvas.height = 0; // libera subito il buffer (budget canvas iOS)
                 const beforeKB = Math.round(file.size / 1024);
                 const afterKB = Math.round((out.length * 0.75) / 1024); // base64 ≈ 4/3 dei bytes
                 if (beforeKB - afterKB > 50) toast(`Immagine ottimizzata: ${beforeKB}KB → ${afterKB}KB`, 'success', 2500);
@@ -2677,6 +2720,8 @@ const state = {
     newsSize:        parseFloat(lsGet(LS.newsSize))      || 1.0,
     // Colore accento di progetto per la sintassi *testo* (override per-slide in slide.accentColor)
     accentColor:     lsGet(LS.accent) || DEFAULT_ACCENT,
+    // Secondo colore accento per la sintassi **testo** (override per-slide in slide.accentColor2)
+    accentColor2:    lsGet(LS.accent2) || DEFAULT_ACCENT2,
     // Numerazione automatica "02 / 13" (Blocco 4)
     pageNums:        (() => { try { return { enabled:false, hideOnCover:true, hideOnLast:false, ...(JSON.parse(lsGet(LS.pageNums) || '{}')) }; } catch(_) { return { enabled:false, hideOnCover:true, hideOnLast:false }; } })(),
     // Set di slide per il carosello (1080x1350)
@@ -2715,6 +2760,8 @@ function makeDefaultSlide(id, overrides = {}) {
         fgImages: [], // Multi-immagini: [{id, url, x, y, size, filters}]
         // ─── Funzioni post "LEGO Star Trek" (tutte spente di default = comportamento invariato) ───
         accentColor: null,   // override del colore accento di progetto per questa slide
+        accentColor2: null,  // override del secondo colore accento (**testo**) per questa slide
+        titleFont: 'Bebas Neue', // font del titolo copertina
         grid: null,          // griglia di immagini con etichette + aura
         mosaic: null,        // mosaico di sfondo full-bleed (copertine)
         kicker: null,        // riga sopra il titolo (es. "SET #10356")
@@ -2917,6 +2964,12 @@ const DOM = {
     inputSlideAccent:      document.getElementById('input-slide-accent'),
     slideAccentHex:        document.getElementById('slide-accent-hex'),
     btnSlideAccentReset:   document.getElementById('btn-slide-accent-reset'),
+    inputAccentColor2:     document.getElementById('input-accent-color2'),
+    accentColor2Hex:       document.getElementById('accent-color2-hex'),
+    inputSlideAccent2:     document.getElementById('input-slide-accent2'),
+    slideAccent2Hex:       document.getElementById('slide-accent2-hex'),
+    btnSlideAccent2Reset:  document.getElementById('btn-slide-accent2-reset'),
+    inputTitleFont:        document.getElementById('input-title-font'),
 };
 
 // UTILITY (specifiche del dominio)
@@ -2924,6 +2977,7 @@ function ensureOverlay() { const s=state.slides[state.activeIndex]; if(!s.textOv
 function slideBg(slide) { if(slide.bgMode==='gradient') return `linear-gradient(${slide.gradDir||'to bottom'},${slide.gradColor1||'#1a1a2e'},${slide.gradColor2||'#e94560'})`; return slide.bgColor||'#333333'; }
 // Colore accento effettivo di una slide: override per-slide, altrimenti quello di progetto.
 function slideAccent(slide) { return (slide && slide.accentColor) || state.accentColor || DEFAULT_ACCENT; }
+function slideAccent2(slide) { return (slide && slide.accentColor2) || state.accentColor2 || DEFAULT_ACCENT2; }
 
 // ════════ CAPTION DEL POST IG (testo dalla copertina) ════════
 const CAPTION_MAX = 2200; // limite didascalia Instagram
@@ -3140,13 +3194,14 @@ function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
         coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews,
-        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
+        title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, titleFont: s.titleFont || 'Bebas Neue', bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
         gradColor1: s.gradColor1, gradColor2: s.gradColor2, gradDir: s.gradDir,
         bgFilters: s.bgFilters, textOverlay: s.textOverlay,
         // Nuovi blocchi (Star Trek): metadati in localStorage, immagini in IndexedDB
         accentColor: s.accentColor || null,
+        accentColor2: s.accentColor2 || null,
         kicker: s.kicker, specsRow: s.specsRow, pill: s.pill, disclaimer: s.disclaimer,
         grid:   s.grid   ? { ...s.grid,   auraUrl: null, items: (s.grid.items || []).map(it => ({ ...it, url: null })) } : null,
         mosaic: s.mosaic ? { ...s.mosaic, auraUrl: null, images: (s.mosaic.images || []).map(im => ({ ...im, url: null })) } : null,
@@ -3344,6 +3399,32 @@ async function saveFgsToIDB(slide) {
     } catch (e) { toast('Errore salvataggio media in IndexedDB', 'warning'); }
 }
 
+// ════════ Ri-persistenza media dopo undo/redo (fix salvataggi iPad) ════════
+// "Elimina slide" / "Reset" / "Svuota" cancellano SUBITO le chiavi IndexedDB,
+// ma l'Annulla ripristinava solo la memoria: alla riapertura dell'app le
+// immagini della slide recuperata erano perse. Dopo ogni restore si ricontrolla
+// quindi quali chiavi mancano e si riscrivono dai dati appena ripristinati.
+// Costa solo quando c'è davvero qualcosa da riscrivere (il check è sulle chiavi).
+function idbGetAllKeys() {
+    if (!idb) return Promise.resolve([]);
+    return new Promise((resolve, reject) => {
+        const req = idb.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).getAllKeys();
+        req.onsuccess = e => resolve(e.target.result || []);
+        req.onerror   = e => reject(e.target.error);
+    });
+}
+async function repersistMissingMedia() {
+    try {
+        const keys = new Set(await idbGetAllKeys());
+        for (const slide of [...state.carouselSlides, ...state.storySlides]) {
+            if (slide.image && !keys.has(slide.id)) await idbSet(slide.id, slide.image);
+            if ((slide.fgImages || []).length && !keys.has(slide.id + '_fgs')) await saveFgsToIDB(slide);
+            if (slide.grid && (slide.grid.items || []).length && !keys.has(slide.id + '_grid')) await saveGridToIDB(slide);
+            if (slide.mosaic && (slide.mosaic.items || []).length && !keys.has(slide.id + '_mosaic')) await saveMosaicToIDB(slide);
+        }
+    } catch (e) { console.warn('[repersistMissingMedia]', e); }
+}
+
 // ════════ UNDO/REDO (UX #1) ════════
 // `last` è la baseline: la copia dello stato com'era DOPO l'ultimo snapshot
 // committato. Serve perché snapshot() viene chiamato dai handler DOPO la
@@ -3351,6 +3432,50 @@ async function saveFgsToIDB(slide) {
 // non quello corrente — altrimenti il primo "Annulla" ripristina lo stato in
 // cui si è già (bug storico: undo sembrava non fare nulla al primo click).
 const history = { stack: [], future: [], suppress: false, last: null, lastJson: null };
+
+// ── Disidratazione degli snapshot (fix memoria iPad) ──
+// Prima ogni snapshot serializzava TUTTE le immagini base64 (JSON.stringify di
+// decine di MB, fino a 30 copie nello stack): su iPad Safari superava il budget
+// di memoria del tab → app che si impunta, dispositivo bloccato, tab ricaricato
+// con perdita delle modifiche non ancora salvate. Ora le stringhe grandi
+// (data:/blob:) vengono sostituite da un segnaposto corto e vivono UNA volta
+// sola nel pool condiviso: gli snapshot restano piccoli (KB, non MB).
+const _snapPool = new Map();      // token → stringa grande
+const _snapPoolRev = new Map();   // stringa grande → token
+let _snapSeq = 0, _snapGcCount = 0;
+const _SNAP_MIN_LEN = 1024, _SNAP_TOKEN = '\u0000snap:'  // il NUL non e' digitabile: nessun testo utente puo' collidere col token;
+function _dehydrate(v) {
+    if (typeof v === 'string') {
+        if (v.length >= _SNAP_MIN_LEN && (v.startsWith('data:') || v.startsWith('blob:'))) {
+            let t = _snapPoolRev.get(v);
+            if (!t) { t = _SNAP_TOKEN + (_snapSeq++); _snapPoolRev.set(v, t); _snapPool.set(t, v); }
+            return t;
+        }
+        return v;
+    }
+    if (Array.isArray(v)) return v.map(_dehydrate);
+    if (v && typeof v === 'object') { const o = {}; for (const k in v) o[k] = _dehydrate(v[k]); return o; }
+    return v;
+}
+function _rehydrate(v) {
+    if (typeof v === 'string') return v.startsWith(_SNAP_TOKEN) ? (_snapPool.get(v) ?? null) : v;
+    if (Array.isArray(v)) return v.map(_rehydrate);
+    if (v && typeof v === 'object') { const o = {}; for (const k in v) o[k] = _rehydrate(v[k]); return o; }
+    return v;
+}
+// Toglie dal pool le stringhe non più referenziate da nessuno snapshot
+// (immagini sostituite/cancellate): senza questo il pool crescerebbe per
+// tutta la sessione. Gli snapshot sono piccoli, la scansione costa poco.
+function _gcSnapPool() {
+    const used = new Set();
+    const walk = v => {
+        if (typeof v === 'string') { if (v.startsWith(_SNAP_TOKEN)) used.add(v); }
+        else if (Array.isArray(v)) v.forEach(walk);
+        else if (v && typeof v === 'object') { for (const k in v) walk(v[k]); }
+    };
+    history.stack.forEach(walk); history.future.forEach(walk); if (history.last) walk(history.last);
+    for (const [t, s] of _snapPool) if (!used.has(t)) { _snapPool.delete(t); _snapPoolRev.delete(s); }
+}
 function _rawState() {
     return {
         mode: state.mode,
@@ -3364,13 +3489,17 @@ function _rawState() {
         themeLogoSize: state.themeLogoSize,
         newsSize: state.newsSize,
         accentColor: state.accentColor,
+        accentColor2: state.accentColor2,
         pageNums: state.pageNums,
     };
 }
-function _captureState() { return deepClone(_rawState()); }
+// Cattura DISIDRATATA: gli oggetti sono copie fresche, le stringhe grandi
+// restano condivise per riferimento (immutabili) tramite il pool.
+function _captureState() { return _dehydrate(_rawState()); }
 function snapshot() {
     if (history.suppress) return;
-    const json = JSON.stringify(_rawState());
+    const dry = _dehydrate(_rawState());
+    const json = JSON.stringify(dry); // piccolo: le immagini sono token, non base64
     // Dedup: trackChange tardivi senza modifiche reali (es. debounce che scatta
     // dopo un undo) non devono impilare snapshot duplicati (= undo "a vuoto").
     if (json === history.lastJson) return;
@@ -3378,15 +3507,17 @@ function snapshot() {
         history.stack.push(history.last); // stato PRE-modifica
         if (history.stack.length > HISTORY_MAX) history.stack.shift();
     }
-    history.last = JSON.parse(json);
+    history.last = dry;
     history.lastJson = json;
     history.future.length = 0; // ogni nuova azione cancella la coda redo
+    if (++_snapGcCount % 20 === 0) _gcSnapPool();
     updateHistoryButtons();
 }
 // La baseline dev'essere una COPIA: dopo undo/redo lo snapshot ripristinato
 // diventa lo stato vivo, e se `last` puntasse allo stesso oggetto le modifiche
 // successive muterebbero anche la history (undo corrotto).
 function _setBaseline(snap) {
+    // `snap` è già disidratato: la copia via JSON resta economica (KB).
     const j = JSON.stringify(snap);
     history.last = JSON.parse(j);
     history.lastJson = j;
@@ -3401,8 +3532,9 @@ function snapshotDebounced() {
 function flushPendingSnapshot() {
     if (_snapTimer) { clearTimeout(_snapTimer); _snapTimer = null; snapshot(); }
 }
-function restoreFrom(snap) {
+function restoreFrom(drySnap) {
     history.suppress = true;
+    const snap = _rehydrate(drySnap); // ricrea oggetti freschi, reinserisce le immagini dal pool
     state.carouselSlides = snap.carouselSlides || state.carouselSlides;
     state.storySlides    = snap.storySlides    || state.storySlides;
     state.mode           = snap.mode === 'story' ? 'story' : 'carousel';
@@ -3415,6 +3547,7 @@ function restoreFrom(snap) {
     if (snap.themeLogoSize !== undefined) state.themeLogoSize = snap.themeLogoSize;
     if (snap.newsSize      !== undefined) state.newsSize      = snap.newsSize;
     if (snap.accentColor   !== undefined) { state.accentColor = snap.accentColor; lsSet(LS.accent, state.accentColor); }
+    if (snap.accentColor2  !== undefined) { state.accentColor2 = snap.accentColor2; lsSet(LS.accent2, state.accentColor2); }
     if (snap.pageNums) { state.pageNums = { ...snap.pageNums }; lsSet(LS.pageNums, JSON.stringify(state.pageNums)); }
     // Persisti immediatamente anche le size
     lsSet(LS.logoSize,      String(state.logoSize));
@@ -3423,6 +3556,7 @@ function restoreFrom(snap) {
     saveStateImmediate();
     render();
     syncCaptionFromCover(); // riallinea la caption se segue il cover
+    repersistMissingMedia(); // async, non blocca l'UI: riscrive in IDB i media cancellati da elimina/reset
     history.suppress = false;
     updateHistoryButtons();
 }
@@ -3499,13 +3633,13 @@ function makeDefaultPillBlock()  { return { enabled: true, lab: 'FIRST APPEARED'
 function makeDefaultDisclaimer() { return { enabled: true, text: '', size: 14, opacity: 42 }; }
 
 // Riga sopra il titolo: "SET #10356" / "THE NEXT GENERATION · 1987–1994"
-function generateKickerHTML(slide, forPreview, accent) {
+function generateKickerHTML(slide, forPreview, accent, accent2) {
     const k = slide.kicker;
     if (!k || !k.enabled || !k.text) return '';
     const center = k.align === 'center';
     const style = `position:absolute;left:${k.x ?? 3.7}%;top:${k.y ?? 13}%;transform:translate(${center ? '-50%' : '0'},-50%);z-index:22;color:#fff;opacity:${(k.opacity ?? 60) / 100};font-family:'DM Sans',sans-serif;font-size:${k.size ?? 23}px;letter-spacing:.28em;text-transform:uppercase;font-weight:700;white-space:nowrap;`;
     const attrs = forPreview ? `id="preview-kicker-drag" style="${style}cursor:grab;user-select:none;"` : `style="${style}"`;
-    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}${formatAccentText(k.text, accent)}</div>`;
+    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}${formatAccentText(k.text, accent, accent2)}</div>`;
 }
 // Riga specifiche: voci separate da ";", i numeri tra *asterischi* diventano
 // grandi, in Bebas e color accento (come "9 minifigures · 3600 pieces · €379.99")
@@ -3524,18 +3658,18 @@ function generateSpecsHTML(slide, forPreview, accent) {
     return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}${inner}</div>`;
 }
 // Pill singola della slide (etichetta piccola + valore grande, bordo arrotondato)
-function generatePillHTML(slide, forPreview, accent) {
+function generatePillHTML(slide, forPreview, accent, accent2) {
     const p = slide.pill;
     if (!p || !p.enabled || !p.val) return '';
     const style = `position:absolute;left:${p.x ?? 50}%;top:${p.y ?? 88}%;transform:translate(-50%,-50%);z-index:22;color:#fff;`;
     const attrs = forPreview ? `id="preview-pill-drag" style="${style}cursor:grab;user-select:none;"` : `style="${style}"`;
-    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}<div style="display:inline-block;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;white-space:nowrap;">${p.lab ? `<span style="font-size:${p.labSize ?? 13}px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;margin-right:8px;font-family:'DM Sans',sans-serif;">${escapeHtml(p.lab)}</span>` : ''}<span style="font-family:'Bebas Neue',sans-serif;font-size:${p.valSize ?? 26}px;letter-spacing:.02em;">${formatAccentText(p.val, accent)}</span></div></div>`;
+    return `<div ${attrs}>${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}<div style="display:inline-block;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;white-space:nowrap;">${p.lab ? `<span style="font-size:${p.labSize ?? 13}px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;margin-right:8px;font-family:'DM Sans',sans-serif;">${escapeHtml(p.lab)}</span>` : ''}<span style="font-family:'Bebas Neue',sans-serif;font-size:${p.valSize ?? 26}px;letter-spacing:.02em;">${formatAccentText(p.val, accent, accent2)}</span></div></div>`;
 }
 // Disclaimer: testo piccolo centrato ancorato in fondo
-function generateDisclaimerHTML(slide, forPreview, accent) {
+function generateDisclaimerHTML(slide, forPreview, accent, accent2) {
     const d = slide.disclaimer;
     if (!d || !d.enabled || !d.text) return '';
-    return `<div style="position:absolute;bottom:26px;left:70px;right:70px;z-index:30;text-align:center;font-size:${d.size ?? 14}px;line-height:1.5;opacity:${(d.opacity ?? 42) / 100};color:#fff;font-family:'DM Sans',sans-serif;white-space:pre-wrap;${forPreview ? 'pointer-events:none;' : ''}">${formatAccentText(d.text, accent)}</div>`;
+    return `<div style="position:absolute;bottom:26px;left:70px;right:70px;z-index:30;text-align:center;font-size:${d.size ?? 14}px;line-height:1.5;opacity:${(d.opacity ?? 42) / 100};color:#fff;font-family:'DM Sans',sans-serif;white-space:pre-wrap;${forPreview ? 'pointer-events:none;' : ''}">${formatAccentText(d.text, accent, accent2)}</div>`;
 }
 // Guide "zone sicure" Instagram: SOLO anteprima (mai in export: forPreview è false lì).
 // Mostra: margini laterali, area username/didascalia in basso, icona repost tonda
@@ -3569,7 +3703,7 @@ function generatePageNumHTML(slide, index, forPreview) {
 
 // HTML della griglia: celle posizionate in px assoluti (niente CSS grid → parità
 // garantita con html2canvas). Le immagini sono le celle già cotte da composeGridCell.
-function generateGridHTML(slide, forPreview, accent) {
+function generateGridHTML(slide, forPreview, accent, accent2) {
     const grid = slide.grid;
     if (!grid || !grid.enabled || !grid.items || !grid.items.length) return '';
     const { cols, innerW, cellW, cellH } = gridGeometry(grid);
@@ -3591,20 +3725,22 @@ function generateGridHTML(slide, forPreview, accent) {
         const imgSrc = baked ? baked.url : safeImageUrl(it.url);
         const imgHtml = imgSrc ? `<img src="${imgSrc}" alt="" style="width:100%;height:100%;display:block;" draggable="false">` : '';
         // Etichette
-        const nameHtml = (lb.show && it.name) ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:${lb.nameSize ?? 29}px;line-height:${below ? '0.95' : '1'};letter-spacing:.02em;">${formatAccentText(it.name, accent)}</div>` : '';
+        const nameHtml = (lb.show && it.name) ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:${lb.nameSize ?? 29}px;line-height:${below ? '0.95' : '1'};letter-spacing:.02em;">${formatAccentText(it.name, accent, accent2)}</div>` : '';
         const subHtml  = (lb.show && it.sub)  ? (below
-            ? `<div style="color:${accent};font-weight:700;font-size:${lb.subSize ?? 14}px;margin-top:8px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent)}</div>`
-            : `<div style="font-size:${lb.subSize ?? 14}px;opacity:.6;margin-top:3px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent)}</div>`) : '';
-        const metaHtml = (lb.show && it.meta) ? `<div style="opacity:.62;font-size:${lb.metaSize ?? 18}px;margin-top:6px;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(it.meta, accent)}</div>` : '';
+            ? `<div style="color:${accent};font-weight:700;font-size:${lb.subSize ?? 14}px;margin-top:8px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent, accent2)}</div>`
+            : `<div style="font-size:${lb.subSize ?? 14}px;opacity:.6;margin-top:3px;font-family:'DM Sans',sans-serif;">${formatAccentText(it.sub, accent, accent2)}</div>`) : '';
+        const metaHtml = (lb.show && it.meta) ? `<div style="opacity:.62;font-size:${lb.metaSize ?? 18}px;margin-top:6px;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(it.meta, accent, accent2)}</div>` : '';
         const pillHtml = (lb.show && lb.pillOn && it.pill)
-            ? `<div style="margin-top:16px;"><div style="display:inline-block;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;"><span style="font-size:${lb.pillLabSize ?? 13}px;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;margin-right:8px;font-family:'DM Sans',sans-serif;">${escapeHtml(lb.pillLab || '')}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:${lb.pillValSize ?? 26}px;letter-spacing:.02em;">${formatAccentText(it.pill, accent)}</span></div></div>` : '';
+            ? `<div style="margin-top:16px;"><div style="display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(120,150,220,.28);border-radius:999px;padding:9px 20px;"><span style="font-size:${lb.pillLabSize ?? 13}px;line-height:1;letter-spacing:.16em;text-transform:uppercase;opacity:.55;font-weight:700;font-family:'DM Sans',sans-serif;">${escapeHtml(lb.pillLab || '')}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:${lb.pillValSize ?? 26}px;line-height:1;letter-spacing:.02em;position:relative;top:${forPreview ? 1 : 1 - Math.round(0.4 * (lb.pillValSize ?? 26))}px;">${formatAccentText(it.pill, accent, accent2)}</span></div></div>` : '';
         const overlayLabel = (!below && (nameHtml || subHtml))
             ? `<div style="position:absolute;bottom:0;left:0;right:0;padding:20px 6px 12px;text-align:center;color:#fff;${lb.gradient !== false ? 'background:linear-gradient(180deg,rgba(5,8,16,0) 0%,rgba(5,8,16,0.9) 60%);' : ''}">${nameHtml}${subHtml}${metaHtml}${pillHtml}</div>` : '';
         const belowLabel = (below && (nameHtml || subHtml || metaHtml || pillHtml))
             ? `<div style="text-align:center;color:#fff;margin-top:22px;">${nameHtml}${subHtml}${metaHtml}${pillHtml}</div>` : '';
         const warnBadge = (forPreview && baked && baked.warn)
             ? `<div style="position:absolute;top:6px;right:6px;background:rgba(180,83,9,.92);color:#fff;font-size:15px;font-weight:700;padding:2px 8px;border-radius:8px;font-family:'DM Sans',sans-serif;z-index:5;">⚠ soggetto al bordo</div>` : '';
-        return `<div ${forPreview ? `class="preview-grid-cell" data-grid-item-id="${it.id}"` : ''} style="position:absolute;left:${x.toFixed(2)}px;top:${y.toFixed(2)}px;width:${cellW.toFixed(2)}px;">`
+        // Sfalsamento verticale per-card (it.dy in px): sposta cella + etichette insieme
+        const yCell = y + (it.dy || 0);
+        return `<div ${forPreview ? `class="preview-grid-cell" data-grid-item-id="${it.id}"` : ''} style="position:absolute;left:${x.toFixed(2)}px;top:${yCell.toFixed(2)}px;width:${cellW.toFixed(2)}px;">`
              + `<div style="position:relative;width:${cellW.toFixed(2)}px;height:${cellH.toFixed(2)}px;border-radius:${radius}px;overflow:hidden;box-sizing:border-box;${grid.cellBgOn !== false ? `background:${grid.cellBg || '#050810'};` : ''}${borderCss}">${imgHtml}${overlayLabel}${warnBadge}</div>${belowLabel}</div>`;
     }).join('');
     const contH = rows * cellH + (rows - 1) * rowGap;
@@ -3612,11 +3748,11 @@ function generateGridHTML(slide, forPreview, accent) {
     return `<div ${forPreview ? 'id="preview-grid-drag"' : ''} style="position:absolute;left:${(grid.marginX ?? 40) + (grid.offsetX ?? 0)}px;top:${grid.y ?? 30}%;width:${innerW}px;height:${contH.toFixed(2)}px;z-index:${grid.behindOverlay ? 5 : 15};opacity:${(grid.opacity ?? 100) / 100};${forPreview ? 'cursor:grab;' : ''}">${handle}${cellsHtml}</div>`;
 }
 
-function generateOverlayHTML(overlay, forPreview, accent) {
+function generateOverlayHTML(overlay, forPreview, accent, accent2) {
     if (!overlay || !overlay.enabled) return '';
     const tsz = overlay.titleSize || 80, bsz = overlay.bodySize || 40, align = overlay.align || 'left', fontFn = FONTS[overlay.font] || FONTS['Bebas Neue'];
-    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${formatAccentText(overlay.title, accent)}</div>` : '';
-    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${formatAccentText(overlay.body, accent)}</div>` : '';
+    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${formatAccentText(overlay.title, accent, accent2)}</div>` : '';
+    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${formatAccentText(overlay.body, accent, accent2)}</div>` : '';
     if (!titleHTML && !bodyHTML) return '';
 
     const txMap = { left:'0%', center:'-50%', right:'-100%' };
@@ -3628,6 +3764,7 @@ function generateOverlayHTML(overlay, forPreview, accent) {
 
 function generateSlideHTML(slide, index, forPreview = false) {
     const accent = slideAccent(slide);
+    const accent2 = slideAccent2(slide);
     const cE = !!slide.coverEnabled;
     const cUpper = !!slide.coverUppercase, cDark = !!slide.coverDarkOverlay, cNews = !!slide.coverShowNews;
     const zoom = slide.zoom || 1, bg = slideBg(slide);
@@ -3670,13 +3807,16 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const titleUppercase = cUpper ? 'text-transform:uppercase;' : '';
     const handleCover = forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : '';
     const titleFs = slide.titleFontSize || 110;
+    const titleFontName = slide.titleFont || 'Bebas Neue';
+    const titleFontFn = FONTS[titleFontName] || FONTS['Bebas Neue'];
     // Compensazione bug html2canvas: in export il testo Bebas Neue con line-height:1
     // viene disegnato più in basso (~0.46em) rispetto al browser, allontanando il badge
     // dal titolo. Si applica un margine negativo SOLO in export (forPreview === false)
     // così il titolo torna allineato al badge esattamente come in anteprima.
-    const titleTopComp = forPreview ? 0 : -Math.round(0.46 * titleFs);
+    // La deriva dipende dalle metriche del font: vale per Bebas Neue, non per gli altri.
+    const titleTopComp = (forPreview || titleFontName !== 'Bebas Neue') ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:'Bebas Neue',sans-serif;font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:${titleFontFn};font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent, accent2)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent, accent2)}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
     // Da Blocco 4: visibile su OGNI slide con il campo compilato (es. "Source: lego.com"),
@@ -3686,7 +3826,7 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const mosaicBaked = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
     const mosaicHTML = mosaicBaked
         ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;"><img src="${mosaicBaked.url}" alt="" style="width:100%;height:100%;display:block;" draggable="false"></div>` : '';
-    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${mosaicHTML}${darkOverlayHTML}${generateGridHTML(slide, forPreview, accent)}${topLogosHTML}${textHTML}${sourceHTML}${generateKickerHTML(slide, forPreview, accent)}${generateSpecsHTML(slide, forPreview, accent)}${generatePillHTML(slide, forPreview, accent)}${generateDisclaimerHTML(slide, forPreview, accent)}${generatePageNumHTML(slide, index, forPreview)}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview, accent)}${generateGuidesHTML(slide, forPreview)}</div>`;
+    return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${mosaicHTML}${darkOverlayHTML}${generateGridHTML(slide, forPreview, accent, accent2)}${topLogosHTML}${textHTML}${sourceHTML}${generateKickerHTML(slide, forPreview, accent, accent2)}${generateSpecsHTML(slide, forPreview, accent)}${generatePillHTML(slide, forPreview, accent, accent2)}${generateDisclaimerHTML(slide, forPreview, accent, accent2)}${generatePageNumHTML(slide, index, forPreview)}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview, accent, accent2)}${generateGuidesHTML(slide, forPreview)}</div>`;
 }
 
 // DRAG & DROP MULTIPLO con snap-to-grid (UX#4 + Feature#3)
@@ -4217,7 +4357,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -4232,6 +4372,14 @@ function renderEditor() {
         DOM.inputSlideAccent.value = ov || state.accentColor || DEFAULT_ACCENT;
         DOM.slideAccentHex.textContent = ov ? ov.toUpperCase() : '—';
         DOM.btnSlideAccentReset.classList.toggle('hidden', !ov);
+    }
+    // Secondo colore accento (**testo**): progetto + eventuale override slide
+    if (DOM.inputAccentColor2) { DOM.inputAccentColor2.value = state.accentColor2 || DEFAULT_ACCENT2; DOM.accentColor2Hex.textContent = (state.accentColor2 || DEFAULT_ACCENT2).toUpperCase(); }
+    if (DOM.inputSlideAccent2) {
+        const ov2 = slide.accentColor2;
+        DOM.inputSlideAccent2.value = ov2 || state.accentColor2 || DEFAULT_ACCENT2;
+        DOM.slideAccent2Hex.textContent = ov2 ? ov2.toUpperCase() : '—';
+        DOM.btnSlideAccent2Reset.classList.toggle('hidden', !ov2);
     }
 
     DOM.btnClearLogo.style.display=state.logoBase64?'block':'none'; DOM.btnClearThemeLogo.style.display=state.themeLogoBase64?'block':'none'; DOM.btnClearNews.style.display=state.newsBase64?'block':'none';
@@ -5452,7 +5600,9 @@ async function bakeFilteredImage(url, filters, dispWFor) {
         ctx.drawImage(img, 0, 0, w, h);
         applyFiltersManually(ctx, w, h, { ...filters, blur: blurBaked });
     }
-    return cnv.toDataURL('image/png'); // PNG: il blur crea bordi semi-trasparenti
+    const outUrl = cnv.toDataURL('image/png'); // PNG: il blur crea bordi semi-trasparenti
+    cnv.width = cnv.height = 0; // libera subito il buffer (fino a 6000px di lato: pesantissimo su iPad)
+    return outUrl;
 }
 // Ritorna una copia della slide con i filtri cotti nelle immagini (o la slide
 // stessa se non c'è nulla da fare / ctx.filter non supportato → export come prima).
@@ -5479,6 +5629,17 @@ async function bakeSlideForExport(slide) {
         }
     } catch (e) { console.warn('Bake filtri export fallito, uso le immagini originali:', e); return slide; }
     return clone;
+}
+
+// Doppio requestAnimationFrame con paracadute: nei tab in background (o quando
+// iOS congela la pagina) rAF non scatta mai e l'export resterebbe appeso per
+// sempre. Il timeout garantisce comunque la ripartenza dopo maxMs.
+function waitTwoFrames(maxMs = 400) {
+    return new Promise(r => {
+        let done = false; const fin = () => { if (!done) { done = true; r(); } };
+        requestAnimationFrame(() => requestAnimationFrame(fin));
+        setTimeout(fin, maxMs);
+    });
 }
 
 // EXPORT
@@ -5532,7 +5693,7 @@ async function renderSlideToFile(slide, index, fileName) {
     if (badgeImg && !(badgeImg.complete && badgeImg.naturalWidth)) {
         await new Promise(res => { badgeImg.onload = badgeImg.onerror = res; });
     }
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); // 2 frame per stabilizzare layout
+    await waitTwoFrames(); // 2 frame per stabilizzare layout (con paracadute per i tab in background)
     try {
         // SUPERSAMPLING: html2canvas ridimensiona male le immagini raster (badge) quando le
         // disegna direttamente alla dimensione finale, rendendole sfocate. Si cattura a scala 2x
@@ -5569,11 +5730,12 @@ async function renderSlideToFile(slide, index, fileName) {
             cx.imageSmoothingQuality = 'high';
             cx.drawImage(big, 0, 0, targetW, targetH);
         }
-        // NB: canvas.toBlob() / toDataURL() funzionano sia su HTTP sia in locale (file://).
+        // NB: canvas.toBlob() funziona sia su HTTP sia in locale (file://).
         // Si evita fetch(dataUrl), bloccato dai browser quando l'app è aperta via file://.
-        let dataUrl, blob;
+        // Niente più toDataURL: il PNG resta solo come Blob (l'anteprima usa un
+        // object URL) — su iPad la stringa base64 duplicava ogni slide in memoria.
+        let blob;
         try {
-            dataUrl = canvas.toDataURL('image/png');
             blob = await new Promise((resolve, reject) => {
                 canvas.toBlob(b => b ? resolve(b) : reject(new Error('Conversione del canvas non riuscita')), 'image/png');
             });
@@ -5582,7 +5744,11 @@ async function renderSlideToFile(slide, index, fileName) {
             // un'immagine caricata da percorso (es. badge News/MOC).
             throw new Error('Esportazione bloccata dal browser: la slide contiene un\'immagine letta da file locale (file://). Avvia un piccolo server web locale (vedi sotto) oppure rimuovi il badge per esportare.');
         }
-        return { dataUrl, blob, file: new File([blob], outName, { type:'image/png' }) };
+        // Libera subito la memoria dei canvas: iOS Safari ha un budget totale per
+        // i canvas e con 10+ slide 2160×2700 il GC non fa in tempo da solo.
+        if (big !== canvas) { big.width = big.height = 0; }
+        canvas.width = canvas.height = 0;
+        return { blob, file: new File([blob], outName, { type:'image/png' }) };
     } finally { DOM.exportNodesContainer.innerHTML = ''; }
 }
 
@@ -5640,7 +5806,7 @@ async function renderSlideVideoToFile(slide, index, baseName) {
             }
             setTimeout(ok, 6000);
         })));
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        await waitTwoFrames();
 
         // 2. Geometria di ogni video rispetto al contenitore (1080 x SLIDE_H)
         const cRect = container.getBoundingClientRect();
@@ -5727,8 +5893,14 @@ async function renderSlideVideoToFile(slide, index, baseName) {
     }
 }
 
+// Object URL delle anteprime dell'export precedente: da revocare al giro dopo
+// (gli <img> vengono buttati via con innerHTML='' ma gli URL resterebbero vivi).
+let _exportPreviewUrls = [];
+function _newPreviewUrl(fileOrBlob) { const u = URL.createObjectURL(fileOrBlob); _exportPreviewUrls.push(u); return u; }
+
 async function exportAllSlides() {
     if (state.isExporting) return; state.isExporting = true; state.renderedBlobs = [];
+    _exportPreviewUrls.forEach(u => URL.revokeObjectURL(u)); _exportPreviewUrls = [];
     DOM.renderedPreviews.innerHTML=''; DOM.btnExport.disabled=true; DOM.btnExportSingle.disabled=true; DOM.exportProgressContainer.style.display='block';
     await document.fonts.ready;
     let videoCount = 0;
@@ -5745,7 +5917,7 @@ async function exportAllSlides() {
                     const r = await renderSlideVideoToFile(state.slides[i], i, `slide-${i+1}`);
                     file = r.file; videoCount++;
                     const vid = document.createElement('video');
-                    vid.src = URL.createObjectURL(file);
+                    vid.src = _newPreviewUrl(file);
                     vid.className = 'h-48 rounded shadow-sm border flex-shrink-0';
                     vid.muted = true; vid.loop = true; vid.autoplay = true; vid.playsInline = true; vid.controls = true;
                     previewEl = vid;
@@ -5753,13 +5925,13 @@ async function exportAllSlides() {
                     // Fallback: se il video non si puo generare, esporta un fotogramma PNG
                     const r = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
                     file = r.file;
-                    previewEl = document.createElement('img'); previewEl.src = r.dataUrl;
+                    previewEl = document.createElement('img'); previewEl.src = _newPreviewUrl(file);
                     previewEl.className = 'h-48 rounded shadow-sm border flex-shrink-0';
                 }
             } else {
                 const r = await renderSlideToFile(state.slides[i], i, `slide-${i+1}.png`);
                 file = r.file;
-                previewEl = document.createElement('img'); previewEl.src = r.dataUrl;
+                previewEl = document.createElement('img'); previewEl.src = _newPreviewUrl(file);
                 previewEl.className = 'h-48 rounded shadow-sm border flex-shrink-0';
             }
             state.renderedBlobs.push(file);
@@ -6255,6 +6427,7 @@ bindCoverFlagToggle(DOM.coverNewsToggleTrack,      DOM.toggleCoverShowNews,    D
 
 DOM.inputTitleFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].titleFontSize=v; DOM.titleFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
 DOM.inputBodyFontSize.addEventListener('input', e => { const v=parseInt(e.target.value, 10); state.slides[state.activeIndex].bodyFontSize=v; DOM.bodyFontSizeValue.textContent=v+'px'; renderPreview(); trackChange(); });
+if (DOM.inputTitleFont) DOM.inputTitleFont.addEventListener('change', e => { state.slides[state.activeIndex].titleFont=e.target.value; renderPreview(); trackChange(true); });
 const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
 DOM.inputBody.addEventListener('input', e => { state.slides[state.activeIndex].body=e.target.value; debouncedPreviewSave(); });
@@ -6275,6 +6448,23 @@ bindColorInput(DOM.inputSlideAccent, DOM.slideAccentHex, v => {
 if (DOM.btnSlideAccentReset) DOM.btnSlideAccentReset.addEventListener('click', e => {
     e.preventDefault();
     state.slides[state.activeIndex].accentColor = null;
+    renderEditor(); renderPreview(); trackChange(true);
+});
+
+// ════════ SECONDO COLORE ACCENTO (**testo**) ════════
+bindColorInput(DOM.inputAccentColor2, DOM.accentColor2Hex, v => {
+    state.accentColor2 = v;
+    lsSet(LS.accent2, v);
+    renderPreview(); trackChange();
+});
+bindColorInput(DOM.inputSlideAccent2, DOM.slideAccent2Hex, v => {
+    state.slides[state.activeIndex].accentColor2 = v;
+    if (DOM.btnSlideAccent2Reset) DOM.btnSlideAccent2Reset.classList.remove('hidden');
+    renderPreview(); trackChange();
+});
+if (DOM.btnSlideAccent2Reset) DOM.btnSlideAccent2Reset.addEventListener('click', e => {
+    e.preventDefault();
+    state.slides[state.activeIndex].accentColor2 = null;
     renderEditor(); renderPreview(); trackChange(true);
 });
 
@@ -6735,6 +6925,19 @@ cutoutDOM.downloadAll.addEventListener('click', async () => {
 const savedTheme = lsGet(LS.theme);
 if (savedTheme==='dark'||(!savedTheme&&window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.body.classList.add('dark-mode'); if(DOM.iconMoon)DOM.iconMoon.style.display='none'; if(DOM.iconSun)DOM.iconSun.style.display='block'; }
 if(DOM.btnThemeToggle) DOM.btnThemeToggle.addEventListener('click', () => { const d=document.body.classList.toggle('dark-mode'); DOM.iconMoon.style.display=d?'none':'block'; DOM.iconSun.style.display=d?'block':'none'; lsSet(LS.theme, d?'dark':'light'); });
+
+// ════════ SALVATAGGIO SU USCITA/CAMBIO APP (fix iPad) ════════
+// I salvataggi normali passano da un debounce di 250ms: su iPad basta passare a
+// un'altra app (o che Safari scarti il tab per liberare memoria) in quella
+// finestra per perdere le ultime modifiche. `visibilitychange→hidden` è l'unico
+// segnale affidabile su iOS (beforeunload spesso NON scatta); pagehide copre la
+// chiusura del tab. Il flush è sincrono su localStorage: sicuro in entrambi.
+function flushAllSaves() {
+    try { flushPendingSnapshot(); } catch (_) {}
+    try { saveStateImmediate(); } catch (_) {}
+}
+window.addEventListener('pagehide', flushAllSaves);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAllSaves(); });
 
 // AVVIO
 window.addEventListener('load', async () => {
