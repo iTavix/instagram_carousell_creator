@@ -1177,12 +1177,59 @@
                             <input type="checkbox" id="toggle-cover-overlay" class="sr-only"/>
                         </div>
                     </label>
-                    <div id="cover-overlay-height-block" class="flex flex-col gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                            <label for="input-cover-overlay-height">Altezza Overlay</label>
-                            <span id="cover-overlay-height-value" class="text-[#0071E3]">60%</span>
+                    <div id="cover-overlay-height-block" class="flex flex-col gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex flex-col gap-1">
+                            <label for="input-cover-overlay-style" class="text-xs font-bold text-gray-500 uppercase">Stile Overlay</label>
+                            <select id="input-cover-overlay-style" class="w-full bg-white rounded-[8px] p-2.5 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm border border-gray-200">
+                                <option value="dark">Scuro (sfumatura)</option>
+                                <option value="glass">Liquid Glass</option>
+                            </select>
                         </div>
-                        <input type="range" id="input-cover-overlay-height" min="10" max="100" step="5" value="60" class="w-full mt-2"/>
+                        <div>
+                            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                <label for="input-cover-overlay-height">Altezza Overlay</label>
+                                <span id="cover-overlay-height-value" class="text-[#0071E3]">60%</span>
+                            </div>
+                            <input type="range" id="input-cover-overlay-height" min="10" max="100" step="5" value="60" class="w-full mt-2"/>
+                        </div>
+                        <div id="cover-glass-fields" style="display:none;" class="flex flex-col gap-3 pt-1 border-t border-gray-200">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                    <label for="input-glass-blur">Sfocatura Vetro</label>
+                                    <span id="glass-blur-value" class="text-[#0071E3]">34px</span>
+                                </div>
+                                <input type="range" id="input-glass-blur" min="6" max="80" step="2" value="34" class="w-full mt-2"/>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <label for="input-glass-tint" class="text-xs font-bold text-gray-500 uppercase">Tinta Vetro</label>
+                                <select id="input-glass-tint" class="w-full bg-white rounded-[8px] p-2.5 outline-none focus:ring-2 focus:ring-[#0071E3] text-sm border border-gray-200">
+                                    <option value="light">Chiara</option>
+                                    <option value="dark">Scura (fumé)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                    <label for="input-glass-intensity">Intensità Tinta</label>
+                                    <span id="glass-intensity-value" class="text-[#0071E3]">100%</span>
+                                </div>
+                                <input type="range" id="input-glass-intensity" min="0" max="200" step="5" value="100" class="w-full mt-2"/>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                    <label for="input-glass-radius">Angoli Bolla</label>
+                                    <span id="glass-radius-value" class="text-[#0071E3]">56px</span>
+                                </div>
+                                <input type="range" id="input-glass-radius" min="0" max="200" step="4" value="56" class="w-full mt-2"/>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                    <label for="input-glass-margin">Margine Bolla</label>
+                                    <span id="glass-margin-value" class="text-[#0071E3]">40px</span>
+                                </div>
+                                <input type="range" id="input-glass-margin" min="0" max="160" step="4" value="40" class="w-full mt-2"/>
+                            </div>
+                            <p class="text-xs text-gray-500">Con la tinta chiara serve un testo scuro, o passa alla tinta scura per far risaltare il titolo bianco. Il margine stacca la bolla dai bordi della slide.</p>
+                        </div>
                     </div>
                     <label class="flex items-center justify-between gap-2 cursor-pointer select-none p-2.5 bg-blue-50 rounded-lg border border-blue-100">
                         <span class="text-sm font-medium text-blue-900">Badge News visibile</span>
@@ -1686,6 +1733,7 @@
                 <summary><span class="help-summary-icon"><svg class="help-symbol" aria-hidden="true"><use href="#help-icon-text"></use></svg></span><span class="help-summary-title">Testi: copertina e testo libero</span></summary>
                 <ol>
                     <li><b>Layout Titolo + Sottotitolo</b> (per le copertine): titolo grande, sottotitolo, fonte in basso a destra. Il menu <b>Font Titolo</b> cambia il carattere del titolo (Bebas di default, c'è anche DaggerSquare). Tre interruttori dedicati: <b>Maiuscolo titolo</b>, <b>Overlay scuro inferiore</b> (scurisce la parte bassa per far leggere il testo), <b>Badge News visibile</b>.</li>
+                    <li><b>Stile Overlay</b>: <b>Scuro</b> è la sfumatura di sempre a tutta larghezza; <b>Liquid Glass</b> la sostituisce con una bolla di vetro smerigliato con contorno chiaro, che sfoca la foto sotto (stile iOS). Con il vetro compaiono <b>Sfocatura</b>, <b>Tinta</b> (chiara o scura), <b>Intensità</b>, <b>Angoli</b> e <b>Margine</b> della bolla; <b>Altezza Overlay</b> vale per entrambi gli stili.</li>
                     <li><b>Titolo su più righe</b>: premi <b>Invio</b> nel campo Titolo per decidere tu dove va a capo (es. "EVERY MINIFIGURE" ⏎ "IN LEGO *STAR TREK*"). Senza Invio il testo va a capo da solo in base alla dimensione. Nella didascalia del post il titolo resta comunque su una riga sola.</li>
                     <li><b>Testo Libero</b>: un blocco titolo + corpo posizionabile ovunque, con font a scelta (Bebas, Oswald, Montserrat, Playfair, DM Sans, DaggerSquare), dimensioni, colore e allineamento.</li>
                     <li>Entrambi i blocchi si <b>trascinano nell'anteprima</b> con il dito o il mouse (la manina ✥). Tenendo premuto <b>Shift</b> disattivi lo snap alle guide.</li>
@@ -2758,7 +2806,9 @@ function makeDefaultSlide(id, overrides = {}) {
         titleFontSize: 110,
         bodyFontSize: 36,            // dimensione del sottotitolo copertina
         coverTextColor: '#ffffff',   // colore del testo copertina (titolo+sottotitolo+fonte)
-        coverOverlayHeight: 60,      // altezza % dell'overlay scuro inferiore
+        coverOverlayHeight: 60,      // altezza % dell'overlay inferiore
+        coverOverlayStyle: 'dark',   // 'dark' (sfumatura storica) | 'glass' (Liquid Glass)
+        coverGlass: null,            // parametri del vetro: { blur, tint, intensity }
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
         coverTextY: 60,
         zoom: 1, bgX: 0, bgY: 0, bgColor: '#333333', bgMode: 'solid',
@@ -2981,6 +3031,17 @@ const DOM = {
     inputCoverOverlayHeight: document.getElementById('input-cover-overlay-height'),
     coverOverlayHeightValue: document.getElementById('cover-overlay-height-value'),
     coverOverlayHeightBlock: document.getElementById('cover-overlay-height-block'),
+    inputCoverOverlayStyle: document.getElementById('input-cover-overlay-style'),
+    coverGlassFields:      document.getElementById('cover-glass-fields'),
+    inputGlassBlur:        document.getElementById('input-glass-blur'),
+    glassBlurValue:        document.getElementById('glass-blur-value'),
+    inputGlassTint:        document.getElementById('input-glass-tint'),
+    inputGlassIntensity:   document.getElementById('input-glass-intensity'),
+    glassIntensityValue:   document.getElementById('glass-intensity-value'),
+    inputGlassRadius:      document.getElementById('input-glass-radius'),
+    glassRadiusValue:      document.getElementById('glass-radius-value'),
+    inputGlassMargin:      document.getElementById('input-glass-margin'),
+    glassMarginValue:      document.getElementById('glass-margin-value'),
 };
 
 // UTILITY (specifiche del dominio)
@@ -3204,7 +3265,7 @@ function syncCaptionFromCover(force = false) {
 function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
-        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews, coverOverlayHeight: s.coverOverlayHeight,
+        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews, coverOverlayHeight: s.coverOverlayHeight, coverOverlayStyle: s.coverOverlayStyle, coverGlass: s.coverGlass,
         title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, titleFont: s.titleFont || 'Bebas Neue', bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
@@ -3778,7 +3839,154 @@ function generateOverlayHTML(overlay, forPreview, accent, accent2) {
     return `<div ${attrs}>${handle}${titleHTML}${bodyHTML}</div>`;
 }
 
-function generateSlideHTML(slide, index, forPreview = false) {
+// ════════ LIQUID GLASS (stile alternativo dell'overlay copertina) ════════
+// UNA sola ricetta, due resa: in anteprima è CSS `backdrop-filter` (vivo e
+// immediato mentre si edita), in export è un PNG cotto su canvas con gli STESSI
+// numeri — html2canvas non conosce backdrop-filter, quindi senza la cottura il
+// pannello sparirebbe dall'immagine finale.
+// I tre strati sopra la sfocatura (tinta, velo, rim speculare) sono gradienti
+// lineari puri proprio per poter essere riprodotti identici su canvas.
+const GLASS_TINTS = {
+    light: { r: 255, g: 255, b: 255, a: [0.28, 0.14, 0.05] }, // basso → alto
+    dark:  { r: 6,   g: 9,   b: 16,  a: [0.58, 0.36, 0.15] },
+};
+const GLASS = { saturate: 185, brightness: 1.06, border: 0.42, borderW: 1.5, sheen: 0.18, sheenH: 34,
+                shadow: 0.35, shadowBlur: 50, shadowY: 18 };
+function usesGlass(slide) {
+    return !!(slide && slide.coverEnabled && slide.coverDarkOverlay && slide.coverOverlayStyle === 'glass');
+}
+function glassCfg(slide) {
+    const g = (slide && slide.coverGlass) || {};
+    return {
+        blur:      g.blur ?? 34,
+        tint:      g.tint === 'dark' ? 'dark' : 'light',
+        intensity: (g.intensity ?? 100) / 100,
+        radius:    g.radius ?? 56,
+        margin:    g.margin ?? 40,
+    };
+}
+// Geometria della bolla in px slide (1080 × H): flottante, non ancorata ai bordi
+function glassBubbleGeom(slide) {
+    const cfg = glassCfg(slide);
+    const H = slide.isStory ? 1920 : 1350;
+    const h = Math.max(1, Math.round(H * (slide.coverOverlayHeight ?? 60) / 100));
+    const m = cfg.margin;
+    const w = Math.max(1, 1080 - m * 2);
+    return { cfg, H, h, m, w, x: m, y: Math.max(0, H - m - h), r: Math.min(cfg.radius, Math.floor(Math.min(w, h) / 2)) };
+}
+function glassTintStops(cfg) {
+    const t = GLASS_TINTS[cfg.tint];
+    return t.a.map(a => `rgba(${t.r},${t.g},${t.b},${(a * cfg.intensity).toFixed(3)})`);
+}
+// Anteprima: bolla vera con backdrop-filter (il prefisso -webkit- serve a Safari/iPad).
+// Gli strati interni sono gradienti lineari puri per poter essere ridipinti
+// identici su canvas nell'export.
+function glassBubbleCss(cfg) {
+    const [a0, a1, a2] = glassTintStops(cfg);
+    const f = `blur(${cfg.blur}px) saturate(${GLASS.saturate}%) brightness(${GLASS.brightness})`;
+    return `-webkit-backdrop-filter:${f};backdrop-filter:${f};`
+        + `background:linear-gradient(to bottom, rgba(255,255,255,${GLASS.sheen}) 0px, rgba(255,255,255,0) ${GLASS.sheenH}px),`
+        + `linear-gradient(to top, ${a0} 0%, ${a1} 55%, ${a2} 100%);`
+        + `border:${GLASS.borderW}px solid rgba(255,255,255,${GLASS.border});`
+        + `box-shadow:0 ${GLASS.shadowY}px ${GLASS.shadowBlur}px rgba(0,0,0,${GLASS.shadow});`;
+}
+// Percorso arrotondato con fallback: roundRect manca su Safari più vecchi
+function roundRectPath(cx, x, y, w, h, r) {
+    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    cx.beginPath();
+    if (cx.roundRect) { cx.roundRect(x, y, w, h, rr); return; }
+    cx.moveTo(x + rr, y);
+    cx.arcTo(x + w, y,     x + w, y + h, rr);
+    cx.arcTo(x + w, y + h, x,     y + h, rr);
+    cx.arcTo(x,     y + h, x,     y,     rr);
+    cx.arcTo(x,     y,     x + w, y,     rr);
+    cx.closePath();
+}
+// Gli stessi due strati interni dell'anteprima, in coordinate bolla
+function paintGlassLayers(cx, gx, gy, gw, gh, cfg, S) {
+    const [a0, a1, a2] = glassTintStops(cfg);
+    const gt = cx.createLinearGradient(0, gy + gh, 0, gy);
+    gt.addColorStop(0, a0); gt.addColorStop(0.55, a1); gt.addColorStop(1, a2);
+    cx.fillStyle = gt; cx.fillRect(gx, gy, gw, gh);
+    const gs = cx.createLinearGradient(0, gy, 0, gy + GLASS.sheenH * S);
+    gs.addColorStop(0, `rgba(255,255,255,${GLASS.sheen})`); gs.addColorStop(1, 'rgba(255,255,255,0)');
+    cx.fillStyle = gs; cx.fillRect(gx, gy, gw, GLASS.sheenH * S);
+}
+// Cottura della bolla per l'export: cattura i SOLI livelli sotto il vetro, li
+// sfoca come farebbe il browser e li ritaglia sulla forma arrotondata.
+// Il PNG è grande quanto la slide (trasparente fuori dalla bolla) così ombra
+// esterna e angoli tondi non hanno bisogno di alcun posizionamento in export.
+async function bakeGlassPanel(slide, index) {
+    const gb = glassBubbleGeom(slide), cfg = gb.cfg;
+    const S = 2; // stessa scala della cattura finale: il PNG entra 1:1, niente ammorbidimento
+    const h2c = await loadHtml2canvas();
+    const wrap = document.createElement('div');
+    wrap.innerHTML = generateSlideHTML(slide, index, false, true); // backdropOnly
+    DOM.exportNodesContainer.appendChild(wrap);
+    let src;
+    try {
+        await waitTwoFrames();
+        src = await h2c(wrap.firstChild, { scale: S, useCORS: true, backgroundColor: null });
+    } finally { DOM.exportNodesContainer.innerHTML = ''; }
+    const W = 1080 * S, HS = gb.H * S;
+    // Bordi estesi prima di sfocare: `backdrop-filter` campiona anche oltre i
+    // bordi della bolla, un canvas invece sfumerebbe verso il trasparente
+    // lasciando un alone chiaro lungo i lati.
+    const pad = Math.max(2, Math.ceil(cfg.blur * S * 2));
+    const padded = document.createElement('canvas');
+    padded.width = W + pad * 2; padded.height = HS + pad * 2;
+    const px = padded.getContext('2d');
+    const sw = src.width, sh = src.height;
+    px.drawImage(src, pad, pad, W, HS);
+    px.drawImage(src, 0, 0, sw, 1, pad, 0, W, pad);                      // alto
+    px.drawImage(src, 0, sh - 1, sw, 1, pad, pad + HS, W, pad);          // basso
+    px.drawImage(src, 0, 0, 1, sh, 0, pad, pad, HS);                     // sinistra
+    px.drawImage(src, sw - 1, 0, 1, sh, pad + W, pad, pad, HS);          // destra
+    px.drawImage(src, 0, 0, 1, 1, 0, 0, pad, pad);                       // angoli
+    px.drawImage(src, sw - 1, 0, 1, 1, pad + W, 0, pad, pad);
+    px.drawImage(src, 0, sh - 1, 1, 1, 0, pad + HS, pad, pad);
+    px.drawImage(src, sw - 1, sh - 1, 1, 1, pad + W, pad + HS, pad, pad);
+    const blurred = document.createElement('canvas');
+    blurred.width = padded.width; blurred.height = padded.height;
+    const bx = blurred.getContext('2d');
+    if (ctxFilterSupported()) {
+        bx.filter = `blur(${(cfg.blur * S).toFixed(2)}px) saturate(${GLASS.saturate}%) brightness(${GLASS.brightness})`;
+        bx.drawImage(padded, 0, 0);
+    } else {
+        bx.drawImage(padded, 0, 0);
+        applyFiltersManually(bx, blurred.width, blurred.height,
+            { brightness: GLASS.brightness * 100, contrast: 100, saturation: GLASS.saturate, blur: cfg.blur * S });
+    }
+    const out = document.createElement('canvas');
+    out.width = W; out.height = HS;
+    const ox = out.getContext('2d');
+    const gx = gb.x * S, gy = gb.y * S, gw = gb.w * S, gh = gb.h * S, gr = gb.r * S, bw = GLASS.borderW * S;
+    // 1) ombra esterna: riempio la forma con l'ombra attiva, poi svuoto l'interno
+    ox.save();
+    ox.shadowColor = `rgba(0,0,0,${GLASS.shadow})`;
+    ox.shadowBlur = GLASS.shadowBlur * S; ox.shadowOffsetY = GLASS.shadowY * S;
+    ox.fillStyle = '#000'; roundRectPath(ox, gx, gy, gw, gh, gr); ox.fill();
+    ox.restore();
+    ox.save(); ox.globalCompositeOperation = 'destination-out';
+    roundRectPath(ox, gx, gy, gw, gh, gr); ox.fill(); ox.restore();
+    // 2) contenuto del vetro, ritagliato sulla bolla
+    ox.save(); roundRectPath(ox, gx, gy, gw, gh, gr); ox.clip();
+    ox.drawImage(blurred, pad, pad, W, HS, 0, 0, W, HS);
+    paintGlassLayers(ox, gx, gy, gw, gh, cfg, S);
+    ox.restore();
+    // 3) contorno (in CSS il bordo sta DENTRO il box: qui lo traccio a filo interno)
+    ox.save();
+    ox.lineWidth = bw; ox.strokeStyle = `rgba(255,255,255,${GLASS.border})`;
+    roundRectPath(ox, gx + bw / 2, gy + bw / 2, gw - bw, gh - bw, Math.max(0, gr - bw / 2));
+    ox.stroke(); ox.restore();
+    const url = out.toDataURL('image/png');
+    [src, padded, blurred, out].forEach(c => { try { c.width = c.height = 0; } catch (_) {} });
+    return url;
+}
+
+// `backdropOnly` = disegna SOLO ciò che sta sotto l'overlay (z-index < 10):
+// è la sorgente da sfocare per il Liquid Glass, mai un output visibile.
+function generateSlideHTML(slide, index, forPreview = false, backdropOnly = false) {
     const accent = slideAccent(slide);
     const accent2 = slideAccent2(slide);
     const cE = !!slide.coverEnabled;
@@ -3815,7 +4023,21 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const topLogosHTML = `<div style="position:absolute;top:${LOGO_MARGIN_PX}px;left:${LOGO_MARGIN_PX}px;right:${LOGO_MARGIN_PX}px;height:${topRowH}px;display:flex;justify-content:space-between;align-items:flex-start;z-index:40;${forPreview ? 'pointer-events:none;' : ''}"><div style="display:flex;align-items:flex-start;justify-content:flex-start;width:50%;height:100%;">${safeThemeLogo ? `<img src="${safeThemeLogo}" alt="" style="max-height:${themeLogoH}px;max-width:${themeLogoW}px;object-fit:contain;object-position:left top;">` : ''}</div><div style="display:flex;align-items:flex-start;justify-content:flex-end;width:50%;height:100%;">${safeLogo ? `<img src="${safeLogo}" alt="" style="max-height:${logoH}px;max-width:${logoW}px;object-fit:contain;object-position:right top;">` : ''}</div></div>`;
 
     // Cover scorporato (UX#5)
-    const darkOverlayHTML = (cE && cDark) ? `<div style="position:absolute;bottom:0;left:0;right:0;height:${slide.coverOverlayHeight ?? 60}%;background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);z-index:10;${forPreview ? 'pointer-events:none;' : ''}"></div>` : '';
+    const overlayH = slide.coverOverlayHeight ?? 60;
+    const overlayBase = `position:absolute;bottom:0;left:0;right:0;height:${overlayH}%;z-index:10;${forPreview ? 'pointer-events:none;' : ''}`;
+    let darkOverlayHTML = '';
+    if (cE && cDark) {
+        if (slide.coverOverlayStyle === 'glass') {
+            // In export il vetro è il PNG già cotto a tutta slide (html2canvas ignora
+            // backdrop-filter); in anteprima è la bolla CSS vera.
+            const gb = glassBubbleGeom(slide);
+            darkOverlayHTML = (!forPreview && slide._glassUrl)
+                ? `<img src="${slide._glassUrl}" alt="" style="position:absolute;top:0;left:0;width:1080px;height:${SLIDE_H}px;z-index:10;display:block;">`
+                : `<div style="position:absolute;left:${gb.x}px;top:${gb.y}px;width:${gb.w}px;height:${gb.h}px;border-radius:${gb.r}px;z-index:10;box-sizing:border-box;${forPreview ? 'pointer-events:none;' : ''}${glassBubbleCss(gb.cfg)}"></div>`;
+        } else {
+            darkOverlayHTML = `<div style="${overlayBase}background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);"></div>`;
+        }
+    }
     // Badge: dimensionamento con height esplicito + width:auto (niente object-fit).
     // html2canvas non gestisce correttamente object-fit: era questa la causa del badge
     // pixelato e di dimensione diversa nell'export rispetto all'anteprima.
@@ -3842,6 +4064,13 @@ function generateSlideHTML(slide, index, forPreview = false) {
     const mosaicBaked = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
     const mosaicHTML = mosaicBaked
         ? `<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;"><img src="${mosaicBaked.url}" alt="" style="width:100%;height:100%;display:block;" draggable="false"></div>` : '';
+    if (backdropOnly) {
+        // Sorgente per la sfocatura del vetro: sfondo, mosaico e i soli livelli
+        // che l'utente ha messo DIETRO l'overlay (stessi z-index < 10 del CSS).
+        const gridUnder = (slide.grid && slide.grid.behindOverlay) ? generateGridHTML(slide, false, accent, accent2) : '';
+        const fgUnder = generateFgImagesHTML({ ...slide, fgImages: (slide.fgImages || []).filter(f => f.behindOverlay) }, false);
+        return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${mosaicHTML}${gridUnder}${fgUnder}</div>`;
+    }
     return `<div style="width:1080px;height:${SLIDE_H}px;position:relative;overflow:hidden;${bgWrapStyle}">${bgHTML}${mosaicHTML}${darkOverlayHTML}${generateGridHTML(slide, forPreview, accent, accent2)}${topLogosHTML}${textHTML}${sourceHTML}${generateKickerHTML(slide, forPreview, accent, accent2)}${generateSpecsHTML(slide, forPreview, accent)}${generatePillHTML(slide, forPreview, accent, accent2)}${generateDisclaimerHTML(slide, forPreview, accent, accent2)}${generatePageNumHTML(slide, index, forPreview)}${generateFgImagesHTML(slide, forPreview)}${generateOverlayHTML(slide.textOverlay, forPreview, accent, accent2)}${generateGuidesHTML(slide, forPreview)}</div>`;
 }
 
@@ -4373,7 +4602,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; if(DOM.inputCoverOverlayHeight){ const oh=slide.coverOverlayHeight??60; DOM.inputCoverOverlayHeight.value=oh; DOM.coverOverlayHeightValue.textContent=oh+'%'; DOM.coverOverlayHeightBlock.style.display=slide.coverDarkOverlay?'':'none'; } DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; if(DOM.inputCoverOverlayHeight){ const oh=slide.coverOverlayHeight??60; DOM.inputCoverOverlayHeight.value=oh; DOM.coverOverlayHeightValue.textContent=oh+'%'; DOM.coverOverlayHeightBlock.style.display=slide.coverDarkOverlay?'':'none'; syncGlassUI(slide); } DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -5675,7 +5904,12 @@ async function renderSlideToFile(slide, index, fileName) {
     const mosaicBakedExp = (slide.mosaic && slide.mosaic.enabled) ? mosaicCache.get(slide.id) : null;
     if (mosaicBakedExp) await preloadImage(mosaicBakedExp.url);
     // Filtri (sfocatura ecc.) cotti nelle immagini: html2canvas ignora i filter CSS
-    const exportSlide = await bakeSlideForExport(slide);
+    let exportSlide = await bakeSlideForExport(slide);
+    if (usesGlass(exportSlide)) {
+        const glassUrl = await bakeGlassPanel(exportSlide, index);
+        exportSlide = { ...exportSlide, _glassUrl: glassUrl }; // copia: la slide viva non va toccata
+        await preloadImage(glassUrl);
+    }
     const wrap = document.createElement('div'); wrap.innerHTML = generateSlideHTML(exportSlide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
     // Le storie hanno un nome file dedicato
@@ -5801,7 +6035,12 @@ async function renderSlideVideoToFile(slide, index, baseName) {
     const SLIDE_H = slide.isStory ? 1920 : 1350;
     // Anche qui i filtri vanno cotti: il layer statico è catturato con html2canvas,
     // che ignora i filter CSS (i video mantengono il loro filtro via ctx.filter nel draw).
-    const exportSlide = await bakeSlideForExport(slide);
+    let exportSlide = await bakeSlideForExport(slide);
+    if (usesGlass(exportSlide)) {
+        const glassUrl = await bakeGlassPanel(exportSlide, index);
+        exportSlide = { ...exportSlide, _glassUrl: glassUrl };
+        await preloadImage(glassUrl);
+    }
     const wrap = document.createElement('div');
     wrap.innerHTML = generateSlideHTML(exportSlide, index, false);
     DOM.exportNodesContainer.appendChild(wrap);
@@ -6448,6 +6687,58 @@ if (DOM.inputTitleFont) DOM.inputTitleFont.addEventListener('change', e => { sta
 if (DOM.inputCoverOverlayHeight) {
     DOM.inputCoverOverlayHeight.addEventListener('input', e => { const v=parseInt(e.target.value,10); state.slides[state.activeIndex].coverOverlayHeight=v; DOM.coverOverlayHeightValue.textContent=v+'%'; renderPreview(); trackChange(); });
     DOM.inputCoverOverlayHeight.addEventListener('change', () => snapshot());
+}
+
+// ════════ STILE OVERLAY: Scuro / Liquid Glass ════════
+function syncGlassUI(slide) {
+    if (!DOM.inputCoverOverlayStyle) return;
+    const st = slide.coverOverlayStyle === 'glass' ? 'glass' : 'dark';
+    DOM.inputCoverOverlayStyle.value = st;
+    DOM.coverGlassFields.style.display = st === 'glass' ? '' : 'none';
+    const g = glassCfg(slide);
+    DOM.inputGlassBlur.value = g.blur;            DOM.glassBlurValue.textContent = g.blur + 'px';
+    DOM.inputGlassTint.value = g.tint;
+    const inten = Math.round(g.intensity * 100);
+    DOM.inputGlassIntensity.value = inten;        DOM.glassIntensityValue.textContent = inten + '%';
+    DOM.inputGlassRadius.value = g.radius;        DOM.glassRadiusValue.textContent = g.radius + 'px';
+    DOM.inputGlassMargin.value = g.margin;        DOM.glassMarginValue.textContent = g.margin + 'px';
+}
+function ensureGlass(slide) { if (!slide.coverGlass) slide.coverGlass = { blur: 34, tint: 'light', intensity: 100, radius: 56, margin: 40 }; return slide.coverGlass; }
+if (DOM.inputCoverOverlayStyle) {
+    DOM.inputCoverOverlayStyle.addEventListener('change', e => {
+        const s = state.slides[state.activeIndex];
+        s.coverOverlayStyle = e.target.value === 'glass' ? 'glass' : 'dark';
+        if (s.coverOverlayStyle === 'glass') ensureGlass(s);
+        syncGlassUI(s); renderPreview(); trackChange(true);
+    });
+    DOM.inputGlassBlur.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureGlass(state.slides[state.activeIndex]).blur = v;
+        DOM.glassBlurValue.textContent = v + 'px'; renderPreview(); trackChange();
+    });
+    DOM.inputGlassBlur.addEventListener('change', () => snapshot());
+    DOM.inputGlassTint.addEventListener('change', e => {
+        ensureGlass(state.slides[state.activeIndex]).tint = e.target.value === 'dark' ? 'dark' : 'light';
+        renderPreview(); trackChange(true);
+    });
+    DOM.inputGlassIntensity.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureGlass(state.slides[state.activeIndex]).intensity = v;
+        DOM.glassIntensityValue.textContent = v + '%'; renderPreview(); trackChange();
+    });
+    DOM.inputGlassIntensity.addEventListener('change', () => snapshot());
+    DOM.inputGlassRadius.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureGlass(state.slides[state.activeIndex]).radius = v;
+        DOM.glassRadiusValue.textContent = v + 'px'; renderPreview(); trackChange();
+    });
+    DOM.inputGlassRadius.addEventListener('change', () => snapshot());
+    DOM.inputGlassMargin.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        ensureGlass(state.slides[state.activeIndex]).margin = v;
+        DOM.glassMarginValue.textContent = v + 'px'; renderPreview(); trackChange();
+    });
+    DOM.inputGlassMargin.addEventListener('change', () => snapshot());
 }
 const debouncedPreviewSave = debounce(() => { renderPreview(); syncCaptionFromCover(); trackChange(); }, 150);
 DOM.inputTitle.addEventListener('input', e => { state.slides[state.activeIndex].title=e.target.value; debouncedPreviewSave(); });
