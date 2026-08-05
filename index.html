@@ -1056,6 +1056,7 @@
                     <div class="flex gap-2">
                         <button type="button" id="btn-news-badge" class="flex-1 py-2 px-4 rounded-full text-sm font-semibold bg-[#F5F5F7] text-black hover:bg-gray-200 transition-all">News</button>
                         <button type="button" id="btn-moc-badge" class="flex-1 py-2 px-4 rounded-full text-sm font-semibold bg-[#F5F5F7] text-black hover:bg-gray-200 transition-all">MOC</button>
+                        <button type="button" id="btn-leak-badge" class="flex-1 py-2 px-4 rounded-full text-sm font-semibold bg-[#F5F5F7] text-black hover:bg-gray-200 transition-all">LEAK</button>
                     </div>
                     <div class="flex justify-between items-center mt-2 text-[10px] font-bold text-gray-500 uppercase">
                         <label for="news-size-slider">Dimensione</label>
@@ -1714,7 +1715,7 @@
                 <ol>
                     <li><b>Loghi in alto</b>: premi <b>Inserisci i loghi</b> e selezionali <b>uno dopo l'altro</b> nella stessa finestra: il 1° va in alto a sinistra, il 2° in alto a destra. Se ne carichi uno solo, riempie il primo posto libero.</li>
                     <li>Sotto vedi i due riquadri <b>Alto sinistra</b> e <b>Alto destra</b> con l'anteprima del logo, lo slider <b>Dimensione</b> e <b>Rimuovi</b>. Se sono invertiti premi <b>⇄ Scambia posizioni</b>.</li>
-                    <li><b>Badge News</b>: premi <b>News</b> o <b>MOC</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
+                    <li><b>Badge News</b>: premi <b>News</b>, <b>MOC</b> o <b>LEAK</b> per usare il badge incluso. Compare in copertina sopra il titolo (si accende/spegne con "Badge News visibile" nel layout copertina).</li>
                     <li><b>Colore Accento</b>: è il colore delle parole evidenziate. Scrivi il testo tra asterischi in QUALSIASI campo di testo: <code>ENTERPRISE *NCC-1701-D*</code> → la parte tra asterischi diventa del colore accento (default giallo).</li>
                     <li>Il colore accento vale per tutto il progetto; per cambiarlo su una sola slide usa <b>Accento di questa slide</b> in cima a "Testo sulla Slide" (il pulsante rosso "Usa progetto" lo riporta a quello globale).</li>
                     <li><b>Colore Accento 2</b>: un secondo colore con i <b>doppi asterischi</b>: <code>*STAR* **TREK**</code> → "STAR" col primo colore, "TREK" col secondo. Funziona ovunque funziona il primo, anche insieme nello stesso titolo, e ha il suo override <b>Accento 2 di questa slide</b>.</li>
@@ -2925,6 +2926,7 @@ const DOM = {
     btnBrandSwap:          document.getElementById('btn-brand-swap'),
     btnNewsBadge:          document.getElementById('btn-news-badge'),
     btnMocBadge:           document.getElementById('btn-moc-badge'),
+    btnLeakBadge:          document.getElementById('btn-leak-badge'),
     btnClearLogo:          document.getElementById('btn-clear-logo'),
     btnClearThemeLogo:     document.getElementById('btn-clear-theme-logo'),
     btnClearNews:          document.getElementById('btn-clear-news'),
@@ -6556,7 +6558,7 @@ if (DOM.btnBrandSwap) DOM.btnBrandSwap.addEventListener('click', e => {
     toast('Loghi scambiati', 'success', 1800);
 });
 
-// Inserimento Badge da file locali (news.png / moc.png nella stessa cartella).
+// Inserimento Badge da file locali (news.png / moc.png / leak.png nella stessa cartella).
 // Il badge viene mantenuto alla massima risoluzione originale (nessuna ricompressione/resize).
 function applyNewsBadge(src) {
     state.newsBase64 = src;
@@ -6599,6 +6601,7 @@ async function insertNewsBadge(filename) {
 }
 DOM.btnNewsBadge.addEventListener('click', () => insertNewsBadge('news.png'));
 DOM.btnMocBadge.addEventListener('click',  () => insertNewsBadge('moc.png'));
+DOM.btnLeakBadge.addEventListener('click', () => insertNewsBadge('leak.png'));
 
 DOM.btnClearLogo.addEventListener('click',      () => { state.logoBase64=null;      lsRemove(LS.logo);      trackChange(true); render(); });
 DOM.btnClearThemeLogo.addEventListener('click', () => { state.themeLogoBase64=null; lsRemove(LS.themeLogo); trackChange(true); render(); });
