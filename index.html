@@ -2044,10 +2044,15 @@ function escapeHtml(str) { const el = document.createElement('div'); el.appendCh
 // così i doppi marcatori non vengono "mangiati" dalla regex singola).
 // L'escape HTML avviene PRIMA della sostituzione (gli asterischi non vengono
 // alterati dall'escape), quindi nessun HTML utente passa mai nel markup.
-function formatAccentText(str, accent, accent2) {
+// shadowFn (opzionale): (colore) => css di text-shadow. Serve dove il testo sta su un
+// blocco con ombra: l'ombra del blocco è calcolata sul colore BASE, e un tratto in
+// accento la eredita anche quando gli è contro (accento verde scuro su ombra scura =
+// scritta illeggibile). Passandola, ogni tratto colorato si ricalcola la propria.
+function formatAccentText(str, accent, accent2, shadowFn) {
     let esc = escapeHtml(str);
-    if (accent2) esc = esc.replace(/\*\*([^*\n]+)\*\*/g, `<span style="color:${accent2};">$1</span>`);
-    if (accent)  esc = esc.replace(/\*([^*\n]+)\*/g, `<span style="color:${accent};">$1</span>`);
+    const sh = c => shadowFn ? `text-shadow:${shadowFn(c)};` : '';
+    if (accent2) esc = esc.replace(/\*\*([^*\n]+)\*\*/g, `<span style="color:${accent2};${sh(accent2)}">$1</span>`);
+    if (accent)  esc = esc.replace(/\*([^*\n]+)\*/g, `<span style="color:${accent};${sh(accent)}">$1</span>`);
     return esc;
 }
 // Rimuove i marcatori *accento* e **accento2** dal testo semplice (caption, contatori, ecc.)
@@ -3094,12 +3099,23 @@ function decorateSource(src) { return (src || '').replace(/Fonte:\s*theverge\.co
 // l'ombra scura storica (nessun cambiamento per il bianco di default); per testo
 // scuro usa un alone chiaro, così il titolo resta leggibile anche sulle zone scure
 // dell'immagine (prima il nero su sfondo scuro spariva).
-function coverTextShadow(hex, soft) {
+// Un colore è "scuro" se la sua luminanza percepita sta sotto metà scala: sotto va
+// un alone chiaro, sopra un'ombra scura. Usata sia dal titolo copertina sia dagli
+// overlay, e — via formatAccentText — dai singoli tratti in accento.
+function isDarkHex(hex) {
     const h = (hex || '#ffffff').replace('#', '');
     const r = parseInt(h.substr(0, 2) || 'ff', 16), g = parseInt(h.substr(2, 2) || 'ff', 16), b = parseInt(h.substr(4, 2) || 'ff', 16);
-    const isDarkText = (0.299 * r + 0.587 * g + 0.114 * b) < 128;
-    if (!isDarkText) return soft ? '0 2px 6px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.8)';
+    return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
+}
+function coverTextShadow(hex, soft) {
+    if (!isDarkHex(hex)) return soft ? '0 2px 6px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.8)';
     return soft ? '0 2px 6px rgba(255,255,255,0.7)' : '0 0 3px rgba(255,255,255,0.95),0 2px 10px rgba(255,255,255,0.65)';
+}
+// Stessa logica per i testi in overlay, che hanno ombre più tenui del titolo copertina.
+function overlayTextShadow(hex, soft) {
+    if (!isDarkHex(hex)) return soft ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 12px rgba(0,0,0,0.6)';
+    return soft ? '0 0 2px rgba(255,255,255,0.9),0 2px 8px rgba(255,255,255,0.55)'
+                : '0 0 3px rgba(255,255,255,0.9),0 2px 12px rgba(255,255,255,0.6)';
 }
 
 // ════════ HASHTAG AUTOMATICI ════════
@@ -3836,8 +3852,8 @@ function generateGridHTML(slide, forPreview, accent, accent2) {
 function generateOverlayHTML(overlay, forPreview, accent, accent2) {
     if (!overlay || !overlay.enabled) return '';
     const tsz = overlay.titleSize || 80, bsz = overlay.bodySize || 40, align = overlay.align || 'left', fontFn = FONTS[overlay.font] || FONTS['Bebas Neue'];
-    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,0.6);">${formatAccentText(overlay.title, accent, accent2)}</div>` : '';
-    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:0 2px 8px rgba(0,0,0,0.5);">${formatAccentText(overlay.body, accent, accent2)}</div>` : '';
+    const titleHTML = overlay.title ? `<div style="font-family:${fontFn};font-size:${tsz}px;line-height:1.1;text-shadow:${overlayTextShadow(overlay.color, false)};">${formatAccentText(overlay.title, accent, accent2, c => overlayTextShadow(c, false))}</div>` : '';
+    const bodyHTML  = overlay.body  ? `<div style="font-family:${fontFn};font-size:${bsz}px;line-height:1.3;margin-top:${Math.round(bsz*0.3)}px;text-shadow:${overlayTextShadow(overlay.color, true)};">${formatAccentText(overlay.body, accent, accent2, c => overlayTextShadow(c, true))}</div>` : '';
     if (!titleHTML && !bodyHTML) return '';
 
     const txMap = { left:'0%', center:'-50%', right:'-100%' };
@@ -4081,7 +4097,7 @@ function generateSlideHTML(slide, index, forPreview = false, backdropOnly = fals
     // La deriva dipende dalle metriche del font: vale per Bebas Neue, non per gli altri.
     const titleTopComp = (forPreview || titleFontName !== 'Bebas Neue') ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:${titleFontFn};font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent, accent2)}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent, accent2)}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:${titleFontFn};font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent, accent2, c => coverTextShadow(c, false))}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent, accent2, c => coverTextShadow(c, false))}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
     // Da Blocco 4: visibile su OGNI slide con il campo compilato (es. "Source: lego.com"),
