@@ -1191,7 +1191,14 @@
                                 <label for="input-cover-overlay-height">Altezza Overlay</label>
                                 <span id="cover-overlay-height-value" class="text-[#0071E3]">60%</span>
                             </div>
-                            <input type="range" id="input-cover-overlay-height" min="10" max="100" step="5" value="60" class="w-full mt-2"/>
+                            <input type="range" id="input-cover-overlay-height" min="10" max="100" step="1" value="60" class="w-full mt-2"/>
+                        </div>
+                        <div id="cover-overlay-opacity-row">
+                            <div class="flex justify-between text-xs font-bold text-gray-500 uppercase">
+                                <label for="input-cover-overlay-opacity">Intensità Overlay</label>
+                                <span id="cover-overlay-opacity-value" class="text-[#0071E3]">90%</span>
+                            </div>
+                            <input type="range" id="input-cover-overlay-opacity" min="20" max="100" step="1" value="90" class="w-full mt-2"/>
                         </div>
                         <div id="cover-glass-fields" style="display:none;" class="flex flex-col gap-3 pt-1 border-t border-gray-200">
                             <div>
@@ -2818,6 +2825,7 @@ function makeDefaultSlide(id, overrides = {}) {
         bodyFontSize: 36,            // dimensione del sottotitolo copertina
         coverTextColor: '#ffffff',   // colore del testo copertina (titolo+sottotitolo+fonte)
         coverOverlayHeight: 60,      // altezza % dell'overlay inferiore
+        coverOverlayOpacity: 90,     // opacità % del nero alla base dell'overlay
         coverOverlayStyle: 'dark',   // 'dark' (sfumatura storica) | 'glass' (Liquid Glass)
         coverGlass: null,            // parametri del vetro: { blur, tint, intensity }
         coverTextX: LOGO_MARGIN_PCT,  // Margine = margine logo (3.7% ≈ 40px)
@@ -3041,6 +3049,8 @@ const DOM = {
     btnSlideAccent2Reset:  document.getElementById('btn-slide-accent2-reset'),
     inputTitleFont:        document.getElementById('input-title-font'),
     inputCoverOverlayHeight: document.getElementById('input-cover-overlay-height'),
+    inputCoverOverlayOpacity: document.getElementById('input-cover-overlay-opacity'),
+    coverOverlayOpacityValue: document.getElementById('cover-overlay-opacity-value'),
     coverOverlayHeightValue: document.getElementById('cover-overlay-height-value'),
     coverOverlayHeightBlock: document.getElementById('cover-overlay-height-block'),
     inputCoverOverlayStyle: document.getElementById('input-cover-overlay-style'),
@@ -3296,7 +3306,7 @@ function syncCaptionFromCover(force = false) {
 function _serializeSlide(s) {
     return {
         id: s.id, isStory: !!s.isStory, coverEnabled: s.coverEnabled,
-        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews, coverOverlayHeight: s.coverOverlayHeight, coverOverlayStyle: s.coverOverlayStyle, coverGlass: s.coverGlass,
+        coverUppercase: s.coverUppercase, coverDarkOverlay: s.coverDarkOverlay, coverShowNews: s.coverShowNews, coverOverlayHeight: s.coverOverlayHeight, coverOverlayOpacity: s.coverOverlayOpacity, coverOverlayStyle: s.coverOverlayStyle, coverGlass: s.coverGlass,
         title: s.title, body: s.body, source: s.source, titleFontSize: s.titleFontSize, titleFont: s.titleFont || 'Bebas Neue', bodyFontSize: s.bodyFontSize, coverTextColor: s.coverTextColor,
         coverTextX: s.coverTextX, coverTextY: s.coverTextY,
         zoom: s.zoom, bgX: s.bgX, bgY: s.bgY, bgColor: s.bgColor, bgMode: s.bgMode, bgRemoved: !!s.bgRemoved,
@@ -4074,6 +4084,9 @@ function generateSlideHTML(slide, index, forPreview = false, backdropOnly = fals
 
     // Cover scorporato (UX#5)
     const overlayH = slide.coverOverlayHeight ?? 60;
+    // Opacità del nero alla base: a 90 la resa è quella storica, a 100 il fondo
+    // diventa nero pieno. La fermata intermedia resta proporzionata (78%).
+    const ovOp = ((slide.coverOverlayOpacity ?? 90) / 100).toFixed(3);
     const overlayBase = `position:absolute;bottom:0;left:0;right:0;height:${overlayH}%;z-index:10;${forPreview ? 'pointer-events:none;' : ''}`;
     let darkOverlayHTML = '';
     if (cE && cDark) {
@@ -4085,7 +4098,7 @@ function generateSlideHTML(slide, index, forPreview = false, backdropOnly = fals
                 ? `<img src="${slide._glassUrl}" alt="" style="position:absolute;top:0;left:0;width:1080px;height:${SLIDE_H}px;z-index:10;display:block;">`
                 : `<div ${forPreview ? 'id="preview-glass-drag"' : ''} style="position:absolute;left:${gb.cxPct}%;top:${gb.cyPct}%;transform:translate(-50%,-50%);width:${gb.w}px;height:${gb.h}px;border-radius:${gb.r}px;z-index:10;box-sizing:border-box;${forPreview ? 'cursor:grab;user-select:none;' : ''}${glassBubbleCss(gb.cfg)}">${forPreview ? '<div class="drag-handle-icon" aria-hidden="true">✥</div>' : ''}</div>`;
         } else {
-            darkOverlayHTML = `<div style="${overlayBase}background:linear-gradient(to top,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.7) 40%,transparent 100%);"></div>`;
+            darkOverlayHTML = `<div style="${overlayBase}background:linear-gradient(to top,rgba(0,0,0,${ovOp}) 0%,rgba(0,0,0,${(ovOp*0.78).toFixed(3)}) 40%,transparent 100%);"></div>`;
         }
     }
     // Badge: dimensionamento con height esplicito + width:auto (niente object-fit).
@@ -4658,7 +4671,7 @@ function renderEditor() {
     // Altri controlli (Toggle, Testi)
     const cOn = !!slide.coverEnabled;
     DOM.toggleCoverLayout.checked=cOn; DOM.coverToggleTrack.className='toggle-track'+(cOn?' on':''); DOM.coverToggleLabel.textContent=cOn?'On':'Off'; DOM.coverFields.style.display=cOn?'flex':'none';
-    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; if(DOM.inputCoverOverlayHeight){ const oh=slide.coverOverlayHeight??60; DOM.inputCoverOverlayHeight.value=oh; DOM.coverOverlayHeightValue.textContent=oh+'%'; DOM.coverOverlayHeightBlock.style.display=slide.coverDarkOverlay?'':'none'; syncGlassUI(slide); } DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
+    if(cOn){ DOM.inputTitleFontSize.value=slide.titleFontSize||110; DOM.titleFontSizeValue.textContent=(slide.titleFontSize||110)+'px'; if(DOM.inputTitleFont) DOM.inputTitleFont.value=slide.titleFont||'Bebas Neue'; if(DOM.inputCoverOverlayHeight){ const oh=slide.coverOverlayHeight??60; DOM.inputCoverOverlayHeight.value=oh; const oo=slide.coverOverlayOpacity??90; DOM.inputCoverOverlayOpacity.value=oo; DOM.coverOverlayOpacityValue.textContent=oo+'%'; DOM.coverOverlayHeightValue.textContent=oh+'%'; DOM.coverOverlayHeightBlock.style.display=slide.coverDarkOverlay?'':'none'; syncGlassUI(slide); } DOM.inputBodyFontSize.value=slide.bodyFontSize||36; DOM.bodyFontSizeValue.textContent=(slide.bodyFontSize||36)+'px'; DOM.inputTitle.value=slide.title||''; DOM.inputBody.value=slide.body||''; DOM.inputSource.value=slide.source||''; const cc=slide.coverTextColor||'#ffffff'; DOM.inputCoverColor.value=cc; DOM.coverColorHex.textContent=cc.toUpperCase(); }
 
     // Tre toggle scorporati (UX#5)
     const syncToggle = (chk, track, label, val) => { chk.checked=val; track.className='toggle-track'+(val?' on':''); label.textContent=val?'On':'Off'; };
@@ -6764,6 +6777,8 @@ if (DOM.inputTitleFont) DOM.inputTitleFont.addEventListener('change', e => { sta
 if (DOM.inputCoverOverlayHeight) {
     DOM.inputCoverOverlayHeight.addEventListener('input', e => { const v=parseInt(e.target.value,10); state.slides[state.activeIndex].coverOverlayHeight=v; DOM.coverOverlayHeightValue.textContent=v+'%'; renderPreview(); trackChange(); });
     DOM.inputCoverOverlayHeight.addEventListener('change', () => snapshot());
+    DOM.inputCoverOverlayOpacity.addEventListener('input', e => { const v=parseInt(e.target.value,10); state.slides[state.activeIndex].coverOverlayOpacity=v; DOM.coverOverlayOpacityValue.textContent=v+'%'; renderPreview(); trackChange(); });
+    DOM.inputCoverOverlayOpacity.addEventListener('change', () => snapshot());
 }
 
 // ════════ STILE OVERLAY: Scuro / Liquid Glass ════════
