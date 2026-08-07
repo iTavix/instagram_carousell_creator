@@ -3107,15 +3107,22 @@ function isDarkHex(hex) {
     const r = parseInt(h.substr(0, 2) || 'ff', 16), g = parseInt(h.substr(2, 2) || 'ff', 16), b = parseInt(h.substr(4, 2) || 'ff', 16);
     return (0.299 * r + 0.587 * g + 0.114 * b) < 128;
 }
+// Contorno a filo per i colori scuri. L'alone sfocato (0 0 3px bianco) staccava il
+// testo ma dava un effetto "ghost" sgradito: al suo posto una linea sottile e netta,
+// costruita con 8 ombre a raggio zero attorno alla lettera. Resta leggibile su fondo
+// scuro senza sfocature attorno ai bordi.
+function hairline(colore, px) {
+    const d = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+    return d.map(([x, y]) => `${x*px}px ${y*px}px 0 ${colore}`).join(',');
+}
 function coverTextShadow(hex, soft) {
     if (!isDarkHex(hex)) return soft ? '0 2px 6px rgba(0,0,0,0.6)' : '0 4px 12px rgba(0,0,0,0.8)';
-    return soft ? '0 2px 6px rgba(255,255,255,0.7)' : '0 0 3px rgba(255,255,255,0.95),0 2px 10px rgba(255,255,255,0.65)';
+    return hairline('rgba(255,255,255,0.92)', soft ? 1 : 1.5);
 }
 // Stessa logica per i testi in overlay, che hanno ombre più tenui del titolo copertina.
 function overlayTextShadow(hex, soft) {
     if (!isDarkHex(hex)) return soft ? '0 2px 8px rgba(0,0,0,0.5)' : '0 2px 12px rgba(0,0,0,0.6)';
-    return soft ? '0 0 2px rgba(255,255,255,0.9),0 2px 8px rgba(255,255,255,0.55)'
-                : '0 0 3px rgba(255,255,255,0.9),0 2px 12px rgba(255,255,255,0.6)';
+    return hairline('rgba(255,255,255,0.92)', soft ? 1 : 1.5);
 }
 
 // ════════ HASHTAG AUTOMATICI ════════
@@ -4097,7 +4104,7 @@ function generateSlideHTML(slide, index, forPreview = false, backdropOnly = fals
     // La deriva dipende dalle metriche del font: vale per Bebas Neue, non per gli altri.
     const titleTopComp = (forPreview || titleFontName !== 'Bebas Neue') ? 0 : -Math.round(0.46 * titleFs);
     const textHTML = cE
-        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:${titleFontFn};font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent, accent2, c => coverTextShadow(c, false))}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent, accent2, c => coverTextShadow(c, false))}</p></div>` : '';
+        ? `<div ${forPreview ? 'id="preview-cover-text-drag"' : ''} style="position:absolute;left:${slide.coverTextX ?? 5.5}%;top:${slide.coverTextY ?? 60}%;width:89%;z-index:20;color:${slide.coverTextColor || '#ffffff'};text-shadow:${coverTextShadow(slide.coverTextColor, false)};display:flex;flex-direction:column;align-items:flex-start;${forPreview ? 'cursor:grab;user-select:none;' : ''}">${handleCover}${newsHTML}<h2 style="font-family:${titleFontFn};font-size:${titleFs}px;line-height:1;margin:${titleTopComp}px 0 16px 0;white-space:pre-wrap;${titleUppercase}">${formatAccentText(slide.title, accent, accent2, c => coverTextShadow(c, false))}</h2><p style="font-size:${slide.bodyFontSize || 36}px;line-height:1.4;font-weight:500;margin:0;font-family:'DM Sans',sans-serif;white-space:pre-wrap;">${formatAccentText(slide.body, accent, accent2, c => coverTextShadow(c, true))}</p></div>` : '';
     // La fonte in copertina si mostra col testo digitato, SENZA la sostituzione
     // "Fonte: theverge.com" → "From" (decorateSource resta solo per la caption).
     // Da Blocco 4: visibile su OGNI slide con il campo compilato (es. "Source: lego.com"),
